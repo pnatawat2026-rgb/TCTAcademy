@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1) employees_master: Master employee directory (empId, fullName, department, position)
+    match /employees_master/{empId} {
+      allow read, write: if true;
+    }
+
+    // 2) training_rosters: Course & cohort trainee rosters
+    match /training_rosters/{rosterId} {
+      allow read, write: if true;
+      match /{subCollection=**} {
+        allow read, write: if true;
+      }
+    }
+
+    // 3) training_records: Verified passed trainees with certificates
+    match /training_records/{recordId} {
+      allow read, write: if true;
+    }
+
+    // 4) system_settings: System, academy, and curriculum persistent settings
+    match /system_settings/{docId} {
+      allow read, write: if true;
+    }
+
+    // 5) training_audit_logs: Training tracking and audit logs
+    match /training_audit_logs/{logId} {
+      allow read, write: if true;
+    }
+
+    // 6) user_progress: Real-time user course progress & test scores
+    match /user_progress/{empId} {
+      allow read, write: if true;
+    }
+
+    // Backward-compatible collections
+    match /employees/{empId} {
+      allow read, write: if true;
+    }
+    match /courses/{courseId} {
+      allow read, write: if true;
+    }
+    match /activity_logs/{logId} {
+      allow read, write: if true;
+    }
+    match /exam_submissions/{submissionId} {
+      allow read, write: if true;
+    }
+    match /app_settings/{docId} {
+      allow read, write: if true;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

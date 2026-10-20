@@ -1,0 +1,155 @@
+{
+  "entities": {
+    "MasterEmployee": {
+      "title": "MasterEmployee",
+      "description": "Master employee directory stored in employees_master collection (source for search & enrollment)",
+      "type": "object",
+      "properties": {
+        "empId": { "type": "string", "maxLength": 64 },
+        "fullName": { "type": "string", "maxLength": 200 },
+        "department": { "type": "string", "maxLength": 100 },
+        "position": { "type": "string", "maxLength": 100 },
+        "pin": { "type": "string", "maxLength": 16 },
+        "role": { "type": "string", "enum": ["employee", "admin"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["empId", "fullName", "department"]
+    },
+    "TrainingRoster": {
+      "title": "TrainingRoster",
+      "description": "Trainee roster record for specific course/cohort stored in training_rosters collection",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "courseId": { "type": "string" },
+        "courseTitle": { "type": "string" },
+        "empId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "department": { "type": "string" },
+        "position": { "type": "string" },
+        "cohortDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["enrolled", "in_progress", "passed", "failed"] },
+        "preTestScore": { "type": "number" },
+        "postTestScore": { "type": "number" },
+        "miniGameScore": { "type": "number" },
+        "completedModules": { "type": "array" },
+        "certificateId": { "type": "string" },
+        "enrolledAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["courseId", "empId", "fullName", "department"]
+    },
+    "TrainingRecord": {
+      "title": "TrainingRecord",
+      "description": "Passed trainee history with verified exam scores and certificates stored in training_records collection",
+      "type": "object",
+      "properties": {
+        "empId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "department": { "type": "string" },
+        "position": { "type": "string" },
+        "courseId": { "type": "string" },
+        "courseTitle": { "type": "string" },
+        "examScore": { "type": "number" },
+        "examTotal": { "type": "number" },
+        "examPercentage": { "type": "number" },
+        "passed": { "type": "boolean" },
+        "certificateId": { "type": "string" },
+        "passedDate": { "type": "string" },
+        "completedAt": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["empId", "fullName", "department", "courseId", "examScore", "passed", "certificateId"]
+    },
+    "SystemSetting": {
+      "title": "SystemSetting",
+      "description": "Persistent system and academy settings stored in system_settings collection",
+      "type": "object",
+      "properties": {
+        "companyName": { "type": "string" },
+        "companyNameEn": { "type": "string" },
+        "centerName": { "type": "string" },
+        "docControlNo": { "type": "string" },
+        "signatory1Name": { "type": "string" },
+        "signatory1Position": { "type": "string" },
+        "signatory1Role": { "type": "string" },
+        "signatory2Name": { "type": "string" },
+        "signatory2Position": { "type": "string" },
+        "signatory2Role": { "type": "string" },
+        "signatory3Name": { "type": "string" },
+        "signatory3Position": { "type": "string" },
+        "signatory3Role": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      }
+    },
+    "TrainingAuditLog": {
+      "title": "TrainingAuditLog",
+      "description": "Training activity log entry stored in training_audit_logs collection",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "empId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "department": { "type": "string" },
+        "position": { "type": "string" },
+        "courseId": { "type": "string" },
+        "courseName": { "type": "string" },
+        "action": { "type": "string" },
+        "detail": { "type": "string" },
+        "score": { "type": "number" },
+        "maxScore": { "type": "number" },
+        "timestamp": { "type": "string" },
+        "displayTime": { "type": "string" },
+        "deviceInfo": { "type": "string" }
+      },
+      "required": ["empId", "fullName", "courseId", "action", "detail", "timestamp"]
+    },
+    "UserProgress": {
+      "title": "UserProgress",
+      "description": "Real-time user persistent learning progress stored in user_progress collection",
+      "type": "object",
+      "properties": {
+        "empId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "department": { "type": "string" },
+        "position": { "type": "string" },
+        "selectedCourseId": { "type": "string" },
+        "preTestScore": { "type": "number" },
+        "postTestScore": { "type": "number" },
+        "miniGameScore": { "type": "number" },
+        "completedModules": { "type": "array" },
+        "certificateId": { "type": "string" },
+        "coursesProgress": { "type": "object" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["empId"]
+    }
+  },
+  "firestore": {
+    "/employees_master/{empId}": {
+      "schema": { "$ref": "#/entities/MasterEmployee" },
+      "description": "Master employee directory (1) employees_master"
+    },
+    "/training_rosters/{rosterId}": {
+      "schema": { "$ref": "#/entities/TrainingRoster" },
+      "description": "Training roster table (2) training_rosters"
+    },
+    "/training_records/{recordId}": {
+      "schema": { "$ref": "#/entities/TrainingRecord" },
+      "description": "Verified passed exam records (3) training_records"
+    },
+    "/system_settings/{docId}": {
+      "schema": { "$ref": "#/entities/SystemSetting" },
+      "description": "Academy & system settings (4) system_settings"
+    },
+    "/training_audit_logs/{logId}": {
+      "schema": { "$ref": "#/entities/TrainingAuditLog" },
+      "description": "Training tracking & audit log system (5) training_audit_logs"
+    },
+    "/user_progress/{empId}": {
+      "schema": { "$ref": "#/entities/UserProgress" },
+      "description": "Real-time user persistent learning progress (6) user_progress"
+    }
+  }
+}
