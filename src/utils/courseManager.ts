@@ -7,6 +7,7 @@ import { COURSE_MODULES_PERSONALITY, PERSONALITY_PSYCHOLOGY_QUESTIONS } from '..
 import { COURSE_MODULES_AI, AI_COURSE_QUESTIONS } from '../data/aiCourseData';
 import { COURSE_MODULES_KYT, KYT_SHISA_KANKO_QUESTIONS } from '../data/kytCourseData';
 import { COURSE_MODULES_APPLIED_PSYCHOLOGY, APPLIED_PSYCHOLOGY_QUESTIONS } from '../data/appliedPsychologyCourseData';
+import { COURSE_MODULES_GOOD_EMPLOYEE_SKILLS, GOOD_EMPLOYEE_SKILLS_QUESTIONS } from '../data/goodEmployeeSkillsData';
 
 export interface CustomCourseData {
   course: Course;
@@ -19,14 +20,64 @@ export interface CustomCourseData {
 
 const STORAGE_CUSTOM_COURSES_KEY = 'tct_custom_courses_v4';
 const STORAGE_COHORT_BACKUPS_KEY = 'tct_cohort_backups_v4';
+export const STORAGE_COURSE_CUSTOMIZATIONS_KEY = 'tct_course_customizations_v5';
 
 /**
- * Get all available courses (Initial built-in + Admin created)
+ * Get all course customizations (overridden image URLs, titles, confidentiality)
+ */
+export function getCourseCustomizations(): Record<string, Partial<Course>> {
+  try {
+    const raw = localStorage.getItem(STORAGE_COURSE_CUSTOMIZATIONS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+/**
+ * Save course customization (e.g. background image URL, confidential status, etc.)
+ */
+export function saveCourseCustomization(courseId: string, overrides: Partial<Course>): void {
+  try {
+    const current = getCourseCustomizations();
+    current[courseId] = {
+      ...(current[courseId] || {}),
+      ...overrides
+    };
+    localStorage.setItem(STORAGE_COURSE_CUSTOMIZATIONS_KEY, JSON.stringify(current));
+  } catch (e) {
+    console.debug('Failed to save course customization', e);
+  }
+}
+
+/**
+ * Reset course customizations to factory defaults
+ */
+export function resetCourseCustomizations(): void {
+  try {
+    localStorage.removeItem(STORAGE_COURSE_CUSTOMIZATIONS_KEY);
+  } catch (e) {}
+}
+
+/**
+ * Get all available courses (Initial built-in + Admin created + Customizations applied)
  */
 export function getAllAvailableCourses(): Course[] {
   const customCourses = getStoredCustomCourses();
   const customList = customCourses.map(c => c.course);
-  return [...INITIAL_COURSES, ...customList];
+  const combined = [...INITIAL_COURSES, ...customList];
+  const customizations = getCourseCustomizations();
+
+  return combined.map(course => {
+    const custom = customizations[course.id];
+    if (custom) {
+      return {
+        ...course,
+        ...custom
+      };
+    }
+    return course;
+  });
 }
 
 /**
@@ -60,6 +111,9 @@ export function getCourseModules(courseId: string): CourseModule[] {
   }
   if (courseId === 'applied-psychology') {
     return COURSE_MODULES_APPLIED_PSYCHOLOGY;
+  }
+  if (courseId === 'good-employee-skills') {
+    return COURSE_MODULES_GOOD_EMPLOYEE_SKILLS;
   }
 
   // Check custom courses
@@ -95,6 +149,9 @@ export function getCourseQuestions(courseId: string): Question[] {
   }
   if (courseId === 'applied-psychology') {
     return APPLIED_PSYCHOLOGY_QUESTIONS;
+  }
+  if (courseId === 'good-employee-skills') {
+    return GOOD_EMPLOYEE_SKILLS_QUESTIONS;
   }
 
   // Check custom courses
@@ -304,7 +361,7 @@ export function getNextActionView(
   const completedMods: number[] = cp?.completedModules || user.completedModules || [];
   const evalSubmitted = cp ? cp.evaluationSubmitted : user.evaluationSubmitted;
   const modules = getCourseModules(courseId);
-  const passingScore = courseId === 'personality-psychology' ? 15 : 8;
+  const passingScore = courseId === 'good-employee-skills' ? 16 : (courseId === 'personality-psychology' ? 15 : (courseId === 'kyt-shisa-kanko' || courseId === 'ai-for-tct' ? 16 : 8));
 
   // 1. If Pre-test not done -> Pre-test
   if (preScore === null || preScore === undefined) {

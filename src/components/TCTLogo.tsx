@@ -4,6 +4,7 @@ interface TCTLogoProps {
   className?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'hero' | 'doc' | 'certPortrait' | 'certLandscape';
   showSubtitle?: boolean;
+  showEmblem?: boolean;
   theme?: 'dark' | 'light' | 'white' | 'auto';
   variant?: 'full' | 'emblem' | 'lockup' | 'image';
   onClick?: () => void;
@@ -14,6 +15,7 @@ export const TCTLogo: React.FC<TCTLogoProps> = ({
   className = '',
   size = 'md',
   showSubtitle = true,
+  showEmblem = true,
   theme = 'auto',
   variant = 'full',
   onClick,
@@ -27,7 +29,7 @@ export const TCTLogo: React.FC<TCTLogoProps> = ({
     md: { h: 'h-13 sm:h-15', textTitle: 'text-base sm:text-lg', textSub: 'text-xs', maxW: 'max-w-[240px]' },
     lg: { h: 'h-18 sm:h-22', textTitle: 'text-xl sm:text-2xl', textSub: 'text-sm', maxW: 'max-w-[300px]' },
     xl: { h: 'h-24 sm:h-28', textTitle: 'text-2xl sm:text-3xl', textSub: 'text-base', maxW: 'max-w-[380px]' },
-    hero: { h: 'h-32 sm:h-40', textTitle: 'text-3xl sm:text-4xl', textSub: 'text-lg', maxW: 'max-w-[500px]' },
+    hero: { h: 'h-28 sm:h-36 md:h-40', textTitle: 'text-3xl sm:text-4xl', textSub: 'text-lg', maxW: 'max-w-[340px] sm:max-w-[500px]' },
     doc: { h: 'h-20 sm:h-24', textTitle: 'text-base sm:text-lg', textSub: 'text-xs', maxW: 'max-w-[320px]' },
     certPortrait: { h: 'h-20 sm:h-24 md:h-26', textTitle: 'text-lg sm:text-xl', textSub: 'text-xs', maxW: 'max-w-[340px]' },
     certLandscape: { h: 'h-16 sm:h-20 md:h-22', textTitle: 'text-base sm:text-lg', textSub: 'text-xs', maxW: 'max-w-[300px]' }
@@ -207,18 +209,20 @@ export const TCTLogo: React.FC<TCTLogoProps> = ({
         className={`inline-flex items-center gap-2 sm:gap-3.5 select-none min-w-0 shrink ${className} ${onClick ? 'cursor-pointer hover:opacity-95' : ''}`}
         onClick={onClick}
       >
-        {/* Official Logo (Direct Image with Vector Fallback) */}
-        {!imgError ? (
-          <img 
-            src="/tct-academy-logo.svg" 
-            alt={alt}
-            onError={() => setImgError(true)}
-            className={`${lockupImgH} w-auto object-contain shrink-0 drop-shadow-xs`}
-            loading="eager"
-            decoding="sync"
-          />
-        ) : (
-          render3DEmblem(lockupImgH)
+        {/* Official Logo (Direct Image with Vector Fallback) - Rendered only if showEmblem is true */}
+        {showEmblem && (
+          !imgError ? (
+            <img 
+              src="/tct-academy-logo.svg" 
+              alt={alt}
+              onError={() => setImgError(true)}
+              className={`${lockupImgH} w-auto object-contain shrink-0 drop-shadow-xs`}
+              loading="eager"
+              decoding="sync"
+            />
+          ) : (
+            render3DEmblem(lockupImgH)
+          )
         )}
 
         {/* Typography Lockup */}

@@ -33,13 +33,19 @@ import {
   Building2,
   FileSpreadsheet,
   Activity,
-  History
+  History,
+  RefreshCw,
+  FileCheck2,
+  Monitor,
+  MapPin,
+  Star
 } from 'lucide-react';
 import { playCyberClick, toggleSound, isSoundEnabled } from '../utils/soundEffects';
 import { useLanguage } from '../context/LanguageContext';
 import { LanguageToggle } from './LanguageToggle';
 import { getAllAvailableCourses } from '../utils/courseManager';
 import { ThaiMOOCLogo } from './ThaiMOOCLogo';
+import { forceHardRefreshAndPurgeCache } from '../utils/appVersionManager';
 
 interface NavbarProps {
   user: UserProfile;
@@ -55,6 +61,9 @@ interface NavbarProps {
   onOpenEditProfile?: () => void;
   onOpenTrainingTracker?: (tab?: 'logs' | 'tracker' | 'my-record') => void;
   onOpenCourseApprovalPdf?: (courseId?: string) => void;
+  onOpenDesktopIcon?: () => void;
+  onOpenLocationTracker?: () => void;
+  onOpenKirkpatrickEval?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -70,7 +79,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onResetProgress,
   onOpenEditProfile,
   onOpenTrainingTracker,
-  onOpenCourseApprovalPdf
+  onOpenCourseApprovalPdf,
+  onOpenDesktopIcon,
+  onOpenLocationTracker,
+  onOpenKirkpatrickEval
 }) => {
   const { t, tName, tDept, language } = useLanguage();
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
@@ -145,7 +157,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               ศูนย์ฝึกอบรมและพัฒนา TCT Academy
             </span>
             <span className="text-blue-200 font-semibold text-[10px] sm:text-[11px] truncate hidden md:inline">
-              • แผนกบุคคลและธุรการ Personnel • บริษัท เทยิน คอร์ด (ประเทศไทย) จำกัด
+              • แผนกบุคคลและธุรการ Personnel & HRD • (Human Resource Development & Training Center) • บริษัท เทยิน คอร์ด (ประเทศไทย) จำกัด
             </span>
           </div>
 
@@ -161,10 +173,52 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* TCT Main Header Navbar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-2 sm:px-6 py-2 transition-all no-print font-sarabun shadow-xs w-full">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-1.5 sm:gap-4 min-w-0">
+        {/* ================= Mobile Header (< md) ================= */}
+        <div className="flex md:hidden items-center justify-between w-full min-w-0 py-1">
+          {/* Left: Back button if deep in view, otherwise spacer */}
+          <div className="w-9 flex items-center justify-start shrink-0">
+            {currentView !== 'dashboard' && currentView !== 'courses' && currentView !== 'login' && currentView !== 'welcome' ? (
+              <button
+                id="nav-mobile-back-btn"
+                type="button"
+                onClick={() => { playCyberClick(); onNavigate('dashboard'); }}
+                className="h-8 w-8 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 flex items-center justify-center cursor-pointer shadow-2xs"
+                title="ย้อนกลับ"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+            ) : null}
+          </div>
+
+          {/* Center: Prominent Large Logo Centered */}
+          <div 
+            className="flex-1 flex items-center justify-center cursor-pointer min-w-0 px-2"
+            onClick={() => { playCyberClick(); onNavigate('courses'); }}
+            title="TCT E-Training - ศูนย์ฝึกอบรมและพัฒนา TCT Academy"
+          >
+            <ThaiMOOCLogo size="md" showSubtitle={true} theme="light" variant="lockup" />
+          </div>
+
+          {/* Right: Hamburger Menu Drawer Button */}
+          <div className="w-9 flex items-center justify-end shrink-0">
+            <button
+              id="nav-mobile-drawer-btn"
+              type="button"
+              onClick={() => { playCyberClick(); setIsMobileDrawerOpen(true); }}
+              className="h-8 w-8 rounded-lg text-slate-800 bg-white hover:bg-slate-100 border border-slate-300 transition-all cursor-pointer flex items-center justify-center shadow-2xs"
+              title="เปิดเมนูทั้งหมด"
+              aria-label="เปิดเมนูทั้งหมด"
+            >
+              <Menu className="w-4 h-4 text-slate-800" />
+            </button>
+          </div>
+        </div>
+
+        {/* ================= Desktop Header (>= md) ================= */}
+        <div className="hidden md:flex items-center justify-between gap-3 sm:gap-4 w-full min-w-0">
           
-          {/* 1. Brand Logo & Back Button (Never Shrinks / Never Overlapped) */}
-          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink">
+          {/* 1. Brand Logo & Back Button */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
             <div 
               className="cursor-pointer group flex items-center min-w-0 shrink" 
               onClick={() => { playCyberClick(); onNavigate('courses'); }}
@@ -179,27 +233,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="nav-quick-back-dashboard-btn"
                 type="button"
                 onClick={() => { playCyberClick(); onNavigate('dashboard'); }}
-                className="h-8 px-2 sm:px-2.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#005A9C] border border-blue-200 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0"
+                className="h-9 px-3 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs"
                 title="ย้อนกลับสู่แดชบอร์ดบทเรียน"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">แดชบอร์ด</span>
+                <ArrowLeft className="w-3.5 h-3.5 text-slate-600" />
+                <span>แดชบอร์ด</span>
               </button>
             )}
           </div>
 
-          {/* 2. Navigation Links & Tools (Desktop) - Clean & Streamlined */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
+          {/* 2. Navigation Links & Tools (Desktop) - Clean, Quiet Corporate Palette */}
+          <div className="flex items-center gap-1.5 lg:gap-2 shrink-0 ml-auto">
             
             {/* 1. บทเรียน */}
             <button
               id="nav-lessons-btn"
               type="button"
               onClick={() => { playCyberClick(); onNavigate('dashboard'); }}
-              className={`h-9 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 whitespace-nowrap ${
+              className={`h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 currentView === 'dashboard' || currentView.startsWith('module') || currentView === 'pretest' || currentView === 'posttest'
-                  ? 'bg-[#005A9C] text-white shadow-xs'
-                  : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
+                  ? 'bg-slate-800 text-white shadow-xs'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'
               }`}
               title="เข้าสู่เนื้อหาบทเรียนและทำแบบทดสอบ"
             >
@@ -213,10 +267,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="nav-my-history-btn"
                 type="button"
                 onClick={() => { playCyberClick(); onOpenTrainingTracker('my-record'); }}
-                className="h-9 px-3 rounded-xl text-xs font-bold bg-blue-50 hover:bg-blue-100 text-[#005A9C] border border-blue-200 flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs whitespace-nowrap"
+                className="h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs whitespace-nowrap"
                 title="ดูประวัติการเข้าเรียนและผลคะแนนสอบทั้งหมดของคุณ"
               >
-                <History className="w-4 h-4 shrink-0 text-[#005A9C]" />
+                <History className="w-4 h-4 shrink-0 text-slate-600" />
                 <span className="whitespace-nowrap">ผลการเรียน</span>
               </button>
             ) : (
@@ -224,41 +278,69 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="nav-my-report-btn"
                 type="button"
                 onClick={() => { playCyberClick(); onNavigate('report'); }}
-                className="h-9 px-3 rounded-xl text-xs font-bold bg-blue-50 hover:bg-blue-100 text-[#005A9C] border border-blue-200 flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs whitespace-nowrap"
+                className="h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs whitespace-nowrap"
                 title="ดูผลคะแนนการฝึกอบรมของคุณ"
               >
-                <FileSpreadsheet className="w-4 h-4 shrink-0 text-[#005A9C]" />
+                <FileSpreadsheet className="w-4 h-4 shrink-0 text-slate-600" />
                 <span className="whitespace-nowrap">ผลการเรียน</span>
               </button>
             )}
 
-            {/* 3. พิมพ์เกียรติบัตร (เมื่อสอบผ่านแล้ว) */}
+            {/* 3. พิมพ์เกียรติบัตร (เมื่อสอบผ่านแล้ว) - Clean Corporate Dark Slate */}
             {isPassed && (
               <button
                 id="nav-print-cert-direct-btn"
                 type="button"
                 onClick={() => { playCyberClick(); onNavigate('certificate'); }}
-                className="h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 shadow-sm shadow-amber-500/20 ring-1 ring-amber-400/50 whitespace-nowrap"
+                className="h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 bg-slate-800 hover:bg-slate-900 text-white border border-slate-700 shadow-xs whitespace-nowrap"
                 title="คลิกเพื่อเปิดและพิมพ์ใบประกาศนียบัตร A4"
               >
-                <Award className="w-4 h-4 shrink-0 text-slate-950" />
-                <span className="whitespace-nowrap">พิมพ์เกียรติบัตร</span>
+                <Award className="w-4 h-4 shrink-0 text-amber-300" />
+                <span className="whitespace-nowrap">เกียรติบัตร</span>
               </button>
             )}
 
-            {/* 4. ผู้ดูแลระบบ (Admin) */}
+            {/* Kirkpatrick Evaluation Button */}
+            {onOpenKirkpatrickEval && (
+              <button
+                id="nav-kirkpatrick-eval-btn"
+                type="button"
+                onClick={() => { playCyberClick(); onOpenKirkpatrickEval(); }}
+                className="h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300 flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs whitespace-nowrap"
+                title="แบบประเมินความพึงพอใจและประสิทธิผลหลังการฝึกอบรม (Kirkpatrick 4 Levels)"
+              >
+                <Star className="w-3.5 h-3.5 shrink-0 fill-amber-500 text-amber-600" />
+                <span className="hidden xl:inline whitespace-nowrap">ประเมิน Kirkpatrick</span>
+                <span className="xl:hidden whitespace-nowrap">Kirkpatrick</span>
+              </button>
+            )}
+
+            {/* ตรวจสอบโลเคชั่นพนักงาน (Employee Location Verification) */}
+            <button
+              id="nav-location-tracker-btn"
+              type="button"
+              onClick={() => { playCyberClick(); onOpenLocationTracker?.(); }}
+              className="h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs whitespace-nowrap"
+              title="ระบบตรวจสอบโลเคชั่นและลงเวลาเข้าอบรมพนักงาน (GPS Check-in 1.0 km)"
+            >
+              <MapPin className="w-4 h-4 shrink-0 text-emerald-600" />
+              <span className="hidden xl:inline whitespace-nowrap">ตรวจสอบโลเคชั่น</span>
+              <span className="xl:hidden whitespace-nowrap">โลเคชั่น</span>
+            </button>
+
+            {/* 4. ผู้ดูแลระบบ (Admin) - Clean Corporate Border */}
             <button
               id="nav-admin-portal-btn"
               type="button"
               onClick={() => { playCyberClick(); onNavigate('admin'); }}
-              className={`h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold transition-all cursor-pointer hidden md:flex items-center gap-1.5 shrink-0 border whitespace-nowrap ${
+              className={`h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 border whitespace-nowrap ${
                 currentView === 'admin'
-                  ? 'bg-purple-700 text-white border-purple-800 shadow-sm'
-                  : 'bg-purple-50 hover:bg-purple-100 text-purple-800 border-purple-200'
+                  ? 'bg-slate-800 text-white border-slate-900 shadow-sm'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'
               }`}
               title="สำหรับผู้ดูแลระบบ & แผนกบุคคล (Personnel Admin Backoffice)"
             >
-              <Lock className={`w-3.5 h-3.5 ${isAdminLoggedIn ? 'text-amber-500' : 'text-purple-600'}`} />
+              <Lock className={`w-3.5 h-3.5 ${isAdminLoggedIn ? 'text-amber-500' : 'text-slate-500'}`} />
               <span className="whitespace-nowrap">ผู้ดูแลระบบ</span>
             </button>
 
@@ -273,10 +355,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setIsMenuDropdownOpen(false);
                   setIsDocsDropdownOpen(false);
                 }}
-                className="h-9 px-2 sm:pl-2 sm:pr-2.5 rounded-lg border text-xs flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer shrink-0 bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800"
+                className="h-9 px-2 sm:pl-2 sm:pr-2.5 rounded-xl border text-xs flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer shrink-0 bg-white hover:bg-slate-50 border-slate-300 text-slate-800 shadow-2xs"
                 title={`${displayName} (คลิกดูข้อมูลส่วนตัว/ออกจากระบบ)`}
               >
-                <div className="w-6 h-6 rounded-full bg-[#005A9C] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                <div className="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shrink-0">
                   {user.fullName?.substring(0, 1) || 'U'}
                 </div>
 
@@ -289,11 +371,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
                 </div>
 
-                <span className="text-[10px] font-bold text-[#005A9C] bg-blue-100/70 px-1 sm:px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
                   {progressPercentage}%
                 </span>
 
-                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform hidden sm:inline ${isUserDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isUserDropdownOpen && (
@@ -361,8 +442,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </button>
                     )}
 
-
-
+                    {onOpenKirkpatrickEval && (
+                      <button
+                        id="nav-dropdown-kirkpatrick-btn"
+                        type="button"
+                        onClick={() => { playCyberClick(); setIsUserDropdownOpen(false); onOpenKirkpatrickEval(); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left hover:bg-amber-50 text-amber-950 cursor-pointer font-medium"
+                      >
+                        <Star className="w-4 h-4 text-amber-600 fill-amber-400 shrink-0" />
+                        <span className="flex items-center gap-1.5 font-bold">
+                          <span>แบบประเมิน Kirkpatrick (4 ระดับ)</span>
+                          <span className="px-1.5 py-0.2 rounded text-[9px] bg-amber-400 text-slate-950">สำคัญ</span>
+                        </span>
+                      </button>
+                    )}
 
                     <button
                       onClick={() => { playCyberClick(); onNavigate('login'); setIsUserDropdownOpen(false); }}
@@ -381,6 +474,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <span>ล้างประวัติเพื่อเรียนใหม่ (Reset)</span>
                       </button>
                     )}
+
+                    <button
+                      type="button"
+                      onClick={() => { playCyberClick(); setIsUserDropdownOpen(false); forceHardRefreshAndPurgeCache(); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left hover:bg-blue-50 text-[#005A9C] cursor-pointer font-medium border-t border-slate-100"
+                      title="ล้างแคชเครื่องและโหลดเวอร์ชันล่าสุด"
+                    >
+                      <RefreshCw className="w-4 h-4 text-[#005A9C]" />
+                      <span>อัปเดตเวอร์ชันล่าสุด (ล้างแคชเครื่อง)</span>
+                    </button>
                   </div>
 
                   {/* Logout */}
@@ -525,22 +628,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                         onNavigate('certificate');
                         setIsMobileDrawerOpen(false);
                       }}
-                      className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left transition-all cursor-pointer bg-gradient-to-r from-amber-400/20 via-yellow-400/20 to-amber-500/20 border-2 border-amber-400 text-amber-950 font-bold"
+                      className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left transition-all cursor-pointer bg-slate-800 text-white font-bold shadow-xs hover:bg-slate-900"
                     >
-                      <Award className="w-5 h-5 shrink-0 text-amber-600 animate-bounce" />
+                      <Award className="w-5 h-5 shrink-0 text-amber-300" />
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-sm">พิมพ์เกียรติบัตร (ใบรับรอง)</span>
-                          <span className="text-[10px] bg-emerald-600 text-white font-bold px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] bg-slate-700 text-amber-300 font-bold px-2 py-0.5 rounded-full border border-slate-600">
                             พร้อมพิมพ์
                           </span>
                         </div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px] text-slate-300">
                           วุฒิบัตรรับรองมาตรฐาน A4 แนวนอน/แนวตั้ง
                         </div>
                       </div>
                     </button>
                   )}
+
                   {/* Quick Switch User Button in Mobile Drawer */}
                   <button
                     onClick={() => {
@@ -578,6 +682,41 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </button>
                   )}
 
+                  {onOpenKirkpatrickEval && (
+                    <button
+                      onClick={() => {
+                        playCyberClick();
+                        setIsMobileDrawerOpen(false);
+                        onOpenKirkpatrickEval();
+                      }}
+                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left bg-amber-50 hover:bg-amber-100 text-amber-950 cursor-pointer font-bold border border-amber-200"
+                    >
+                      <Star className="w-4 h-4 fill-amber-500 text-amber-600 shrink-0" />
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span>แบบประเมิน Kirkpatrick (4 ระดับ)</span>
+                          <span className="px-1.5 py-0.2 rounded text-[9px] bg-amber-400 text-slate-950 font-black">มาตรฐาน</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-normal">ประเมินความพึงพอใจและประสิทธิผลหลังการเรียน</div>
+                      </div>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      playCyberClick();
+                      setIsMobileDrawerOpen(false);
+                      onOpenLocationTracker?.();
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left hover:bg-emerald-50 text-emerald-950 cursor-pointer font-bold"
+                  >
+                    <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <div>ตรวจสอบโลเคชั่นพนักงาน (GPS Check-in)</div>
+                      <div className="text-[10px] text-slate-500 font-normal">เช็คอินพิกัดในรัศมีโรงงาน 1.0 กม.</div>
+                    </div>
+                  </button>
+
                   <button
                     onClick={() => {
                       playCyberClick();
@@ -602,6 +741,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <span>เสียงประกอบ (Sound Effects)</span>
                     </span>
                     <span className="text-[11px] font-bold text-[#005A9C]">{soundOn ? 'เปิด' : 'ปิด'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      playCyberClick();
+                      setIsMobileDrawerOpen(false);
+                      forceHardRefreshAndPurgeCache();
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left bg-blue-50/70 hover:bg-blue-100 text-[#005A9C] cursor-pointer font-bold border border-blue-200"
+                    title="ล้างแคชเครื่องและโหลดเวอร์ชันล่าสุด"
+                  >
+                    <RefreshCw className="w-4 h-4 text-[#005A9C] shrink-0" />
+                    <div>
+                      <div className="text-xs">อัปเดตเวอร์ชันล่าสุด (ล้างแคชเครื่อง)</div>
+                      <div className="text-[10px] text-blue-600 font-normal">กรณีหน้าจอบนอุปกรณ์ไม่อัปเดต</div>
+                    </div>
                   </button>
                 </div>
 

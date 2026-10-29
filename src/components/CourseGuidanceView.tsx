@@ -42,68 +42,20 @@ export const CourseGuidanceView: React.FC<CourseGuidanceViewProps> = ({
   const hasDonePreTest = user.preTestScore !== null;
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8 font-sarabun text-slate-800">
+    <div className="w-full max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6 font-sarabun text-slate-800 overflow-x-hidden">
       
-      {/* 9-Step Employee Flow Stepper */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs">
-        <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-slate-100">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-            <GraduationCap className="w-4 h-4 text-[#005A9C]" />
-            <span>ลำดับขั้นตอนการเรียนรู้ของพนักงาน (Employee Learning Sequence)</span>
-          </div>
-          <span className="text-[11px] font-semibold text-[#005A9C] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-            ขั้นตอนที่ 4 จาก 9
-          </span>
-        </div>
-
-        <div className="grid grid-cols-3 sm:grid-cols-9 gap-1.5 text-center text-[10px] font-semibold">
-          {[
-            { num: 1, title: 'หน้าแรก', view: 'welcome', active: false, done: true },
-            { num: 2, title: 'เข้าสู่ระบบ', view: 'login', active: false, done: true },
-            { num: 3, title: 'เลือกวิชา', view: 'courses', active: false, done: true },
-            { num: 4, title: 'คำแนะนำ', view: 'guidance', active: true, done: false },
-            { num: 5, title: 'เริ่มเรียน', view: 'dashboard', active: false, done: hasDonePreTest },
-            { num: 6, title: 'ประเมิน', view: 'evaluation', active: false, done: user.evaluationSubmitted },
-            { num: 7, title: 'ผลศักยภาพ', view: 'report', active: false, done: user.postTestScore !== null },
-            { num: 8, title: 'ใบรับรอง', view: 'certificate', active: false, done: user.postTestScore !== null && user.postTestScore >= passingScore },
-            { num: 9, title: 'ติดตาม 30 วัน', view: 'followup30', active: false, done: false }
-          ].map((s) => (
-            <div
-              key={s.num}
-              onClick={() => {
-                if (s.done || s.active) {
-                  playCyberClick();
-                  onNavigate(s.view as ViewState);
-                }
-              }}
-              className={`p-1.5 rounded-xl border transition-all ${
-                s.active
-                  ? 'bg-[#002855] text-white border-[#002855] shadow-xs'
-                  : s.done
-                  ? 'bg-emerald-50 text-emerald-900 border-emerald-200 cursor-pointer hover:bg-emerald-100'
-                  : 'bg-slate-50 text-slate-400 border-slate-200 opacity-80'
-              }`}
-            >
-              <div className="text-[9px] font-mono">{s.done ? '✓' : `0${s.num}`}</div>
-              <div className="truncate">{s.title}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Hero Course Header */}
-      <div className="rounded-3xl bg-gradient-to-br from-[#002855] via-[#003875] to-[#005A9C] text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
+      <div className="rounded-3xl bg-slate-900 text-white p-5 sm:p-8 shadow-md relative overflow-hidden border border-slate-800">
         <div className="relative z-10 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-blue-100 text-[11px] sm:text-xs">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-            <span>คำแนะนำและแนวทางการเรียนรู้ • ศูนย์ฝึกอบรมและพัฒนา TCT Academy • แผนก Personnel</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-slate-200 text-[11px] sm:text-xs">
+            <span>คำแนะนำและแนวทางการเรียนรู้ • ศูนย์ฝึกอบรมและพัฒนา TCT Academy</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-amber-400 text-slate-900">
+            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-white/15 text-white border border-white/20">
               {activeCourse.code || 'COURSE'}
             </span>
-            <span className="text-xs font-medium text-blue-100 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/20">
+            <span className="text-xs font-medium text-slate-300 bg-white/5 px-2.5 py-0.5 rounded-full border border-white/10">
               หลักสูตรฝึกอบรมบุคลากรภายใน TCT
             </span>
           </div>
@@ -257,15 +209,15 @@ export const CourseGuidanceView: React.FC<CourseGuidanceViewProps> = ({
 
       </div>
 
-      {/* Action Navigation Buttons (Mobile-Safe, Balanced, Symmetrical) */}
-      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+      {/* Action Navigation Buttons (Clean White and Dark Slate) */}
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
         <button
           type="button"
           onClick={() => {
             playCyberClick();
             onNavigate('courses');
           }}
-          className="w-full sm:w-auto h-12 px-6 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border border-slate-300"
+          className="w-full sm:w-auto h-11 px-5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border border-slate-300 shadow-2xs"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>&larr; เปลี่ยน / เลือกหลักสูตรอื่น</span>
@@ -282,9 +234,9 @@ export const CourseGuidanceView: React.FC<CourseGuidanceViewProps> = ({
               onNavigate('pretest');
             }
           }}
-          className="w-full sm:w-auto h-12 px-8 rounded-2xl bg-[#005A9C] hover:bg-[#004070] text-white text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer whitespace-nowrap"
+          className="w-full sm:w-auto h-11 px-6 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer whitespace-nowrap"
         >
-          <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{hasDonePreTest ? 'รับทราบ และเข้าสู่บทเรียน' : 'รับทราบ และเข้าทำแบบทดสอบก่อนเรียน (Pre-test)'}</span>
           <ArrowRight className="w-4 h-4" />
         </button>

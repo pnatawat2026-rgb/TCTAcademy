@@ -9,12 +9,15 @@ export const COURSES: Course[] = [
     moduleCount: 4,
     badge: 'หลักสูตรที่ 1 • 4 บทเรียน (QSRM)',
     url: 'https://quality-safety-risk-management-micro-training-8605141631.asia-southeast1.run.app',
-    color: 'from-cyan-500 to-blue-600',
+    color: 'from-[#001D3D] via-[#002D62] to-[#0A192F]',
     code: 'QSRM',
     duration: '45-60 นาที',
     estimatedHours: 1,
     passingScore: 8,
-    passingCriteria: '≥ 80% (8/10 ข้อ)'
+    passingCriteria: '≥ 80% (8/10 ข้อ)',
+    imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'เครื่องทดสอบแรงดึงเส้นด้ายคอร์ดในห้องแล็บ QC, ระบบ LOTO และเมทริกซ์ 5x5',
+    isConfidential: true // ข้อมูลความลับองค์กร: แลกเปลี่ยนเฉพาะในพื้นที่บริษัท ต้องแชร์ GPS
   },
   {
     id: 'advanced-preventive-maintenance',
@@ -24,12 +27,15 @@ export const COURSES: Course[] = [
     moduleCount: 3,
     badge: 'หลักสูตรที่ 2 • 3 บทเรียน (APM)',
     url: 'https://quality-safety-risk-management-micro-training-8605141631.asia-southeast1.run.app',
-    color: 'from-purple-500 to-indigo-600',
+    color: 'from-[#001428] via-[#002244] to-[#0A192F]',
     code: 'APM',
     duration: '45-60 นาที',
     estimatedHours: 1,
     passingScore: 8,
-    passingCriteria: '≥ 80% (8/10 ข้อ)'
+    passingCriteria: '≥ 80% (8/10 ข้อ)',
+    imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'เครื่องจักรปั่นเกลียวเส้นด้ายคอร์ด, ตลับลูกปืน, เซนเซอร์ตรวจวัดการสั่นสะเทือน CBM และ P-F Curve',
+    isConfidential: false
   },
   {
     id: 'conflict-management',
@@ -39,12 +45,15 @@ export const COURSES: Course[] = [
     moduleCount: 4,
     badge: 'หลักสูตรที่ 3 • 4 บทเรียน (CFM)',
     url: 'https://quality-safety-risk-management-micro-training-8605141631.asia-southeast1.run.app',
-    color: 'from-amber-500 to-orange-600',
+    color: 'from-[#021426] via-[#0F243E] to-[#0A1828]',
     code: 'CFM',
     duration: '45-60 นาที',
     estimatedHours: 1,
     passingScore: 8,
-    passingCriteria: '≥ 80% (8/10 ข้อ)'
+    passingCriteria: '≥ 80% (8/10 ข้อ)',
+    imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'แบบจำลอง Thomas-Kilmann 5 สไตล์ และการเจรจา Win-Win ในโรงงาน',
+    isConfidential: false
   },
   {
     id: 'ai-for-tct',
@@ -54,12 +63,15 @@ export const COURSES: Course[] = [
     moduleCount: 7,
     badge: 'หลักสูตรที่ 4 • 7 บทเรียน (TCT-AI-101)',
     url: 'https://quality-safety-risk-management-micro-training-8605141631.asia-southeast1.run.app',
-    color: 'from-blue-600 via-indigo-600 to-purple-600',
+    color: 'from-[#021428] via-[#002D62] to-[#051221]',
     code: 'TCT-AI-101',
     duration: '60-90 นาที',
     estimatedHours: 1.5,
     passingScore: 15,
-    passingCriteria: '≥ 75% (15/20 ข้อ)'
+    passingCriteria: '≥ 75% (15/20 ข้อ)',
+    imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'ระบบ Smart Factory หุ่นยนต์อัตโนมัติ และแท็บเล็ต AI พร้อม TH AI Passport',
+    isConfidential: true // ข้อมูลความลับองค์กร: ระบบปัญญาประดิษฐ์และสิทธิบัตรการผลิตเส้นด้าย
   },
   {
     id: 'personality-psychology',
@@ -69,12 +81,15 @@ export const COURSES: Course[] = [
     moduleCount: 4,
     badge: 'หลักสูตรที่ 5 • 4 บทเรียน (TCT-A001)',
     url: 'https://quality-safety-risk-management-micro-training-8605141631.asia-southeast1.run.app',
-    color: 'from-emerald-500 to-teal-600',
+    color: 'from-[#021428] via-[#0B2342] to-[#041224]',
     code: 'TCT-A001',
     duration: '60-90 นาที',
     estimatedHours: 1.5,
     passingScore: 15,
-    passingCriteria: '≥ 75% (15/20 ข้อ)'
+    passingCriteria: '≥ 75% (15/20 ข้อ)',
+    imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'โมเดล DISC 4 มิติ และการปรับตัวสื่อสารสร้างความเข้าอกเข้าใจในโรงงาน',
+    isConfidential: false
   },
   {
     id: 'kyt-shisa-kanko',
@@ -84,12 +99,15 @@ export const COURSES: Course[] = [
     moduleCount: 6,
     badge: 'หลักสูตรที่ 6 • 6 บทเรียน (TCT-KYT-01)',
     url: 'https://quality-safety-risk-management-micro-training-8605141631.asia-southeast1.run.app',
-    color: 'from-amber-500 via-yellow-500 to-emerald-600',
+    color: 'from-[#031526] via-[#002855] to-[#011020]',
     code: 'TCT-KYT-01',
     duration: '60-90 นาที',
     estimatedHours: 1.5,
     passingScore: 16,
-    passingCriteria: '≥ 80% (16/20 ข้อ)'
+    passingCriteria: '≥ 80% (16/20 ข้อ)',
+    imageUrl: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'เทคนิคมือชี้-ปากย้ำ Shisa Kanko ชี้จุดอันตรายเครื่องจักรและเป้าหมาย Zero Accident',
+    isConfidential: false
   },
   {
     id: 'applied-psychology',
@@ -99,11 +117,32 @@ export const COURSES: Course[] = [
     moduleCount: 3,
     badge: 'หลักสูตรที่ 7 • 3 บทเรียน (TCT-PSY-01) รอบที่ 1 (12-16 ต.ค. 2569)',
     url: 'https://quality-safety-risk-management-micro-training-8605141631.asia-southeast1.run.app',
-    color: 'from-teal-600 via-emerald-600 to-cyan-700',
+    color: 'from-[#021C24] via-[#002D38] to-[#01141C]',
     code: 'TCT-PSY-01',
     duration: '45-60 นาที',
     estimatedHours: 1,
     passingScore: 8,
-    passingCriteria: '≥ 80% (8/10 ข้อ)'
+    passingCriteria: '≥ 80% (8/10 ข้อ)',
+    imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'กราฟ Growth Mindset, การบริหารอารมณ์ และความสุขความผูกพันในงาน',
+    isConfidential: false
+  },
+  {
+    id: 'good-employee-skills',
+    title: 'หลักสูตรที่ 8: ทักษะการเป็นพนักงานที่ดี (Good Employee Skills)',
+    thaiTitle: 'หลักสูตรพัฒนาศักยภาพพนักงานระดับต้น “ทักษะการเป็นพนักงานที่ดี” (ปฐมนิเทศ ระเบียบวินัย มารยาท และวัฒนธรรมองค์กร สำหรับพนักงานปฏิบัติการใหม่ - TCT-GES-01)',
+    description: 'หลักสูตรพัฒนาศักยภาพพนักงานระดับต้น สำหรับพนักงานปฏิบัติการใหม่ (Worker): ปฐมนิเทศ, ระเบียบวินัยและข้อบังคับการทำงาน (เวลาทำงาน 4 กะ, สิทธิการลา, วินัย 5 ขั้น), มารยาทในการทำงาน (Chain of Command, Anti-Harassment), ความปลอดภัย อาชีวอนามัย (PPE, ป้ายเตือน, 5ส, จุดรวมพล), และสวัสดิการพร้อมช่องทางการร้องทุกข์',
+    moduleCount: 7,
+    badge: 'หลักสูตรที่ 8 • 7 บทเรียน (TCT-GES-01) ปฐมนิเทศ & วินัย',
+    url: 'https://quality-safety-risk-management-micro-training-8605141631.asia-southeast1.run.app',
+    color: 'from-[#021528] via-[#002D62] to-[#031220]',
+    code: 'TCT-GES-01',
+    duration: '60-90 นาที (Onsite 6 ชม. / Online 30 นาที)',
+    estimatedHours: 1.5,
+    passingScore: 16,
+    passingCriteria: '≥ 80% (16/20 ข้อ หรือ 8/10 ข้อ)',
+    imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'กระดาน 5ส (Seiri Seiton Seiso Seiketsu Shitsuke) และอุปกรณ์ PPE มาตรฐาน',
+    isConfidential: false
   }
 ];

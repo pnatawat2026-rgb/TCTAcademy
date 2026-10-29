@@ -90,8 +90,9 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
   const rawPreScore = courseProgress ? (courseProgress.preTestScore ?? user.preTestScore) : user.preTestScore;
   const rawPostScore = courseProgress ? (courseProgress.postTestScore ?? user.postTestScore) : user.postTestScore;
 
-  const passingScore = currentCourseId === 'personality-psychology' ? 15 : 8;
-  const totalScore = currentCourseId === 'personality-psychology' ? 20 : 10;
+  const isGoodEmployeeCourse = currentCourseId === 'good-employee-skills';
+  const totalScore = currentCourseId === 'personality-psychology' || isGoodEmployeeCourse || currentCourseId === 'kyt-shisa-kanko' || currentCourseId === 'ai-for-tct' ? 20 : 10;
+  const passingScore = isGoodEmployeeCourse ? 16 : (currentCourseId === 'personality-psychology' ? 15 : (currentCourseId === 'kyt-shisa-kanko' || currentCourseId === 'ai-for-tct' ? 16 : 8));
   const hasPostTest = rawPostScore !== null && rawPostScore !== undefined;
   const isPassed = hasPostTest && rawPostScore >= passingScore;
   const canShowCertificate = isPassed || (Boolean(isAdminLoggedIn) && adminBypass);
@@ -356,18 +357,19 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
     day: 'numeric'
   });
 
+  const isGoodEmployee = currentCourseId === 'good-employee-skills';
   const isAppliedPsychology = currentCourseId === 'applied-psychology';
   const isKyt = currentCourseId === 'kyt-shisa-kanko';
   const isPersonality = currentCourseId === 'personality-psychology' || currentCourseId === 'conflict-management';
   const isPreventive = currentCourseId === 'advanced-preventive-maintenance';
   const isAi = currentCourseId === 'ai-for-tct';
   const certPrefix = currentCourse.code || (
-    isAppliedPsychology ? 'TCT-PSY' : 
+    isGoodEmployee ? 'TCT-GES' :
+    (isAppliedPsychology ? 'TCT-PSY' : 
     (isKyt ? 'TCT-KYT' : 
     (isPersonality ? 'TCT-A001' : 
     (isPreventive ? 'TCT-APM' : 
-    (isAi ? 'TCT-AI' : `TCT-${currentCourseId.toUpperCase().slice(0, 4)}`))))
-  );
+    (isAi ? 'TCT-AI' : `TCT-${currentCourseId.toUpperCase().slice(0, 4)}`))))));
 
   const courseTitleTh = currentCourse.thaiTitle || currentCourse.title;
   const courseTitleEn = currentCourse.titleEn || currentCourse.title;
@@ -384,6 +386,16 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
         hours: m.durationMinutes ? `${(m.durationMinutes / 60).toFixed(1)} ชม.` : '1.0 ชม.',
         status: 'ผ่านเกณฑ์ 100%'
       }))
+    : isGoodEmployee
+    ? [
+        { code: 'MOD-01', titleTh: 'พิธีเปิด กิจกรรมละลายพฤติกรรม และภาพรวมหลักสูตร', titleEn: 'Opening Ceremony, Ice Breaking & Overview', hours: '0.5 ชม.', status: 'ผ่านเกณฑ์ 100%' },
+        { code: 'MOD-02', titleTh: 'รู้จักองค์กร วิสัยทัศน์ พันธกิจ และวัฒนธรรม TCT', titleEn: 'Company Vision, Mission, Core Values & Culture', hours: '1.0 ชม.', status: 'ผ่านเกณฑ์ 100%' },
+        { code: 'MOD-03', titleTh: 'ระเบียบข้อบังคับเกี่ยวกับการทำงาน เวลาทำงาน วันหยุด การลา และวินัย 5 ขั้น', titleEn: 'Work Rules, 4-Shift Schedules, Leaves & 5-Step Discipline', hours: '1.0 ชม.', status: 'ผ่านเกณฑ์ 100%' },
+        { code: 'MOD-04', titleTh: 'มารยาทและพฤติกรรมในการทำงาน สายการบังคับบัญชา และ Anti-Harassment', titleEn: 'Workplace Etiquette, Chain of Command & Anti-Harassment', hours: '1.0 ชม.', status: 'ผ่านเกณฑ์ 100%' },
+        { code: 'MOD-05', titleTh: 'ความปลอดภัย อาชีวอนามัย PPE ป้ายสัญลักษณ์ 5ส และเส้นทางหนีไฟ', titleEn: 'Safety, Health, Environment, PPE & Fire Evacuation', hours: '1.0 ชม.', status: 'ผ่านเกณฑ์ 100%' },
+        { code: 'MOD-06', titleTh: 'สวัสดิการ โบนัส กองทุน ช่องทางการสื่อสาร และการร้องทุกข์', titleEn: 'Benefits, Bonus, Welfare & Whistleblowing Channel', hours: '0.8 ชม.', status: 'ผ่านเกณฑ์ 100%' },
+        { code: 'MOD-07', titleTh: 'สรุปความรู้ Quiz Show แบบทดสอบวัดผล และพิธีปิด', titleEn: 'Comprehensive Quiz Show, Post-Test & Certification', hours: '0.8 ชม.', status: 'ผ่านเกณฑ์ 100%' },
+      ]
     : isAppliedPsychology
     ? [
         { code: 'MOD-01', titleTh: 'จิตวิทยาเพื่อความสำเร็จและ Growth Mindset ในการทำงาน', titleEn: 'Psychology of Success & Workplace Growth Mindset', hours: '1.0 ชม.', status: 'ผ่านเกณฑ์ 100%' },
@@ -406,7 +418,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
         { code: 'MOD-04', titleTh: 'การขับเคลื่อนวัฒนธรรม Zero Accident และกิจกรรม KYT หน้างาน', titleEn: 'Zero Accident Culture & Operational KYT Activity', hours: '1.5 ชม.', status: 'ผ่านเกณฑ์ 100%' },
       ];
 
-  const competencyMatrix = isAppliedPsychology
+  const competencyMatrix = isGoodEmployee
+    ? [
+        { nameTh: 'ความเข้าใจในระเบียบข้อบังคับเกี่ยวกับการทำงาน และการปฏิบัติตามวินัย 5 ขั้นตอน', nameEn: 'Work Rules, Employment Regulations & 5-Step Disciplinary Code', level: 'ระดับดีเยี่ยม (Proficient)', status: 'Certified' },
+        { nameTh: 'มารยาทการสื่อสารตามสายบังคับบัญชา (Chain of Command) และการอยู่ร่วมกันอย่างสันติ', nameEn: 'Chain of Command Communication & Anti-Harassment Compliance', level: 'ระดับดีเยี่ยม (Proficient)', status: 'Certified' },
+        { nameTh: 'ความตระหนักด้านความปลอดภัย การสวมใส่อุปกรณ์ PPE ครบชุด และขั้นตอนกรณีฉุกเฉิน', nameEn: 'Workplace Safety Awareness, PPE Adherence & Emergency Protocols', level: 'ระดับดีเยี่ยม (Proficient)', status: 'Certified' },
+        { nameTh: 'ความผูกพันต่อองค์กร (Sense of Belonging) และทัศนคติใฝ่พัฒนาตนเอง (Growth Mindset)', nameEn: 'Employee Engagement, Corporate Values & Growth Mindset', level: 'ระดับดีเยี่ยม (Proficient)', status: 'Certified' },
+      ]
+    : isAppliedPsychology
     ? [
         { nameTh: 'กรอบความคิดแบบเติบโต (Growth Mindset) และการตั้งเป้าหมายสู่งานที่เป็นเลิศ', nameEn: 'Workplace Growth Mindset & High-Performance Goal Setting', level: 'ระดับดีเยี่ยม (Proficient)', status: 'Certified' },
         { nameTh: 'ทักษะการรู้เท่าทันอารมณ์ การจัดการความเครียด และเทคนิค S-T-O-P', nameEn: 'Emotional Regulation, Stress Management & S-T-O-P Practice', level: 'ระดับดีเยี่ยม (Proficient)', status: 'Certified' },
@@ -596,33 +615,33 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-6 font-sarabun">
+    <div className="w-full max-w-7xl mx-auto px-2 sm:px-6 py-4 sm:py-8 space-y-6 font-sarabun text-slate-800 overflow-x-hidden">
       {/* Admin Testing Preview Alert Banner */}
       {adminBypass && (
-        <div className="bg-amber-600 text-white p-3.5 rounded-2xl flex items-center justify-between text-xs font-bold no-print shadow-md">
+        <div className="bg-slate-800 text-white p-3.5 rounded-2xl flex items-center justify-between text-xs font-bold no-print shadow-md border border-slate-700">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-amber-200 animate-bounce" />
+            <ShieldAlert className="w-5 h-5 text-amber-300 shrink-0" />
             <span>โหมดพรีวิวผู้ดูแลระบบ (Admin Testing Preview): พนักงานท่านนี้ยังไม่ผ่านเกณฑ์จริง ({rawPostScore ?? 0}/{totalScore}) กำลังแสดงผลเพื่อตรวจสอบเอกสาร</span>
           </div>
           <button
             onClick={() => setAdminBypass(false)}
-            className="px-3 py-1 bg-black/40 hover:bg-black/60 text-white rounded-lg text-xs cursor-pointer"
+            className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs cursor-pointer border border-slate-500"
           >
             ปิดโหมดพรีวิว
           </button>
         </div>
       )}
 
-      {/* Top Header & Actions Bar (Hidden during Print) */}
-      <div className="no-print glass-panel-cyan rounded-3xl p-4 sm:p-6 border border-cyan-500/40 shadow-xl">
+      {/* Top Header & Actions Bar (Calm Corporate White/Dark Slate - No Flashy Colors) */}
+      <div className="no-print bg-slate-900 rounded-2xl p-4 sm:p-6 border border-slate-700/80 shadow-lg text-white">
         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/30 font-semibold">
-                TCT E-TRAINING A4 CERTIFICATE (210 × 297 mm / 21 × 29.7 cm)
+              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-semibold">
+                TCT E-TRAINING A4 CERTIFICATE (210 × 297 mm)
               </span>
-              <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4" />
+              <span className="text-xs text-slate-300 font-medium flex items-center gap-1">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 ผ่านเกณฑ์มาตรฐานสมบูรณ์
               </span>
             </div>
@@ -630,15 +649,15 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               ใบรับรองผลการฝึกอบรม (TCT E-Training Certificate)
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1">
-              เอกสารขนาดมาตรฐาน <strong>A4 (210 × 297 มิลลิเมตร หรือ 21 × 29.7 เซนติเมตร)</strong> รองรับทั้ง <strong>แนวตั้ง (Portrait)</strong> และ <strong>แนวนอน (Landscape)</strong> พร้อมระเบียนผลสัมฤทธิ์และสมรรถนะด้านหลัง (Page 2)
+              เอกสารขนาดมาตรฐาน <strong>A4</strong> รองรับทั้ง <strong>แนวตั้ง (Portrait)</strong> และ <strong>แนวนอน (Landscape)</strong> พร้อมระเบียนผลสัมฤทธิ์และสมรรถนะด้านหลัง (Page 2)
             </p>
           </div>
 
-          {/* Action Buttons & Selectors */}
+          {/* Action Buttons & Selectors (Calm White / Dark Slate Palette) */}
           <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
             {/* Course Selector Dropdown */}
-            <div className="flex items-center gap-2 bg-slate-900/90 border-2 border-blue-500/50 rounded-2xl px-3 py-1.5 shadow-lg shadow-blue-500/10">
-              <span className="text-xs font-bold text-cyan-300 shrink-0">หลักสูตร:</span>
+            <div className="flex items-center gap-2 bg-slate-800/90 border border-slate-700 rounded-xl px-3 py-1.5">
+              <span className="text-xs font-bold text-slate-300 shrink-0">หลักสูตร:</span>
               <select
                 id="cert-course-selector"
                 value={activeCourseId}
@@ -646,7 +665,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   playCyberClick();
                   setActiveCourseId(e.target.value);
                 }}
-                className="bg-slate-800 text-white text-xs rounded-xl px-2.5 py-1 border border-cyan-500/40 font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer max-w-[240px] truncate"
+                className="bg-slate-900 text-white text-xs rounded-lg px-2.5 py-1 border border-slate-600 font-semibold focus:outline-none focus:ring-1 focus:ring-slate-400 cursor-pointer max-w-[220px] truncate"
               >
                 {allAvailableCourses.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -656,97 +675,103 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               </select>
             </div>
 
-            {/* 0. Page Selector (Both Pages / Front Only / Back Only) */}
-            <div className="flex items-center gap-1.5 bg-slate-900/90 border-2 border-emerald-500/50 rounded-2xl p-1 shadow-lg shadow-emerald-500/10">
+            {/* 0. Page Selector */}
+            <div className="flex items-center gap-1 bg-slate-800/90 border border-slate-700 rounded-xl p-1">
               <button
                 id="cert-page-all-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setCertPage('all'); }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   certPage === 'all'
-                    ? 'bg-emerald-500 text-slate-950 shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
                 title="พิมพ์/แสดงครบทั้ง 2 หน้า (ด้านหน้าเกียรติบัตร + ด้านหลังระเบียนผลสัมฤทธิ์)"
               >
-                <span>📑</span>
-                <span>ครบ 2 หน้า (หน้า-หลัง)</span>
+                <span>ครบ 2 หน้า</span>
               </button>
               <button
                 id="cert-page-front-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setCertPage('front'); }}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                   certPage === 'front'
-                    ? 'bg-emerald-500 text-slate-950 shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
                 title="หน้า 1: ด้านหน้าใบประกาศนียบัตร"
               >
-                <span>🥇</span>
-                <span>หน้า 1 (ด้านหน้า)</span>
+                <span>หน้า 1</span>
               </button>
               <button
                 id="cert-page-back-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setCertPage('back'); }}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                   certPage === 'back'
-                    ? 'bg-emerald-500 text-slate-950 shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
                 title="หน้า 2: ด้านหลัง ระเบียนผลสัมฤทธิ์และสมรรถนะ Transcript"
               >
-                <span>📋</span>
-                <span>หน้า 2 (ด้านหลัง)</span>
+                <span>หน้า 2</span>
               </button>
             </div>
 
             {/* 1. Orientation & Aspect Ratio Selector */}
-            <div className="flex flex-wrap items-center gap-1.5 bg-slate-900/90 border-2 border-cyan-500/50 rounded-2xl p-1 shadow-lg shadow-cyan-500/10">
+            <div className="flex flex-wrap items-center gap-1 bg-slate-800/90 border border-slate-700 rounded-xl p-1">
               <button
                 id="cert-orient-portrait-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setOrientation('portrait'); }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   orientation === 'portrait'
-                    ? 'bg-cyan-500 text-slate-950 shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
                 title="A4 แนวตั้ง: 210 × 297 มม."
               >
-                <span>📄</span>
-                <span>A4 แนวตั้ง (210×297 mm)</span>
+                <span>A4 แนวตั้ง</span>
               </button>
 
               <button
                 id="cert-orient-landscape-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setOrientation('landscape'); }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   orientation === 'landscape'
-                    ? 'bg-cyan-500 text-slate-950 shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
                 title="แนวนอน / Landscape"
               >
-                <span>📜</span>
-                <span>แนวนอน (Landscape)</span>
+                <span>แนวนอน</span>
               </button>
 
               {/* Sub-aspect ratio selector when Landscape */}
               {orientation === 'landscape' && (
-                <div className="flex items-center gap-1 pl-1 border-l border-cyan-500/40">
+                <div className="flex items-center gap-1 pl-1 border-l border-slate-700">
+                  <button
+                    id="cert-aspect-a4-btn"
+                    type="button"
+                    onClick={() => { playCyberClick(); setAspectRatio('a4'); }}
+                    className={`px-2 py-1 rounded text-[11px] font-bold transition-all cursor-pointer ${
+                      aspectRatio === 'a4'
+                        ? 'bg-slate-200 text-slate-900'
+                        : 'text-slate-300 hover:text-white bg-slate-900/60'
+                    }`}
+                  >
+                    A4
+                  </button>
                   <button
                     id="cert-aspect-16-9-btn"
                     type="button"
                     onClick={() => { playCyberClick(); setAspectRatio('16:9'); }}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    className={`px-2 py-1 rounded text-[11px] font-bold transition-all cursor-pointer ${
                       aspectRatio === '16:9'
-                        ? 'bg-amber-400 text-slate-950 shadow-sm font-extrabold'
-                        : 'text-cyan-300 hover:text-white bg-slate-800/80'
+                        ? 'bg-slate-200 text-slate-900'
+                        : 'text-slate-300 hover:text-white bg-slate-900/60'
                     }`}
-                    title="สัดส่วน 16:9 Widescreen / A4 Fit"
                   >
                     16:9
                   </button>
@@ -754,88 +779,72 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                     id="cert-aspect-4-3-btn"
                     type="button"
                     onClick={() => { playCyberClick(); setAspectRatio('4:3'); }}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    className={`px-2 py-1 rounded text-[11px] font-bold transition-all cursor-pointer ${
                       aspectRatio === '4:3'
-                        ? 'bg-amber-400 text-slate-950 shadow-sm font-extrabold'
-                        : 'text-cyan-300 hover:text-white bg-slate-800/80'
+                        ? 'bg-slate-200 text-slate-900'
+                        : 'text-slate-300 hover:text-white bg-slate-900/60'
                     }`}
-                    title="สัดส่วน 4:3 Standard Classic / A4 Fit"
                   >
                     4:3
-                  </button>
-                  <button
-                    id="cert-aspect-a4-btn"
-                    type="button"
-                    onClick={() => { playCyberClick(); setAspectRatio('a4'); }}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                      aspectRatio === 'a4'
-                        ? 'bg-amber-400 text-slate-950 shadow-sm font-extrabold'
-                        : 'text-cyan-300 hover:text-white bg-slate-800/80'
-                    }`}
-                    title="A4 แนวนอนมาตรฐาน (297×210 mm)"
-                  >
-                    A4
                   </button>
                 </div>
               )}
             </div>
 
             {/* 2. Language Switcher Toggle */}
-            <div className="bg-slate-900/90 border-2 border-amber-500/50 rounded-2xl p-1 flex items-center shadow-lg shadow-amber-500/10">
+            <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-1 flex items-center">
               <button
                 id="cert-lang-th-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setCertLanguage('th'); }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 whitespace-nowrap ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   certLanguage === 'th'
-                    ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
-                <span>🇹🇭</span>
-                <span className="whitespace-nowrap">ไทย (TH)</span>
+                <span>ไทย (TH)</span>
               </button>
 
               <button
                 id="cert-lang-en-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setCertLanguage('en'); }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 whitespace-nowrap ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   certLanguage === 'en'
-                    ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
-                <span>🇬🇧</span>
-                <span className="whitespace-nowrap">English (EN)</span>
+                <span>EN</span>
               </button>
             </div>
 
-            {/* Print A4 Certificate Button (Primary) */}
+            {/* Print A4 Certificate Button (Calm White Button) */}
             <button
               id="cert-print-btn"
               type="button"
               onClick={handlePrint}
-              className="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-xl shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition-all whitespace-nowrap"
+              className="bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs py-2 px-4 rounded-xl shadow-sm border border-slate-300 flex items-center justify-center gap-1.5 cursor-pointer transition-all whitespace-nowrap"
             >
-              <Printer className="w-4 h-4 shrink-0" />
-              <span className="whitespace-nowrap">พิมพ์ใบรับรอง (A4)</span>
+              <Printer className="w-4 h-4 shrink-0 text-slate-700" />
+              <span>พิมพ์ใบรับรอง (A4)</span>
             </button>
 
-            {/* Download PDF Button */}
+            {/* Download PDF Button (Calm Slate-800 Button) */}
             <button
               id="cert-download-pdf-btn"
               type="button"
               onClick={handleDownloadPdf}
               disabled={isPdfGenerating}
-              className="bg-red-600 hover:bg-red-500 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 whitespace-nowrap"
+              className="bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs py-2 px-3.5 rounded-xl border border-slate-600 flex items-center justify-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 whitespace-nowrap"
             >
               {isPdfGenerating ? (
-                <Sparkles className="w-4 h-4 animate-spin shrink-0" />
+                <Sparkles className="w-4 h-4 animate-spin shrink-0 text-slate-300" />
               ) : (
-                <FileDown className="w-4 h-4 shrink-0" />
+                <FileDown className="w-4 h-4 shrink-0 text-slate-300" />
               )}
-              <span className="whitespace-nowrap">{isPdfGenerating ? 'กำลังสร้าง PDF...' : 'ดาวน์โหลด PDF'}</span>
+              <span>{isPdfGenerating ? 'กำลังสร้าง PDF...' : 'ดาวน์โหลด PDF'}</span>
             </button>
 
             {/* Back to Dashboard Button */}
@@ -843,60 +852,60 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               id="cert-back-dashboard-btn"
               type="button"
               onClick={() => { playCyberClick(); onNavigate('dashboard'); }}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs py-2 px-3.5 rounded-xl border border-slate-600 flex items-center justify-center gap-1.5 cursor-pointer transition-all whitespace-nowrap"
+              className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-xs py-2 px-3.5 rounded-xl border border-slate-700 flex items-center justify-center gap-1.5 cursor-pointer transition-all whitespace-nowrap"
             >
               <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap">กลับสู่บทเรียน</span>
+              <span>กลับสู่บทเรียน</span>
             </button>
           </div>
         </div>
 
         {downloadSuccess && (
-          <div className="mt-3 p-3 bg-emerald-950/80 border border-emerald-500/50 rounded-xl text-emerald-300 text-xs flex items-center gap-2">
+          <div className="mt-3 p-3 bg-slate-800 border border-emerald-500/50 rounded-xl text-emerald-300 text-xs flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{downloadMessage || `ดาวน์โหลดเอกสาร A4 (${orientation === 'portrait' ? 'แนวตั้ง 210×297 mm' : 'แนวนอน 297×210 mm'}) สำเร็จ!`}</span>
+            <span>{downloadMessage || `ดาวน์โหลดเอกสาร A4 เรียบร้อยแล้ว`}</span>
           </div>
         )}
       </div>
 
-      {/* Quick Summary Badges (Hidden in Print) */}
-      <div className="no-print grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* Quick Summary Badges (Calm Corporate Slate Cards - Hidden in Print) */}
+      <div className="no-print grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {/* Pre-test */}
-        <div className="glass-panel rounded-2xl p-3 sm:p-4 border border-cyan-500/30 bg-cyan-950/20">
-          <div className="text-xs text-cyan-300 font-medium">คะแนนก่อนเรียน (Pre-Test)</div>
-          <div className="text-xl sm:text-2xl font-bold text-cyan-400 font-mono mt-0.5">
-            {preScore} <span className="text-xs text-cyan-500/80 font-normal">/ 10 ({preScore * 10}%)</span>
+        <div className="bg-slate-900 border border-slate-700/80 rounded-xl p-3 text-white">
+          <div className="text-xs text-slate-400 font-medium">คะแนนก่อนเรียน (Pre-Test)</div>
+          <div className="text-xl sm:text-2xl font-bold text-white font-mono mt-0.5">
+            {preScore} <span className="text-xs text-slate-400 font-normal">/ {totalScore}</span>
           </div>
           <div className="text-[11px] text-slate-400 mt-0.5">ก่อนเข้ารับการอบรม</div>
         </div>
 
         {/* Post-test */}
-        <div className="glass-panel rounded-2xl p-3 sm:p-4 border border-emerald-500/40 bg-emerald-950/20">
-          <div className="text-xs text-emerald-300 font-medium">คะแนนหลังเรียน (Post-Test)</div>
+        <div className="bg-slate-900 border border-slate-700/80 rounded-xl p-3 text-white">
+          <div className="text-xs text-slate-400 font-medium">คะแนนหลังเรียน (Post-Test)</div>
           <div className="text-xl sm:text-2xl font-bold text-emerald-400 font-mono mt-0.5">
-            {postScore} <span className="text-xs text-emerald-500/80 font-normal">/ 10 ({postScore * 10}%)</span>
+            {postScore} <span className="text-xs text-slate-400 font-normal">/ {totalScore}</span>
           </div>
           <div className="text-[11px] text-emerald-400/90 mt-0.5 font-semibold">ผ่านเกณฑ์มาตรฐาน (Passed)</div>
         </div>
 
         {/* Knowledge & Skill Growth / Gap Closure */}
-        <div className="glass-panel rounded-2xl p-3 sm:p-4 border border-purple-500/40 bg-purple-950/20">
-          <div className="text-xs text-purple-300 font-medium">การพัฒนา & ปิดช่องว่างความรู้</div>
-          <div className="text-xl sm:text-2xl font-bold text-purple-400 font-mono mt-0.5">
+        <div className="bg-slate-900 border border-slate-700/80 rounded-xl p-3 text-white">
+          <div className="text-xs text-slate-400 font-medium">การพัฒนา & ปิดช่องว่าง</div>
+          <div className="text-xl sm:text-2xl font-bold text-slate-100 font-mono mt-0.5">
             {metrics.growthPercentage === 100 ? '100%' : `+${metrics.scoreDelta}%`}
           </div>
-          <div className="text-[10px] text-purple-300/80 mt-0.5 font-medium truncate" title={metrics.badgeLabelEn}>
+          <div className="text-[10px] text-slate-400 mt-0.5 font-medium truncate" title={metrics.badgeLabelEn}>
             {metrics.badgeLabelEn}
           </div>
         </div>
 
         {/* Mini Game Score */}
-        <div className="glass-panel rounded-2xl p-3 sm:p-4 border border-amber-500/40 bg-amber-950/20">
-          <div className="text-xs text-amber-300 font-medium">คะแนนมินิเกม (Mini-Game)</div>
-          <div className="text-xl sm:text-2xl font-bold text-amber-400 font-mono mt-0.5">
-            {miniGameScore} <span className="text-xs text-amber-500/80 font-normal">pts</span>
+        <div className="bg-slate-900 border border-slate-700/80 rounded-xl p-3 text-white">
+          <div className="text-xs text-slate-400 font-medium">คะแนนมินิเกม (Mini-Game)</div>
+          <div className="text-xl sm:text-2xl font-bold text-slate-100 font-mono mt-0.5">
+            {miniGameScore} <span className="text-xs text-slate-400 font-normal">pts</span>
           </div>
-          <div className="text-[11px] text-amber-300/80 mt-0.5">การประยุกต์ใช้จริงในโรงงาน</div>
+          <div className="text-[11px] text-slate-400 mt-0.5">การประยุกต์ใช้จริงในโรงงาน</div>
         </div>
       </div>
 
@@ -911,9 +920,9 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
       `}</style>
 
       {/* ========================================================================= */}
-      {/* OFFICIAL PARCHMENT & GOLD CORPORATE CERTIFICATE - A4 (210×297 mm / 297×210 mm) */}
+      {/* OFFICIAL PARCHMENT & GOLD CORPORATE CERTIFICATE - A4                       */}
       {/* ========================================================================= */}
-      <div className="flex flex-col items-center gap-8 pb-8 overflow-x-auto w-full">
+      <div className="w-full max-w-full overflow-x-auto pb-8 flex flex-col items-center">
         {/* ========================================================================= */}
         {/* PAGE 1: FRONT CERTIFICATE (PORTRAIT OR LANDSCAPE)                         */}
         {/* ========================================================================= */}

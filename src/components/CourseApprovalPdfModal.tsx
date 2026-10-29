@@ -28,9 +28,18 @@ import {
   SlidersHorizontal,
   ExternalLink,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  Plus,
+  Trash2,
+  Search,
+  Filter,
+  Edit3,
+  UserPlus,
+  RefreshCw,
+  CheckSquare
 } from 'lucide-react';
 import { playCyberClick, playSuccessChime } from '../utils/soundEffects';
+import { MASTER_EMPLOYEE_ROSTER_230 } from '../data/employeeDatabase';
 
 interface CourseApprovalPdfModalProps {
   initialCourseId?: string;
@@ -274,14 +283,58 @@ const COURSE_SYLLABUS_DETAILS: Record<string, CourseSyllabusDetail> = {
     equipmentAndPlatform: 'ระบบ TCT Micro E-Training Platform, วิดีโอ Google NotebookLM 3 บทเรียน และระบบบันทึกเวลาเรียนดิจิทัล',
     documentRefNo: 'TCT-ACAD-PSY-01/2569',
     approvalDate: '12 ตุลาคม 2569'
+  },
+  'good-employee-skills': {
+    objectives: [
+      'เพื่อให้พนักงานปฏิบัติการใหม่มีความรู้ความเข้าใจในระเบียบข้อบังคับเกี่ยวกับการทำงานของบริษัทฯ ตามระเบียบข้อบังคับฉบับปัจจุบัน (ปรับปรุง 1 ม.ค. 2569)',
+      'เพื่อให้พนักงานปฏิบัติการใหม่เข้าใจและปฏิบัติตนตามมารยาทและวัฒนธรรมการทำงานร่วมกันในองค์กรได้อย่างถูกต้อง (Chain of Command & Anti-Harassment Policy)',
+      'เพื่อให้พนักงานปฏิบัติการใหม่ตระหนักถึงความปลอดภัยในการทำงานและปฏิบัติตามมาตรการความปลอดภัยขั้นพื้นฐาน (PPE, ป้ายเตือน, 5ส และเส้นทางหนีไฟ)',
+      'เพื่อให้พนักงานปฏิบัติการใหม่รับทราบสิทธิประโยชน์ สวัสดิการ และช่องทางการสื่อสาร/ร้องทุกข์ภายในองค์กร (หมวดที่ 9 และหมวดที่ 12)',
+      'เพื่อสร้างเจตคติเชิงบวกและความรู้สึกเป็นส่วนหนึ่งขององค์กร (Employee Engagement / Sense of Belonging) และปลูกฝังทัศนคติใฝ่พัฒนาตนเอง (Growth Mindset)'
+    ],
+    targetAudience: 'พนักงานปฏิบัติการ (Worker) ที่บรรจุใหม่ทุกคน ก่อนหรือภายใน 7 วันแรกของการเริ่มปฏิบัติงาน',
+    prerequisites: 'ไม่มี (เป็นหลักสูตรภาคบังคับสำหรับการปฐมนิเทศพนักงานระดับปฏิบัติการเข้าใหม่ทุกคน)',
+    learningMethodology: '2 รูปแบบคู่ขนาน: (1) Onsite Training 6 ชั่วโมง (บรรยาย + กิจกรรมกลุ่มละลายพฤติกรรม + Role Play + เดินสำรวจหน้างาน + Post-test 20 ข้อ) และ (2) Online Micro-Training 30 นาที (7 Micro-lessons + Online Quiz 10 ข้อ)',
+    evaluationCriteria: {
+      preTest: 'แบบทดสอบก่อนเรียน (Pre-test) ประเมินความรู้พื้นฐานด้านกฎระเบียบและความปลอดภัย',
+      learningRequirement: 'เข้าอบรมในชั้นเรียนครบ 6 ชั่วโมง หรือเรียนผ่านระบบ e-Learning ครบทั้ง 7 บทเรียน',
+      miniGame: 'ทำแบบฝึกสถานการณ์จำลองมารยาทและวินัยการทำงาน (Simulation Scenario) 5 สถานการณ์',
+      postTest: 'Onsite Post-test 20 ข้อ (เกณฑ์ผ่าน ≥ 70%) หรือ Online Quiz 10 ข้อ (เกณฑ์ผ่าน ≥ 80% ทำซ้ำได้ไม่เกิน 2 ครั้ง)',
+      certificate: 'ออกวุฒิบัตรรับรองการผ่านการอบรมมาตรฐาน TCT Academy (รหัส TCT-GES-01) พร้อม QR Code'
+    },
+    expectedOutcomes: [
+      'พนักงานใหม่ปรับตัวเข้ากับสภาพแวดล้อมการทำงานและเพื่อนร่วมงานได้อย่างราบรื่นตั้งแต่วันแรก',
+      'ปฏิบัติตามกฎระเบียบ เวลาทำงาน 4 กะ การบันทึกเวลา และขั้นตอนการลาได้อย่างถูกต้อง ลดอัตราการทำผิดวินัย',
+      'ตระหนักถึงความปลอดภัย สวมใส่อุปกรณ์ PPE ครบถ้วน รู้จักเส้นทางหนีไฟและจุดรวมพล มุ่งสู่เป้าหมาย Zero Accident',
+      'เกิดความผูกพันต่อองค์กร (Employee Engagement) มีความสุขในการทำงาน และพร้อมเติบโตในสายอาชีพระยะยาว'
+    ],
+    kpis: [
+      'พนักงานปฏิบัติการใหม่ทุกคนผ่านเกณฑ์การทดสอบ Post-Test 100% (Onsite ≥ 70%, Online ≥ 80%)',
+      'อัตราความพึงพอใจต่อหลักสูตรและวิทยากร (Training Satisfaction Score) ไม่น้อยกว่า 95%',
+      'ลดอัตราการลาออกของพนักงานใหม่ในช่วงทดลองงาน (Probation Turnover Rate) ลงไม่น้อยกว่า 50%'
+    ],
+    equipmentAndPlatform: 'ห้องอบรมศูนย์ฝึกอบรม TCT Academy, ชุดอุปกรณ์ PPE ตัวอย่าง, แผนผังเส้นทางหนีไฟจริง, สื่อนำเสนอ และระบบ TCT E-Training Platform',
+    documentRefNo: 'TCT-ACAD-GES-01/2569',
+    approvalDate: '20 ตุลาคม 2569'
   }
 };
+
+export interface ApprovalRosterRow {
+  rowId: string;
+  empId: string;
+  fullName: string;
+  department: string;
+  position: string;
+  objective: string;
+  approvalStatus: string;
+  remarks: string;
+}
 
 export const CourseApprovalPdfModal: React.FC<CourseApprovalPdfModalProps> = ({
   initialCourseId = 'applied-psychology',
   onClose
 }) => {
-  const [activeTab, setActiveTab] = useState<'single' | 'exam' | 'summary'>('single');
+  const [activeTab, setActiveTab] = useState<'single' | 'exam' | 'summary' | 'roster'>('single');
   const [selectedCourseId, setSelectedCourseId] = useState<string>(initialCourseId);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -290,6 +343,172 @@ export const CourseApprovalPdfModal: React.FC<CourseApprovalPdfModalProps> = ({
   const printSingleRef = useRef<HTMLDivElement>(null);
   const printExamRef = useRef<HTMLDivElement>(null);
   const printSummaryRef = useRef<HTMLDivElement>(null);
+  const printRosterRef = useRef<HTMLDivElement>(null);
+
+  // Trainee Roster Attachment State (Tab 4)
+  const [rosterRows, setRosterRows] = useState<ApprovalRosterRow[]>(() => {
+    try {
+      const saved = localStorage.getItem(`tct_course_approval_roster_${initialCourseId}`);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return MASTER_EMPLOYEE_ROSTER_230.slice(0, 15).map((emp, idx) => ({
+      rowId: `row-${idx + 1}-${emp.empId}`,
+      empId: emp.empId,
+      fullName: emp.fullName,
+      department: emp.department,
+      position: emp.position,
+      objective: 'พัฒนาทักษะตามสมรรถนะตำแหน่งงาน',
+      approvalStatus: 'อนุมัติเข้ารับการอบรม',
+      remarks: 'คุณสมบัติผ่านเกณฑ์'
+    }));
+  });
+
+  const [selectedEmpToPull, setSelectedEmpToPull] = useState(MASTER_EMPLOYEE_ROSTER_230[0]?.empId || '00021');
+  const [rosterDeptFilter, setRosterDeptFilter] = useState('all');
+  const [rosterSearchQuery, setRosterSearchQuery] = useState('');
+  const [isRosterEditable, setIsRosterEditable] = useState(true);
+
+  // Roster Header & Signatory configuration (fully editable)
+  const [rosterDocRefNo, setRosterDocRefNo] = useState('TCT-ACAD-ROSTER-01/2569');
+  const [rosterTrainingDate, setRosterTrainingDate] = useState('วันที่ 15 - 17 ตุลาคม 2569');
+  const [rosterTrainingVenue, setRosterTrainingVenue] = useState('ศูนย์ฝึกอบรม TCT Academy / E-Training Platform');
+  const [rosterBudget, setRosterBudget] = useState('0 บาท (หลักสูตรพัฒนาภายใน Internal Training)');
+
+  const [rosterSigner1Name, setRosterSigner1Name] = useState('นายณฐวัตร พงษ์สาริกิจ');
+  const [rosterSigner1Pos, setRosterSigner1Pos] = useState('หัวหน้าศูนย์ TCT Academy / หัวหน้าแผนกบุคคลและธุรการ Personnel');
+  const [rosterSigner2Name, setRosterSigner2Name] = useState('นายกิตติศักดิ์ สร้อยจิตต์');
+  const [rosterSigner2Pos, setRosterSigner2Pos] = useState('ผู้จัดการศูนย์ TCT Academy / ผู้จัดการฝ่ายบุคคลและธุรการ');
+  const [rosterSigner3Name, setRosterSigner3Name] = useState('นายนพดล บำรุงเกียรติ');
+  const [rosterSigner3Pos, setRosterSigner3Pos] = useState('ผู้จัดการทั่วไปและผู้จัดการโรงงาน / ประธานที่ปรึกษาศูนย์ TCT Academy');
+
+  // Load roster when course changes
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`tct_course_approval_roster_${selectedCourseId}`);
+      if (saved) {
+        setRosterRows(JSON.parse(saved));
+        return;
+      }
+    } catch (e) {}
+    const initial = MASTER_EMPLOYEE_ROSTER_230.slice(0, 15).map((emp, idx) => ({
+      rowId: `row-${idx + 1}-${emp.empId}`,
+      empId: emp.empId,
+      fullName: emp.fullName,
+      department: emp.department,
+      position: emp.position,
+      objective: 'พัฒนาทักษะตามสมรรถนะตำแหน่งงาน',
+      approvalStatus: 'อนุมัติเข้ารับการอบรม',
+      remarks: 'คุณสมบัติผ่านเกณฑ์'
+    }));
+    setRosterRows(initial);
+  }, [selectedCourseId]);
+
+  // Save to localStorage
+  useEffect(() => {
+    if (rosterRows && selectedCourseId) {
+      try {
+        localStorage.setItem(`tct_course_approval_roster_${selectedCourseId}`, JSON.stringify(rosterRows));
+      } catch (e) {}
+    }
+  }, [rosterRows, selectedCourseId]);
+
+  // Pull Selected Employee - Duplicates allowed without limit!
+  const handlePullSelectedEmployee = () => {
+    const emp = MASTER_EMPLOYEE_ROSTER_230.find(e => e.empId === selectedEmpToPull);
+    if (!emp) return;
+    playCyberClick();
+    const newRow: ApprovalRosterRow = {
+      rowId: `row-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+      empId: emp.empId,
+      fullName: emp.fullName,
+      department: emp.department,
+      position: emp.position,
+      objective: 'พัฒนาทักษะตามสมรรถนะตำแหน่งงาน',
+      approvalStatus: 'อนุมัติเข้ารับการอบรม',
+      remarks: 'พร้อมเข้าอบรม'
+    };
+    setRosterRows(prev => [...prev, newRow]);
+  };
+
+  // Add Blank Row
+  const handleAddBlankRow = () => {
+    playCyberClick();
+    const newRow: ApprovalRosterRow = {
+      rowId: `row-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+      empId: '',
+      fullName: '',
+      department: 'P',
+      position: 'Worker',
+      objective: 'พัฒนาทักษะการปฏิบัติงาน',
+      approvalStatus: 'อนุมัติเข้ารับการอบรม',
+      remarks: ''
+    };
+    setRosterRows(prev => [...prev, newRow]);
+  };
+
+  // Delete Row
+  const handleDeleteRow = (index: number) => {
+    playCyberClick();
+    setRosterRows(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  // Update Field
+  const handleUpdateRow = (index: number, field: keyof ApprovalRosterRow, value: string) => {
+    setRosterRows(prev => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  // Pull All 224
+  const handlePullAll224 = () => {
+    playSuccessChime();
+    const all: ApprovalRosterRow[] = MASTER_EMPLOYEE_ROSTER_230.map((emp, idx) => ({
+      rowId: `row-all-${idx + 1}-${emp.empId}-${Date.now()}`,
+      empId: emp.empId,
+      fullName: emp.fullName,
+      department: emp.department,
+      position: emp.position,
+      objective: 'พัฒนาศักยภาพบุคลากรครอบคลุม 100% ทั้งองค์กร',
+      approvalStatus: 'อนุมัติเข้ารับการอบรม',
+      remarks: 'ผ่านการกลั่นกรอง'
+    }));
+    setRosterRows(all);
+  };
+
+  // Pull Department
+  const handlePullDepartment = (dept: string) => {
+    playSuccessChime();
+    const deptEmployees = MASTER_EMPLOYEE_ROSTER_230.filter(e => e.department === dept);
+    const newRows: ApprovalRosterRow[] = deptEmployees.map((emp, idx) => ({
+      rowId: `row-dept-${dept}-${idx + 1}-${emp.empId}-${Date.now()}`,
+      empId: emp.empId,
+      fullName: emp.fullName,
+      department: emp.department,
+      position: emp.position,
+      objective: `พัฒนาทักษะเฉพาะสายงานแผนก ${dept}`,
+      approvalStatus: 'อนุมัติเข้ารับการอบรม',
+      remarks: `บุคลากรแผนก ${dept}`
+    }));
+    setRosterRows(prev => [...prev, ...newRows]);
+  };
+
+  // Reset to default
+  const handleResetRoster = () => {
+    playCyberClick();
+    const initial = MASTER_EMPLOYEE_ROSTER_230.slice(0, 15).map((emp, idx) => ({
+      rowId: `row-${idx + 1}-${emp.empId}`,
+      empId: emp.empId,
+      fullName: emp.fullName,
+      department: emp.department,
+      position: emp.position,
+      objective: 'พัฒนาทักษะตามสมรรถนะตำแหน่งงาน',
+      approvalStatus: 'อนุมัติเข้ารับการอบรม',
+      remarks: 'คุณสมบัติผ่านเกณฑ์'
+    }));
+    setRosterRows(initial);
+  };
 
   const [courses, setCourses] = useState<Course[]>(() => getAllAvailableCourses());
   useEffect(() => {
@@ -476,6 +695,48 @@ export const CourseApprovalPdfModal: React.FC<CourseApprovalPdfModalProps> = ({
     }
   };
 
+  // Handle Download Roster PDF
+  const handleDownloadRosterPdf = async () => {
+    playCyberClick();
+    if (!printRosterRef.current) return;
+    setIsExporting(true);
+    setExportMessage('กำลังสร้างใบรายชื่อผู้ขออนุมัติเข้ารับการอบรม (PDF)...');
+
+    try {
+      const filename = `TCT_Course_Approval_Roster_${currentCourse.code}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      const pages = Array.from(printRosterRef.current.querySelectorAll('.approval-roster-page')) as HTMLElement[];
+      let success = false;
+      if (pages.length > 1) {
+        success = await downloadMultiPagePdf(pages, {
+          filename,
+          orientation: 'portrait',
+          format: 'a4',
+          scale: 2.2
+        });
+      } else {
+        success = await downloadElementAsPdf(printRosterRef.current, {
+          filename,
+          orientation: 'portrait',
+          format: 'a4',
+          scale: 2.2,
+          marginMm: 0,
+          title: `ใบรายชื่อผู้ขออนุมัติฝึกอบรม ${currentCourse.title}`
+        });
+      }
+
+      if (success) {
+        playSuccessChime();
+        setExportMessage('ดาวน์โหลดใบรายชื่อผู้ขออนุมัติเข้ารับการอบรม (PDF) สำเร็จแล้ว!');
+        setTimeout(() => setExportMessage(''), 4000);
+      }
+    } catch (e) {
+      console.error(e);
+      setExportMessage('เกิดข้อผิดพลาดในการสร้าง PDF');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   // Native Browser Print Dialog (Isolated Standalone Window for 100% WYSIWYG match)
   const handlePrint = () => {
     playCyberClick();
@@ -483,13 +744,17 @@ export const CourseApprovalPdfModal: React.FC<CourseApprovalPdfModalProps> = ({
       ? printSingleRef.current
       : activeTab === 'exam'
         ? printExamRef.current
-        : printSummaryRef.current;
+        : activeTab === 'roster'
+          ? printRosterRef.current
+          : printSummaryRef.current;
     if (activeEl) {
       const docTitle = activeTab === 'single'
         ? `แบบขออนุมัติหลักสูตร_${currentCourse.code}`
         : activeTab === 'exam'
           ? `ชุดข้อสอบและเฉลย_${currentCourse.code}`
-          : `เอกสารสรุปหลักสูตรทั้งหมด_TCT_Academy`;
+          : activeTab === 'roster'
+            ? `ใบรายชื่อผู้ขออนุมัติฝึกอบรม_${currentCourse.code}`
+            : `เอกสารสรุปหลักสูตรทั้งหมด_TCT_Academy`;
       printElementViaStandaloneWindow(activeEl, docTitle, 'portrait');
     } else {
       window.print();
@@ -498,27 +763,27 @@ export const CourseApprovalPdfModal: React.FC<CourseApprovalPdfModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-2 sm:p-4 overflow-y-auto animate-fadeIn font-sarabun">
-      <div className="bg-[#F8FAFC] border border-slate-300 w-full max-w-6xl max-h-[96vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-800">
+      <div className="bg-[#F8FAFC] border border-slate-300 w-full max-w-[95vw] sm:max-w-6xl max-h-[96vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-800">
         
         {/* ========================================================= */}
         {/* TOP TOOLBAR (Hidden during print)                         */}
         {/* ========================================================= */}
-        <div className="no-print bg-gradient-to-r from-[#002855] via-[#003875] to-[#005A9C] text-white p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-blue-400/30 shrink-0 shadow-md">
+        <div className="no-print bg-[#002855] text-white p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-blue-900/40 shrink-0 shadow-md">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0 shadow-inner">
-              <FileText className="w-6 h-6 text-cyan-300" />
+              <FileText className="w-6 h-6 text-slate-200" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-cyan-400/20 text-cyan-200 border border-cyan-400/30">
+                <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-white/10 text-slate-200 border border-white/20">
                   TCT ACADEMY OFFICIAL DOCUMENT SYSTEM
                 </span>
-                <span className="text-xs bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded border border-amber-400/30 font-medium">
-                  ขนาด A4 มาตรฐาน (210 × 297 mm)
+                <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700 font-medium">
+                  210 × 297 mm
                 </span>
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-white tracking-wide mt-0.5">
-                ระบบดึงข้อมูลและพิมพ์เอกสารขออนุมัติหลักสูตร (PDF)
+              <h2 className="text-lg sm:text-xl font-bold text-white tracking-wide mt-0.5">
+                แบบขออนุมัติหลักสูตร & แผนการฝึกอบรม (Course Approval Form)
               </h2>
             </div>
           </div>
@@ -553,19 +818,27 @@ export const CourseApprovalPdfModal: React.FC<CourseApprovalPdfModalProps> = ({
               className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer transition-all hover:scale-102"
               title="พิมพ์เอกสารออกเครื่องพิมพ์ หรือบันทึกผ่านคำสั่งพิมพ์ของเบราว์เซอร์"
             >
-              <Printer className="w-4 h-4 text-cyan-300" />
+              <Printer className="w-4 h-4 text-slate-200" />
               <span>พิมพ์เอกสาร (Print)</span>
             </button>
 
             {/* Direct PDF Download Button */}
             <button
               type="button"
-              onClick={activeTab === 'single' ? handleDownloadSinglePdf : activeTab === 'exam' ? handleDownloadExamPdf : handleDownloadSummaryPdf}
+              onClick={
+                activeTab === 'single'
+                  ? handleDownloadSinglePdf
+                  : activeTab === 'exam'
+                    ? handleDownloadExamPdf
+                    : activeTab === 'roster'
+                      ? handleDownloadRosterPdf
+                      : handleDownloadSummaryPdf
+              }
               disabled={isExporting}
-              className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-amber-400/20 cursor-pointer transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-xs cursor-pointer transition-all disabled:opacity-50"
               title="ดาวน์โหลดเป็นไฟล์ PDF คุณภาพสูง A4"
             >
-              <Download className="w-4 h-4 text-slate-950" />
+              <Download className="w-4 h-4 text-slate-700" />
               <span>{isExporting ? 'กำลังสร้าง PDF...' : 'ดาวน์โหลด PDF (A4)'}</span>
             </button>
 
@@ -625,10 +898,23 @@ export const CourseApprovalPdfModal: React.FC<CourseApprovalPdfModalProps> = ({
               <FileSpreadsheet className="w-4 h-4" />
               <span>3. สรุปภาพรวมทุกหลักสูตร (All Courses Summary)</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => { playCyberClick(); setActiveTab('roster'); }}
+              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'roster'
+                  ? 'bg-[#005A9C] text-white shadow-sm'
+                  : 'bg-white text-slate-700 hover:bg-slate-200/70 border border-slate-200'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>4. ใบรายชื่อผู้ขออนุมัติ (Trainee Roster A4)</span>
+            </button>
           </div>
 
-          {/* Course Selector Dropdown (When in Single or Exam Mode) */}
-          {(activeTab === 'single' || activeTab === 'exam') && (
+          {/* Course Selector Dropdown (When in Single, Exam, or Roster Mode) */}
+          {(activeTab === 'single' || activeTab === 'exam' || activeTab === 'roster') && (
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-xs text-slate-600 font-bold whitespace-nowrap">เลือกหลักสูตร:</span>
               <select
@@ -659,14 +945,14 @@ export const CourseApprovalPdfModal: React.FC<CourseApprovalPdfModalProps> = ({
         {/* ========================================================= */}
         {/* DOCUMENT PREVIEW & PRINTABLE CANVAS CONTAINER              */}
         {/* ========================================================= */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-6 bg-slate-200/70 flex justify-center">
+        <div className="flex-1 overflow-y-auto overflow-x-auto w-full max-w-full p-2 sm:p-6 bg-slate-200/70 flex justify-center">
           <div 
             style={{ 
               transform: `scale(${zoomLevel / 100})`, 
               transformOrigin: 'top center',
               transition: 'transform 0.15s ease-out'
             }}
-            className="w-full max-w-[850px] shrink-0"
+            className="w-full max-w-[850px] shrink-0 flex flex-col items-center"
           >
             {/* ------------------------------------------------------------- */}
             {/* TAB 1: SINGLE COURSE CURRICULUM APPROVAL SPECIFICATION FORM   */}
@@ -1457,6 +1743,432 @@ export const CourseApprovalPdfModal: React.FC<CourseApprovalPdfModalProps> = ({
                 <div className="pt-2 flex items-center justify-between text-[10px] text-slate-400 font-mono border-t border-slate-200">
                   <div>TCT ACADEMY PORTFOLIO SUMMARY REPORT • TCT-ACAD-PORTFOLIO-2569</div>
                   <div>PAGE 1 OF 1 • A4 STANDARD (210 × 297 MM)</div>
+                </div>
+              </div>
+            )}
+
+            {/* ========================================================= */}
+            {/* TAB 4: TRAINEE ROSTER APPROVAL ATTACHMENT (A4)            */}
+            {/* ========================================================= */}
+            {activeTab === 'roster' && (
+              <div className="space-y-4">
+                {/* No-print Action Controls / Employee Puller Toolbar */}
+                <div className="no-print bg-slate-900 text-white p-4 rounded-2xl border border-slate-700 shadow-md space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-5 h-5 text-amber-400" />
+                      <div>
+                        <h4 className="text-sm font-bold text-white">
+                          ระบบจัดการและดึงรายชื่อพนักงานขออนุมัติฝึกอบรม
+                        </h4>
+                        <p className="text-[11px] text-slate-400">
+                          เชื่อมโยงทะเบียนพนักงานทางการ (224 ท่าน) • ดึงได้ไม่จำกัด ดึงซ้ำได้ ลบได้ และแก้ไขได้ทุกช่อง
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsRosterEditable(!isRosterEditable)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                          isRosterEditable ? 'bg-amber-500 text-slate-950 hover:bg-amber-400' : 'bg-slate-700 text-white hover:bg-slate-600'
+                        }`}
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>{isRosterEditable ? 'โหมดแก้ไขตาราง (กำลังเปิด)' : 'ดูตัวอย่างเอกสาร'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleResetRoster}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                        title="คืนค่ารายชื่อเริ่มต้น"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>คืนค่าเริ่มต้น</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Search and Pull Tool */}
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs">
+                    {/* Dept Filter */}
+                    <div className="sm:col-span-3">
+                      <label className="text-[10px] text-slate-400 block mb-0.5">กรองตามแผนก:</label>
+                      <select
+                        value={rosterDeptFilter}
+                        onChange={(e) => setRosterDeptFilter(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs outline-none focus:border-amber-400"
+                      >
+                        <option value="all">ทุกแผนกในบริษัท</option>
+                        {Array.from(new Set(MASTER_EMPLOYEE_ROSTER_230.map(e => e.department))).sort().map(d => (
+                          <option key={d} value={d}>แผนก {d}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Employee Selector */}
+                    <div className="sm:col-span-6">
+                      <label className="text-[10px] text-slate-400 block mb-0.5">ค้นหาและเลือกพนักงาน (224 ท่าน):</label>
+                      <select
+                        value={selectedEmpToPull}
+                        onChange={(e) => setSelectedEmpToPull(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs outline-none focus:border-amber-400 font-mono"
+                      >
+                        {MASTER_EMPLOYEE_ROSTER_230
+                          .filter(e => rosterDeptFilter === 'all' || e.department === rosterDeptFilter)
+                          .map(e => (
+                            <option key={e.empId} value={e.empId}>
+                              [{e.empId}] {e.fullName} • แผนก {e.department} ({e.position})
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+
+                    {/* Add Button */}
+                    <div className="sm:col-span-3 flex items-end">
+                      <button
+                        type="button"
+                        onClick={handlePullSelectedEmployee}
+                        className="w-full py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        <span>ดึงพนักงานท่านนี้ (+ซ้ำได้)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Batch Actions */}
+                  <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-800 text-xs">
+                    <span className="text-slate-400 text-[11px]">การดึงแบบกลุ่ม:</span>
+                    <button
+                      type="button"
+                      onClick={handleAddBlankRow}
+                      className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Plus className="w-3 h-3 text-emerald-400" />
+                      <span>เพิ่มแถวเปล่า (ป้อนเอง)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePullDepartment(rosterDeptFilter === 'all' ? 'P' : rosterDeptFilter)}
+                      className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Layers className="w-3 h-3 text-cyan-400" />
+                      <span>ดึงพนักงานแผนก {rosterDeptFilter === 'all' ? 'P' : rosterDeptFilter} ทั้งหมด</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handlePullAll224}
+                      className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Users className="w-3 h-3 text-amber-400" />
+                      <span>ดึงพนักงานทั้งบริษัท (224 ท่าน)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRosterRows([])}
+                      className="px-2.5 py-1 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-[11px] font-semibold flex items-center gap-1 cursor-pointer ml-auto transition-colors"
+                    >
+                      <Trash2 className="w-3 h-3 text-rose-400" />
+                      <span>ล้างตารางทั้งหมด</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Printable A4 Container */}
+                <div ref={printRosterRef} className="space-y-6">
+                  {(() => {
+                    const PAGE_SIZE = 16;
+                    const totalPages = Math.max(1, Math.ceil(rosterRows.length / PAGE_SIZE));
+                    const pages = [];
+                    for (let p = 0; p < totalPages; p++) {
+                      const startIndex = p * PAGE_SIZE;
+                      const pageRows = rosterRows.slice(startIndex, startIndex + PAGE_SIZE);
+                      pages.push({
+                        pageNumber: p + 1,
+                        totalPages,
+                        isLast: p === totalPages - 1,
+                        rows: pageRows,
+                        startIndex
+                      });
+                    }
+
+                    return pages.map((page) => (
+                      <div
+                        key={`roster-page-${page.pageNumber}`}
+                        className="approval-roster-page bg-white mx-auto shadow-md border border-slate-300 p-6 sm:p-8 flex flex-col justify-between"
+                        style={{
+                          width: '100%',
+                          maxWidth: '210mm',
+                          minHeight: '297mm',
+                          boxSizing: 'border-box'
+                        }}
+                      >
+                        <div className="space-y-3">
+                          {/* Official Header */}
+                          <div className="flex items-start justify-between border-b-2 border-black pb-2.5">
+                            <div className="flex items-center gap-3">
+                              <TCTLogo size="md" theme="light" />
+                              <div>
+                                <div className="text-xs font-extrabold text-black uppercase tracking-wider font-mono">
+                                  TEIJIN CORD (THAILAND) CO., LTD.
+                                </div>
+                                <div className="text-[11px] font-bold text-slate-800">
+                                  บริษัท เทยิน คอร์ด (ประเทศไทย) จำกัด • สวนอุตสาหกรรมโรจนะ
+                                </div>
+                                <div className="text-[10px] text-[#005A9C] font-semibold">
+                                  ศูนย์ฝึกอบรมและพัฒนา TCT Academy (Personnel Development & Training Center)
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right text-[10px] text-slate-700 font-mono space-y-0.5">
+                              <div className="font-bold text-black border border-slate-300 px-2 py-0.5 rounded bg-slate-50">
+                                {rosterDocRefNo}
+                              </div>
+                              <div>หน้า {page.pageNumber} จาก {page.totalPages}</div>
+                              <div>เอกสารแนบขออนุมัติหลักสูตร</div>
+                            </div>
+                          </div>
+
+                          {/* Form Title Banner */}
+                          <div className="text-center py-1.5 bg-slate-100 border-y border-black">
+                            <h2 className="text-sm sm:text-base font-black text-black tracking-wide">
+                              ใบรายชื่อพนักงานที่ขออนุมัติเข้ารับการฝึกอบรม (Trainee Roster Approval Attachment)
+                            </h2>
+                            <p className="text-[10px] font-semibold text-slate-700 font-mono">
+                              COURSE TRAINING PARTICIPANT ROSTER • TCT ACADEMY
+                            </p>
+                          </div>
+
+                          {/* Course Metadata Box */}
+                          <div className="bg-slate-50 border border-black p-2.5 text-xs grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div>
+                              <div><strong>หลักสูตร:</strong> [{currentCourse.code}] {currentCourse.thaiTitle || currentCourse.title}</div>
+                              <div className="mt-1 flex items-center gap-1.5">
+                                <strong>วันที่จัดอบรม:</strong>
+                                {isRosterEditable ? (
+                                  <input
+                                    type="text"
+                                    value={rosterTrainingDate}
+                                    onChange={(e) => setRosterTrainingDate(e.target.value)}
+                                    className="bg-white border border-slate-400 rounded px-1.5 py-0.5 text-xs text-black w-48 font-medium"
+                                  />
+                                ) : (
+                                  <span>{rosterTrainingDate}</span>
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <strong>สถานที่ / รูปแบบ:</strong>
+                                {isRosterEditable ? (
+                                  <input
+                                    type="text"
+                                    value={rosterTrainingVenue}
+                                    onChange={(e) => setRosterTrainingVenue(e.target.value)}
+                                    className="bg-white border border-slate-400 rounded px-1.5 py-0.5 text-xs text-black flex-1 font-medium"
+                                  />
+                                ) : (
+                                  <span>{rosterTrainingVenue}</span>
+                                )}
+                              </div>
+                              <div className="mt-1 flex items-center justify-between">
+                                <span><strong>ผู้เข้าอบรมทั้งหมด:</strong> <span className="font-bold text-blue-900 font-mono text-sm">{rosterRows.length}</span> ท่าน</span>
+                                <span><strong>งบประมาณ:</strong> {rosterBudget}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Trainee Table */}
+                          <div className="border border-black overflow-x-auto">
+                            <table className="w-full border-collapse text-[10px] text-center">
+                              <thead>
+                                <tr className="bg-slate-200 border-b border-black font-bold text-black">
+                                  <th className="border-r border-black p-1 w-8">ลำดับ</th>
+                                  <th className="border-r border-black p-1 w-16">รหัสพนักงาน</th>
+                                  <th className="border-r border-black p-1 text-left px-1.5 min-w-[120px]">ชื่อ - นามสกุล</th>
+                                  <th className="border-r border-black p-1 w-12">แผนก</th>
+                                  <th className="border-r border-black p-1 w-16">ตำแหน่ง</th>
+                                  <th className="border-r border-black p-1 text-left px-1.5">วัตถุประสงค์ในการเข้าอบรม</th>
+                                  <th className="border-r border-black p-1 w-24">การพิจารณา</th>
+                                  <th className="border-r border-black p-1 w-20">หมายเหตุ</th>
+                                  <th className="p-1 w-8 no-print">ลบ</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-black">
+                                {page.rows.length > 0 ? (
+                                  page.rows.map((row, rIdx) => {
+                                    const actualIndex = page.startIndex + rIdx;
+                                    return (
+                                      <tr key={row.rowId || `row-${actualIndex}`} className="hover:bg-slate-50">
+                                        <td className="border-r border-black p-1 font-mono font-bold">
+                                          {actualIndex + 1}
+                                        </td>
+                                        <td className="border-r border-black p-1 font-mono font-bold text-blue-900">
+                                          {isRosterEditable ? (
+                                            <input
+                                              type="text"
+                                              value={row.empId}
+                                              onChange={(e) => handleUpdateRow(actualIndex, 'empId', e.target.value)}
+                                              className="w-full text-center bg-transparent border-b border-slate-300 font-mono focus:border-blue-600 outline-none"
+                                            />
+                                          ) : (
+                                            row.empId
+                                          )}
+                                        </td>
+                                        <td className="border-r border-black p-1 text-left px-1.5 font-bold text-black">
+                                          {isRosterEditable ? (
+                                            <input
+                                              type="text"
+                                              value={row.fullName}
+                                              onChange={(e) => handleUpdateRow(actualIndex, 'fullName', e.target.value)}
+                                              className="w-full bg-transparent border-b border-slate-300 focus:border-blue-600 outline-none"
+                                            />
+                                          ) : (
+                                            row.fullName
+                                          )}
+                                        </td>
+                                        <td className="border-r border-black p-1 font-bold">
+                                          {isRosterEditable ? (
+                                            <input
+                                              type="text"
+                                              value={row.department}
+                                              onChange={(e) => handleUpdateRow(actualIndex, 'department', e.target.value)}
+                                              className="w-full text-center bg-transparent border-b border-slate-300 focus:border-blue-600 outline-none"
+                                            />
+                                          ) : (
+                                            row.department
+                                          )}
+                                        </td>
+                                        <td className="border-r border-black p-1 text-slate-700">
+                                          {isRosterEditable ? (
+                                            <input
+                                              type="text"
+                                              value={row.position}
+                                              onChange={(e) => handleUpdateRow(actualIndex, 'position', e.target.value)}
+                                              className="w-full text-center bg-transparent border-b border-slate-300 focus:border-blue-600 outline-none"
+                                            />
+                                          ) : (
+                                            row.position
+                                          )}
+                                        </td>
+                                        <td className="border-r border-black p-1 text-left px-1.5 text-slate-800">
+                                          {isRosterEditable ? (
+                                            <input
+                                              type="text"
+                                              value={row.objective}
+                                              onChange={(e) => handleUpdateRow(actualIndex, 'objective', e.target.value)}
+                                              className="w-full bg-transparent border-b border-slate-300 focus:border-blue-600 outline-none"
+                                            />
+                                          ) : (
+                                            row.objective
+                                          )}
+                                        </td>
+                                        <td className="border-r border-black p-1 font-bold text-emerald-800">
+                                          {isRosterEditable ? (
+                                            <input
+                                              type="text"
+                                              value={row.approvalStatus}
+                                              onChange={(e) => handleUpdateRow(actualIndex, 'approvalStatus', e.target.value)}
+                                              className="w-full text-center bg-transparent border-b border-slate-300 focus:border-blue-600 outline-none font-bold text-emerald-800"
+                                            />
+                                          ) : (
+                                            row.approvalStatus
+                                          )}
+                                        </td>
+                                        <td className="border-r border-black p-1 text-slate-600">
+                                          {isRosterEditable ? (
+                                            <input
+                                              type="text"
+                                              value={row.remarks}
+                                              onChange={(e) => handleUpdateRow(actualIndex, 'remarks', e.target.value)}
+                                              className="w-full text-center bg-transparent border-b border-slate-300 focus:border-blue-600 outline-none text-slate-600"
+                                            />
+                                          ) : (
+                                            row.remarks || '-'
+                                          )}
+                                        </td>
+                                        <td className="p-1 text-center no-print">
+                                          <button
+                                            type="button"
+                                            onClick={() => handleDeleteRow(actualIndex)}
+                                            className="p-1 rounded text-rose-600 hover:bg-rose-100 transition-colors cursor-pointer"
+                                            title="ลบแถวนี้"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })
+                                ) : (
+                                  <tr>
+                                    <td colSpan={9} className="p-4 text-center text-slate-400 italic">
+                                      ไม่มีรายชื่อพนักงาน กรุณากดปุ่มดึงรายชื่อด้านบน
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        {/* Signatures & Footer on Final Page */}
+                        {page.isLast && (
+                          <div className="space-y-3 pt-3 border-t-2 border-black mt-3">
+                            <div className="text-[10px] text-slate-700 font-bold mb-1">
+                              การลงนามพิจารณาและอนุมัติรายชื่อผู้เข้าอบรม (Signatures & Verification):
+                            </div>
+                            <div className="grid grid-cols-3 gap-3 text-center text-[10px]">
+                              {/* Signer 1: นายณฐวัตร พงษ์สาริกิจ */}
+                              <div className="border border-black p-2 rounded bg-slate-50 flex flex-col justify-between h-32">
+                                <div className="font-bold text-slate-800">1. ผู้เสนอขออนุมัติรายชื่อ</div>
+                                <div className="my-auto py-1">
+                                  <div className="w-32 h-px bg-slate-400 mx-auto mt-6" />
+                                  <div className="font-bold text-black mt-1">({rosterSigner1Name})</div>
+                                  <div className="text-[9px] text-slate-600 leading-tight">{rosterSigner1Pos}</div>
+                                </div>
+                                <div className="text-[9px] text-slate-500 font-mono">
+                                  วันที่: {new Date().toLocaleDateString('th-TH')}
+                                </div>
+                              </div>
+
+                              {/* Signer 2: นายกิตติศักดิ์ สร้อยจิตต์ */}
+                              <div className="border border-black p-2 rounded bg-slate-50 flex flex-col justify-between h-32">
+                                <div className="font-bold text-slate-800">2. ผู้ตรวจสอบคุณสมบัติ</div>
+                                <div className="my-auto py-1">
+                                  <div className="w-32 h-px bg-slate-400 mx-auto mt-6" />
+                                  <div className="font-bold text-black mt-1">({rosterSigner2Name})</div>
+                                  <div className="text-[9px] text-slate-600 leading-tight">{rosterSigner2Pos}</div>
+                                </div>
+                                <div className="text-[9px] text-slate-500 font-mono">
+                                  วันที่: {new Date().toLocaleDateString('th-TH')}
+                                </div>
+                              </div>
+
+                              {/* Signer 3: นายนพดล บำรุงเกียรติ */}
+                              <div className="border-2 border-black p-2 rounded bg-emerald-50/50 flex flex-col justify-between h-32">
+                                <div className="font-bold text-emerald-950">3. ผู้อนุมัติรายชื่อเข้ารับการฝึกอบรม</div>
+                                <div className="my-auto py-1">
+                                  <div className="w-32 h-px bg-emerald-800 mx-auto mt-6" />
+                                  <div className="font-bold text-black mt-1">({rosterSigner3Name})</div>
+                                  <div className="text-[9px] text-slate-800 font-bold leading-tight">{rosterSigner3Pos}</div>
+                                </div>
+                                <div className="text-[9px] text-emerald-900 font-mono font-bold">
+                                  วันที่: {new Date().toLocaleDateString('th-TH')}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between text-[9px] text-slate-500 font-mono pt-1">
+                              <div>TCT ACADEMY • TRAINEE ROSTER APPROVAL ATTACHMENT</div>
+                              <div>OFFICIAL ACCREDITED RECORD • TEIJIN CORD THAILAND</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ));
+                  })()}
                 </div>
               </div>
             )}

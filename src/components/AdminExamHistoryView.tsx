@@ -84,6 +84,7 @@ export const AdminExamHistoryView: React.FC<AdminExamHistoryViewProps> = ({
       // 1. Process Course Progress records
       const coursesToCheck = [
         'applied-psychology',
+        'good-employee-skills',
         'kyt-shisa-kanko',
         'ai-for-tct',
         'risk-management',
@@ -125,8 +126,8 @@ export const AdminExamHistoryView: React.FC<AdminExamHistoryViewProps> = ({
         const progress = t.coursesProgress?.[cId];
         const certId = progress?.certificateId || (t.selectedCourseId === cId ? t.certificateId : undefined);
         const certDate = progress?.certificateDate || (t.selectedCourseId === cId ? t.certificateDate : undefined);
-        const maxScore = cId === 'personality-psychology' || cId === 'kyt-shisa-kanko' ? 20 : 10;
-        const passScore = cId === 'personality-psychology' ? 15 : (cId === 'kyt-shisa-kanko' ? 16 : 8);
+        const maxScore = cId === 'personality-psychology' || cId === 'kyt-shisa-kanko' || cId === 'good-employee-skills' ? 20 : 10;
+        const passScore = cId === 'personality-psychology' ? 15 : (cId === 'kyt-shisa-kanko' || cId === 'good-employee-skills' ? 16 : 8);
 
         // Pre-test
         const preScore = progress?.preTestScore ?? (t.selectedCourseId === cId ? t.preTestScore : null);
@@ -453,6 +454,7 @@ export const AdminExamHistoryView: React.FC<AdminExamHistoryViewProps> = ({
               className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-[#005A9C]"
             >
               <option value="all">ทุกหลักสูตร (All Courses)</option>
+              <option value="good-employee-skills">หลักสูตร: ทักษะการเป็นพนักงานที่ดี TCT-GES-01</option>
               <option value="applied-psychology">หลักสูตร: จิตวิทยาประยุกต์ TCT-PSY-01 (12-16 ต.ค. 2569)</option>
               <option value="kyt-shisa-kanko">หลักสูตร: การคาดการณ์อันตราย KYT Shisa Kanko</option>
               <option value="ai-for-tct">หลักสูตร: AI เพื่อการเพิ่มผลผลิต TCT-AI-01</option>

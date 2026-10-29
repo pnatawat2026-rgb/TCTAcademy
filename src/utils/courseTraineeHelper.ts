@@ -429,6 +429,16 @@ export const COURSE_OFFICIAL_METADATA: Record<string, {
     institute: 'ศูนย์ฝึกอบรมและพัฒนา TCT Academy Personnel Development & Training Center',
     totalModules: 3,
     passingScorePercent: 80
+  },
+  'good-employee-skills': {
+    title: 'หลักสูตรพัฒนาศักยภาพพนักงานระดับต้น “ทักษะการเป็นพนักงานที่ดี” (Good Employee Skills)',
+    code: 'TCT-GES-01',
+    batch: 'รุ่นที่ 1 ปฐมนิเทศพนักงานปฏิบัติการใหม่ ประจำปี 2569',
+    trainingDates: 'วันที่ 20 - 24 ตุลาคม 2569 (08.00 - 16.00 น.)',
+    instructor: 'นายณฐวัตร พงษ์สาริกิจ (หัวหน้าแผนกบุคคลและธุรการ) & ทีมวิทยากร TCT Academy',
+    institute: 'ศูนย์ฝึกอบรมและพัฒนาบุคลากร TCT Academy (Personnel Development And Training Center) บริษัท เทยิน คอร์ด (ประเทศไทย) จำกัด',
+    totalModules: 7,
+    passingScorePercent: 80
   }
 };
 
@@ -492,7 +502,7 @@ export function resolveCourseTrainees(
     const progressFromUser: CourseProgressRecord | undefined = userStored?.coursesProgress?.[courseId];
     const progressFromAdmin: CourseProgressRecord | undefined = existingInList?.coursesProgress?.[courseId];
     const progress = progressFromUser || progressFromAdmin;
-    const isCustomOrUnenrolled = !['risk-management', 'advanced-preventive-maintenance', 'conflict-management', 'ai-for-tct', 'personality-psychology', 'kyt-shisa-kanko', 'applied-psychology'].includes(courseId);
+    const isCustomOrUnenrolled = !['risk-management', 'advanced-preventive-maintenance', 'conflict-management', 'ai-for-tct', 'personality-psychology', 'kyt-shisa-kanko', 'applied-psychology', 'good-employee-skills'].includes(courseId);
     const initMatch = courseId === 'applied-psychology'
       ? APPLIED_PSYCHOLOGY_INITIAL_TRAINEES.find(t => t.empId.trim().toUpperCase() === cleanId)
       : undefined;

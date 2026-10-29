@@ -39,6 +39,7 @@ import { SystemAccessSettings } from './SystemAccessSettings';
 import { calculateLearningMetrics } from '../utils/scoreMetrics';
 import { CohortResetModal } from './CohortResetModal';
 import { CourseDeveloperStudio } from './CourseDeveloperStudio';
+import { MasterEmployeeDatabaseView } from './MasterEmployeeDatabaseView';
 import { AdminCourseScheduleSettings } from './AdminCourseScheduleSettings';
 import { 
   COURSE_OFFICIAL_METADATA, 
@@ -50,6 +51,9 @@ import {
 import { printElementViaStandaloneWindow } from '../utils/pdfExport';
 import { EnrollTraineesModal } from './EnrollTraineesModal';
 import { DataSecurityBadge } from './DataSecurityBadge';
+import { AdminPasswordResetModal } from './AdminPasswordResetModal';
+import { getPasswordResetRequests } from '../utils/passwordSecurity';
+import { cleanAndResetRosterToOfficial } from '../data/traineeData';
 import { 
   Users, 
   UserPlus,
@@ -107,13 +111,16 @@ import {
   ListOrdered,
   MonitorPlay,
   BookOpen,
-  Zap
+  Zap,
+  MapPin
 } from 'lucide-react';
 import { FirestoreExamDashboardView } from './FirestoreExamDashboardView';
 import { playCyberClick, playSuccessChime } from '../utils/soundEffects';
 import { AdminVideoSettings } from './AdminVideoSettings';
 import { SystemAutoCorrectionView } from './SystemAutoCorrectionView';
 import { DEPARTMENT_LOOKUP, formatDepartment } from '../data/courseData';
+import { AdminLocationBypassModal } from './AdminLocationBypassModal';
+import { getAdminGeoBypassConfig, AdminGeoBypassConfig } from '../utils/geolocationSecurity';
 
 interface AdminBackofficeViewProps {
   currentUser: UserProfile | null;
@@ -121,6 +128,10 @@ interface AdminBackofficeViewProps {
   onSelectTraineeForReport?: (trainee: TraineeRecord) => void;
   onSelectTraineeForCert?: (trainee: TraineeRecord) => void;
   onOpenCourseApprovalPdf?: (courseId?: string) => void;
+  onOpenTrainingForms?: (formId?: string) => void;
+  onOpenLocationTracker?: () => void;
+  onOpenLocationBypass?: () => void;
+  onSelectCourse?: (courseId: string) => void;
 }
 
 const VALID_ADMIN_PINS = ['25056', 'TCTADMIN', 'ADMIN2026', 'TCTDEV', 'DEV2026', 'DEVELOPER999', 'ADMIN', 'TCT', '1234', '123456', 'SECRET', 'SUPERADMIN', 'TEIJIN', 'TCTA001', 'QSRM', 'APM', 'CFM', 'PASSWORD', 'ADMIN1234', 'MASTER'];
@@ -130,7 +141,11 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
   onNavigate,
   onSelectTraineeForReport,
   onSelectTraineeForCert,
-  onOpenCourseApprovalPdf
+  onOpenCourseApprovalPdf,
+  onOpenTrainingForms,
+  onOpenLocationTracker,
+  onOpenLocationBypass,
+  onSelectCourse
 }) => {
   const printRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -144,8 +159,8 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
   const [pinError, setPinError] = useState('');
   const [isShaking, setIsShaking] = useState(false);
 
-  // Sub-view: 'roster' | 'course_schedule' | 'training_reports' | 'firestore_live' | 'exam_history' | 'cqi' | 'system_settings' | 'video_settings' | 'course_developer'
-  const [adminSubView, setAdminSubView] = useState<'roster' | 'course_schedule' | 'training_reports' | 'firestore_live' | 'exam_history' | 'cqi' | 'system_settings' | 'video_settings' | 'course_developer'>('roster');
+  // Sub-view: 'roster' | 'master_database' | 'course_schedule' | 'training_reports' | 'firestore_live' | 'exam_history' | 'cqi' | 'system_settings' | 'video_settings' | 'course_developer'
+  const [adminSubView, setAdminSubView] = useState<'roster' | 'master_database' | 'course_schedule' | 'training_reports' | 'firestore_live' | 'exam_history' | 'cqi' | 'system_settings' | 'video_settings' | 'course_developer'>('roster');
 
   // Trainee record & certificate modal state (for clicking trainee name)
   const [selectedTraineeForCertRecord, setSelectedTraineeForCertRecord] = useState<TraineeRecord | null>(null);
@@ -195,6 +210,20 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
   const [isResetRealBaselineModalOpen, setIsResetRealBaselineModalOpen] = useState(false);
   const [isSeedPerfectModalOpen, setIsSeedPerfectModalOpen] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
+  const [isLocationBypassModalOpen, setIsLocationBypassModalOpen] = useState(false);
+  const [bypassConfig, setBypassConfig] = useState<AdminGeoBypassConfig>(() => getAdminGeoBypassConfig());
+
+  useEffect(() => {
+    const handleBypassUpdate = () => {
+      setBypassConfig(getAdminGeoBypassConfig());
+    };
+    window.addEventListener('tct_geo_bypass_updated', handleBypassUpdate);
+    return () => window.removeEventListener('tct_geo_bypass_updated', handleBypassUpdate);
+  }, []);
+  const [pendingResetCount, setPendingResetCount] = useState<number>(() => {
+    return getPasswordResetRequests().filter(r => r.status === 'pending').length;
+  });
 
   // Form states for Add / Edit
   const [formEmpId, setFormEmpId] = useState('');
@@ -1030,29 +1059,29 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
   // =========================================================================
   if (!isAdminAuthenticated) {
     return (
-      <div className="max-w-md mx-auto px-4 py-12 sm:py-20 font-sarabun">
-        <div className={`bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xl relative overflow-hidden ${isShaking ? 'animate-bounce' : ''}`}>
+      <div className="w-full max-w-md mx-auto px-3 sm:px-4 py-6 sm:py-12 font-sarabun">
+        <div className={`bg-white rounded-2xl p-5 sm:p-7 border border-slate-200 shadow-xl relative overflow-hidden w-full ${isShaking ? 'animate-bounce' : ''}`}>
           
-          <div className="space-y-6 relative z-10">
-            <div className="text-center space-y-3">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-blue-50 border border-blue-200 p-0.5 shadow-sm flex items-center justify-center">
-                <ShieldCheck className="w-8 h-8 text-[#005A9C]" />
+          <div className="space-y-5 relative z-10">
+            <div className="text-center space-y-2.5">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-blue-50 border border-blue-200 p-0.5 shadow-xs flex items-center justify-center">
+                <ShieldCheck className="w-7 h-7 text-[#005A9C]" />
               </div>
 
               <div>
-                <span className="text-[11px] font-mono font-bold text-[#005A9C] uppercase bg-blue-50 px-3 py-1 rounded-full border border-blue-200 inline-block mb-1.5">
+                <span className="text-[10px] font-mono font-bold text-[#005A9C] uppercase bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200 inline-block mb-1">
                   RESTRICTED ACCESS • AUTHORIZED ONLY
                 </span>
-                <h1 className="text-xl font-bold text-[#002855]">
+                <h1 className="text-lg sm:text-xl font-bold text-[#002855]">
                   ระบบผู้ดูแลระบบ (Admin Portal)
                 </h1>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-500 mt-0.5">
                   กรุณากรอกรหัสผ่านเพื่อเข้าถึงฐานข้อมูลผู้เข้าอบรม 230 คน และระบบวิเคราะห์ผล
                 </p>
               </div>
             </div>
 
-            <form onSubmit={handleAuthenticate} className="space-y-4">
+            <form onSubmit={handleAuthenticate} className="space-y-3.5">
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-slate-700">
                   รหัสผ่านผู้ดูแลระบบ (Admin Password)
@@ -1064,12 +1093,12 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
                     onChange={(e) => { setPinInput(e.target.value); setPinError(''); }}
                     placeholder="กรอกรหัสผ่านเพื่อเข้าใช้งาน"
                     autoFocus
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#005A9C] rounded-xl pl-4 pr-11 py-3 text-base font-mono text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#005A9C] rounded-xl pl-3.5 pr-10 py-2.5 text-sm sm:text-base font-mono text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -1083,11 +1112,11 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
                 </div>
               )}
 
-              <div className="space-y-2.5 pt-2">
+              <div className="space-y-2 pt-1">
                 <button
                   type="submit"
                   id="admin-auth-submit-btn"
-                  className="w-full bg-[#002D5A] hover:bg-[#001f3f] text-white font-bold text-sm py-3 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
+                  className="w-full bg-[#002D5A] hover:bg-[#001f3f] text-white font-bold text-sm py-2.5 sm:py-3 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
                   <Unlock className="w-4 h-4" />
                   <span>เข้าสู่ระบบผู้ดูแล (Sign In)</span>
@@ -1122,7 +1151,7 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
   // 2. AUTHENTICATED ADMIN BACKOFFICE
   // =========================================================================
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-6 font-sarabun text-slate-800">
+    <div className="w-full max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 font-sarabun text-slate-800">
       
       {/* Hidden File Input for CSV Import */}
       <input 
@@ -1133,54 +1162,54 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
         className="hidden" 
       />
 
-      {/* Top Banner Toolbar - Official Corporate Royal Navy Design */}
-      <div className="no-print bg-gradient-to-r from-[#001f3f] via-[#002D5A] to-[#005A9C] rounded-3xl p-5 sm:p-7 text-white shadow-xl border border-blue-900/40 relative z-30">
+      {/* Top Banner Toolbar - Official Corporate Royal Navy Design (100% Screen Fit) */}
+      <div className="no-print bg-gradient-to-r from-[#001f3f] via-[#002D5A] to-[#005A9C] rounded-2xl p-4 sm:p-5 text-white shadow-md border border-blue-900/40 relative z-30 w-full max-w-full">
         {/* Subtle decorative background glow (encapsulated so it doesn't clip dropdowns) */}
-        <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-amber-400/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-amber-400/5 rounded-full blur-2xl pointer-events-none" />
         </div>
 
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/95 p-1 shadow-md flex items-center justify-center shrink-0 border border-white/50">
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/95 p-1 shadow-xs flex items-center justify-center shrink-0 border border-white/50">
               <img 
                 src="/tct-academy-logo.svg" 
                 alt="TCT Academy" 
                 className="w-full h-full object-contain" 
               />
             </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[11px] font-mono px-3 py-0.5 rounded-full bg-blue-900/80 text-amber-300 border border-blue-400/30 font-bold flex items-center gap-1.5 shadow-xs">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
-                  TEIJIN CORD LMS ADMIN • AUTHENTICATED
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span className="text-[10px] sm:text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-blue-900/80 text-amber-300 border border-blue-400/30 font-bold flex items-center gap-1 shadow-2xs">
+                  <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-300 shrink-0" />
+                  <span>TEIJIN CORD LMS ADMIN</span>
                 </span>
-                <span className="text-xs text-blue-200/90 font-mono">
-                  พนักงานลงทะเบียนและเข้าสอบจริง: {trainees.length} ท่าน (บันทึกข้อมูลตามจริง)
+                <span className="text-[10px] sm:text-xs text-blue-200/90 font-mono">
+                  พนักงาน: {trainees.length} ท่าน
                 </span>
                 <DataSecurityBadge variant="compact" />
               </div>
-              <h1 className="text-xl sm:text-2xl font-black text-white mt-1.5 tracking-tight">
-                ศูนย์จัดการข้อมูลและวิเคราะห์ผลการฝึกอบรม (LMS Backoffice & CQI)
+              <h1 className="text-lg sm:text-2xl font-black text-white mt-1 tracking-tight">
+                ศูนย์จัดการข้อมูลและวิเคราะห์ผล (LMS Backoffice & CQI)
               </h1>
-              <p className="text-xs sm:text-sm text-blue-100/90 max-w-2xl mt-0.5">
-                จัดการรายชื่อพนักงาน ตรวจสอบผลสัมฤทธิ์ ออกรายงานทางการ A4 และบันทึกแผนพัฒนาคุณภาพต่อเนื่อง (CAPA)
+              <p className="text-[11px] sm:text-xs text-blue-100/90 max-w-2xl mt-0.5 line-clamp-1 sm:line-clamp-none">
+                จัดการรายชื่อพนักงาน ตรวจสอบผลสัมฤทธิ์ ออกรายงานทางการ A4 และแผนพัฒนาคุณภาพ (CAPA)
               </p>
             </div>
           </div>
 
-          {/* Action Toolbar */}
-          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          {/* Action Toolbar - 100% Responsive Grid on Mobile */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 sm:gap-2 w-full lg:w-auto mt-1 lg:mt-0">
             {/* Live Real-Time Stream Status & Bell Notifications */}
-            <div className="relative">
+            <div className="relative col-span-2 sm:col-span-1">
               <button
                 id="admin-btn-live-stream-toggle"
                 onClick={() => {
                   playCyberClick();
                   setShowActivityDrawer(!showActivityDrawer);
                 }}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer min-h-[38px] ${
+                className={`w-full sm:w-auto flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer min-h-[38px] ${
                   isLiveStreaming
                     ? 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40 hover:bg-emerald-500/30'
                     : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'
@@ -1188,7 +1217,7 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
                 title="คลิกเพื่อดูประวัติการแจ้งเตือนกิจกรรมเรียลไทม์ (Real-Time Live Activity Stream)"
               >
                 <Radio className={`w-3.5 h-3.5 ${isLiveStreaming ? 'text-emerald-300 animate-spin' : 'text-slate-300'}`} />
-                <span className="hidden sm:inline">{isLiveStreaming ? 'LIVE เรียลไทม์' : 'PAUSED'}</span>
+                <span>{isLiveStreaming ? 'LIVE เรียลไทม์' : 'PAUSED'}</span>
                 <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-white text-[10px] font-mono">
                   {activities.length}
                 </span>
@@ -1259,6 +1288,22 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
               )}
             </div>
 
+            {/* F1-F13 Training Forms Studio */}
+            {onOpenTrainingForms && (
+              <button
+                id="admin-btn-training-forms-2570"
+                onClick={() => {
+                  playCyberClick();
+                  onOpenTrainingForms('overview');
+                }}
+                className="bg-red-600 hover:bg-red-500 text-white font-bold text-xs py-2 px-3 rounded-xl border border-red-400 flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[38px] shadow-xs"
+                title="เปิดชุดแบบฟอร์มการฝึกอบรมและพัฒนาบุคลากร ปี 2570 (F1–F13 & Flow 16 ชุด) เพื่อกรอกและพิมพ์ A4"
+              >
+                <FileText className="w-3.5 h-3.5 text-white shrink-0" />
+                <span className="truncate">แบบฟอร์ม F1–F13</span>
+              </button>
+            )}
+
             {/* Direct Employee View Preview Button */}
             <button
               id="admin-btn-preview-employee-view"
@@ -1266,10 +1311,10 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
                 playCyberClick();
                 onNavigate('courses');
               }}
-              className="bg-white/15 hover:bg-white/25 text-white font-bold text-xs py-2 px-3.5 rounded-xl border border-white/30 flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[38px] shadow-xs"
+              className="bg-white/15 hover:bg-white/25 text-white font-bold text-xs py-2 px-3 rounded-xl border border-white/30 flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[38px] shadow-2xs"
               title="สลับไปตรวจสอบระบบในมุมมองของพนักงาน (Employee View)"
             >
-              <Eye className="w-3.5 h-3.5 text-blue-200" />
+              <Eye className="w-3.5 h-3.5 text-blue-200 shrink-0" />
               <span>มุมมองพนักงาน</span>
             </button>
 
@@ -1277,28 +1322,28 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
             <button
               onClick={handleRefresh}
               disabled={isSyncing}
-              className="bg-white/10 hover:bg-white/20 text-white font-medium text-xs py-2 px-3.5 rounded-xl border border-white/20 transition-all cursor-pointer min-h-[38px] flex items-center gap-1.5"
+              className="bg-white/10 hover:bg-white/20 text-white font-medium text-xs py-2 px-3 rounded-xl border border-white/20 transition-all cursor-pointer min-h-[38px] flex items-center justify-center gap-1.5"
               title="ซิงค์และรวมผลสอบทุกเครื่องทันที"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-blue-200' : ''}`} />
-              <span>ซิงค์ข้อมูลสด</span>
+              <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${isSyncing ? 'animate-spin text-blue-200' : ''}`} />
+              <span>ซิงค์สด</span>
             </button>
 
             {/* Sign Out */}
             <button
               onClick={handleLockAdmin}
-              className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 hover:text-white font-medium text-xs py-2 px-3.5 rounded-xl border border-rose-400/30 transition-all cursor-pointer min-h-[38px] flex items-center gap-1.5"
+              className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 hover:text-white font-medium text-xs py-2 px-3 rounded-xl border border-rose-400/30 transition-all cursor-pointer min-h-[38px] flex items-center justify-center gap-1.5"
               title="ออกจากระบบแอดมิน (Sign Out)"
             >
-              <Lock className="w-3.5 h-3.5" />
-              <span>ออกจากระบบ</span>
+              <Lock className="w-3.5 h-3.5 shrink-0" />
+              <span>ออกระบบ</span>
             </button>
           </div>
         </div>
 
         {/* Notice alert */}
         {importNotice && (
-          <div className="mt-4 p-3 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-xs text-emerald-100 flex items-center justify-between animate-fadeIn">
+          <div className="mt-3 p-3 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-xs text-emerald-100 flex items-center justify-between animate-fadeIn">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
               <span>{importNotice}</span>
@@ -1311,9 +1356,9 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
       </div>
 
       {/* =================================================================== */}
-      {/* 3 PRIMARY ADMIN MANAGEMENT MENUS (Organized & Uncluttered)           */}
+      {/* 3 PRIMARY ADMIN MANAGEMENT MENUS (100% Width Responsive Grid)       */}
       {/* =================================================================== */}
-      <div className="bg-white rounded-2xl p-2.5 border border-slate-200 shadow-sm flex flex-col md:flex-row items-stretch gap-2.5 font-sarabun">
+      <div className="w-full bg-white rounded-2xl p-2 sm:p-2.5 border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-2 font-sarabun">
         {/* MENU 1: Trainees Management */}
         <button
           id="admin-menu-trainees-btn"
@@ -1391,8 +1436,23 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
       </div>
 
       {/* Secondary Tools Pill Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-print scrollbar-thin">
+      <div className="w-full max-w-full flex items-center gap-2 overflow-x-auto pb-1 text-xs no-print scrollbar-thin">
         <span className="text-[11px] font-bold text-slate-400 whitespace-nowrap pl-1">เครื่องมือเพิ่มเติม:</span>
+        <button
+          id="admin-btn-master-db"
+          onClick={() => { playCyberClick(); setAdminSubView('master_database'); }}
+          className={`px-3.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+            adminSubView === 'master_database'
+              ? 'bg-[#002855] text-white shadow-md ring-2 ring-blue-400/40 font-black'
+              : 'bg-blue-50 hover:bg-blue-100 text-[#003875] border border-blue-200'
+          }`}
+          title="เปิดฐานข้อมูลพนักงานแม่บท 224 ท่าน (ค้นหา, กรองฝ่าย/แผนก, ส่งออก Excel)"
+        >
+          <Users className="w-3.5 h-3.5 text-[#005A9C]" />
+          <span>ทะเบียนพนักงานแม่บท (224 ท่าน)</span>
+          <span className="px-1.5 py-0.2 rounded-full bg-blue-600 text-white text-[9px] font-black">MASTER DB</span>
+        </button>
+
         <button
           onClick={() => { playCyberClick(); setAdminSubView('firestore_live'); }}
           className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
@@ -1416,6 +1476,80 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
         >
           <History className="w-3.5 h-3.5" />
           <span>ประวัติการทำข้อสอบทั้งหมด</span>
+        </button>
+
+        <button
+          onClick={() => { playCyberClick(); setIsPasswordResetModalOpen(true); }}
+          className="px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 bg-rose-50 text-rose-800 hover:bg-rose-100 border border-rose-200"
+          title="ดูคำขอและแก้ไข/รีเซ็ตรหัสผ่านให้พนักงานที่ลืมรหัส"
+        >
+          <KeyRound className="w-3.5 h-3.5 text-rose-600" />
+          <span>รีเซ็ตรหัสผ่านพนักงาน</span>
+          {pendingResetCount > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[10px] font-bold">
+              {pendingResetCount}
+            </span>
+          )}
+        </button>
+
+        {onOpenLocationTracker && (
+          <button
+            onClick={() => { playCyberClick(); onOpenLocationTracker(); }}
+            className="px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 bg-sky-50 text-sky-900 hover:bg-sky-100 border border-sky-300 shadow-xs"
+            title="ตรวจสอบและบันทึกพิกัด GPS พนักงาน (Geofencing & Location Check-in)"
+          >
+            <MapPin className="w-3.5 h-3.5 text-sky-600" />
+            <span>ตรวจสอบโลเคชั่น GPS พนักงาน</span>
+            <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
+          </button>
+        )}
+
+        {/* Location Restriction 3-Tier Bypass Modal Button */}
+        <button
+          id="admin-btn-location-bypass"
+          onClick={() => {
+            playCyberClick();
+            if (onOpenLocationBypass) {
+              onOpenLocationBypass();
+            } else {
+              setIsLocationBypassModalOpen(true);
+            }
+          }}
+          className="px-3.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 bg-gradient-to-r from-amber-500/10 via-amber-400/20 to-blue-600/10 text-slate-900 hover:bg-amber-100 border-2 border-amber-400 shadow-xs"
+          title="ยกเลิก/ตั้งค่าการจำกัดพิกัดโลเคชั่น: ยกเลิกทั้งระบบ, รายบุคคล หรือตามหลักสูตร"
+        >
+          <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+          <span>ยกเลิกจำกัดโลเคชั่น (รายบุคคล/ทั้งระบบ/หลักสูตร)</span>
+          {bypassConfig.isSystemWideBypass ? (
+            <span className="px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[9px] font-black">
+              ปลดล็อกทั้งระบบ
+            </span>
+          ) : (bypassConfig.bypassedEmpIds.length > 0 || bypassConfig.bypassedCourseIds.length > 0) ? (
+            <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black">
+              ยกเว้น {bypassConfig.bypassedEmpIds.length + bypassConfig.bypassedCourseIds.length} รายการ
+            </span>
+          ) : (
+            <span className="px-1.5 py-0.2 rounded-full bg-emerald-600 text-white text-[9px] font-bold">
+              จำกัด 1 กม.
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => {
+            playCyberClick();
+            if (window.confirm('ยืนยันล้างรายชื่อทดสอบ และเริ่มต้นรายชื่อพนักงานทางการ 224 ท่านใหม่?')) {
+              const fresh = cleanAndResetRosterToOfficial();
+              setTrainees(fresh);
+              playSuccessChime();
+              setImportNotice('ล้างรายชื่อทดสอบและเริ่มต้นฐานข้อมูลพนักงานทางการ 224 ท่านเรียบร้อยแล้ว!');
+            }
+          }}
+          className="px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 bg-blue-50 text-[#003875] hover:bg-blue-100 border border-blue-200"
+          title="ล้างรายชื่อจำลอง/ทดสอบ และเริ่มต้นฐานข้อมูลทางการ 224 คน"
+        >
+          <RotateCcw className="w-3.5 h-3.5 text-[#005A9C]" />
+          <span>ล้างรายชื่อใหม่ทางการ (224 ท่าน)</span>
         </button>
 
         <button
@@ -1481,61 +1615,61 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
       {adminSubView === 'training_reports' && (
         <div className="space-y-6 font-sarabun animate-fadeIn">
           {/* Header Card */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full max-w-full">
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] sm:text-xs font-bold border border-emerald-200">
                 <FileText className="w-3.5 h-3.5" />
                 <span>OFFICIAL TRAINING REPORTS • A4 STANDARDIZED</span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-[#002D5A] tracking-tight">
+              <h2 className="text-lg sm:text-xl font-black text-[#002D5A] tracking-tight">
                 ศูนย์จัดการและพิมพ์รายงานสรุปผลการฝึกอบรม
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 max-w-2xl">
+              <p className="text-xs text-slate-500 max-w-2xl">
                 เอกสารรายงานราชการและระบบคุณภาพ ISO รองรับการพิมพ์และส่งออกขนาด A4 พอดี ไม่ล้น ไม่ตกขอบ ทั้งแนวตั้งและแนวนอน
               </p>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
               <button
                 onClick={handleExportCSV}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
+                className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[38px]"
               >
-                <Download className="w-4 h-4" />
-                <span>ส่งออก Excel / CSV ทั้งหมด</span>
+                <Download className="w-4 h-4 shrink-0" />
+                <span>ส่งออก CSV</span>
               </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 px-4 rounded-xl border border-slate-200 flex items-center gap-1.5 cursor-pointer transition-all"
+                className="flex-1 md:flex-none bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 px-3.5 rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[38px]"
               >
-                <Upload className="w-4 h-4" />
+                <Upload className="w-4 h-4 shrink-0" />
                 <span>นำเข้า CSV</span>
               </button>
             </div>
           </div>
 
           {/* 5 Official Report Types Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full max-w-full">
             {/* Report 1: Individual Training Report */}
-            <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover:border-blue-300 transition-all">
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#005A9C] border border-blue-200 flex items-center justify-center">
-                  <FileText className="w-6 h-6" />
+            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-2xs flex flex-col justify-between space-y-3 hover:border-blue-300 transition-all">
+              <div className="space-y-2.5">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#005A9C] border border-blue-200 flex items-center justify-center">
+                  <FileText className="w-5 h-5" />
                 </div>
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
                     A4 แนวตั้ง & แนวนอน
                   </span>
-                  <h3 className="text-base font-bold text-slate-900 mt-1">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-1">
                     รายงานผลการฝึกอบรมรายบุคคล
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
                     บันทึกประวัติการเรียน ผลสอบ Pre/Post และสถิติการเรียนรู้รายบุคคล ขนาด A4 พอดี สำหรับแนบแฟ้มประวัติพนักงาน
                   </p>
                 </div>
 
                 {/* Trainee Quick Selector */}
                 <div className="pt-1">
-                  <label className="text-[11px] font-semibold text-slate-600 block mb-1">เลือกพนักงาน:</label>
+                  <label className="text-[10px] font-semibold text-slate-600 block mb-1">เลือกพนักงาน:</label>
                   <select
                     className="w-full text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-[#005A9C]"
                     onChange={(e) => {
@@ -1565,28 +1699,28 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
                     }
                     onNavigate('report');
                   }}
-                  className="w-full h-10 rounded-xl bg-[#002D5A] hover:bg-[#001D3D] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all"
+                  className="w-full h-9 rounded-xl bg-[#002D5A] hover:bg-[#001D3D] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer transition-all"
                 >
-                  <Printer className="w-4 h-4" />
-                  <span>เปิดรายงานเพื่อพิมพ์ (A4 แนวตั้ง/แนวนอน)</span>
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>เปิดรายงานเพื่อพิมพ์ (A4)</span>
                 </button>
               </div>
             </div>
 
             {/* Report 2: Official In-House Training Report HRD-TR-00-05 */}
-            <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover:border-emerald-300 transition-all">
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center">
-                  <FileSpreadsheet className="w-6 h-6" />
+            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-2xs flex flex-col justify-between space-y-3 hover:border-emerald-300 transition-all">
+              <div className="space-y-2.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center">
+                  <FileSpreadsheet className="w-5 h-5" />
                 </div>
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                     แบบฟอร์มทางการ
                   </span>
-                  <h3 className="text-base font-bold text-slate-900 mt-1">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-1">
                     แบบรายงานผลการฝึกอบรมภายใน (HRD-TR-00-05)
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
                     เอกสารทางการสำหรับฝ่ายทรัพยากรบุคคลและระบบ ISO สรุปผลการประเมิน 4 มิติ และสถิติรวมผู้เข้าอบรม
                   </p>
                 </div>
@@ -1718,7 +1852,16 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
       {/* VIEW -2: COURSE DEVELOPER STUDIO                                     */}
       {/* ==================================================================== */}
       {adminSubView === 'course_developer' && (
-        <CourseDeveloperStudio onCourseCreatedOrUpdated={handleRefresh} />
+        <CourseDeveloperStudio 
+          onCourseCreatedOrUpdated={handleRefresh} 
+          onSelectCourse={(cId) => {
+            if (onSelectCourse) {
+              onSelectCourse(cId);
+            } else {
+              onNavigate('dashboard');
+            }
+          }}
+        />
       )}
 
       {/* ==================================================================== */}
@@ -1800,6 +1943,18 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
           onViewCertificate={(t) => {
             if (onSelectTraineeForReport) onSelectTraineeForReport(t);
             onNavigate('certificate');
+          }}
+        />
+      )}
+
+      {/* ==================================================================== */}
+      {/* VIEW: MASTER EMPLOYEE DATABASE (224 OFFICIAL ROSTER)                  */}
+      {/* ==================================================================== */}
+      {adminSubView === 'master_database' && (
+        <MasterEmployeeDatabaseView 
+          onBackToRoster={() => setAdminSubView('roster')}
+          onEnrollToCourse={() => {
+            setTrainees(getStoredTrainees(currentUser));
           }}
         />
       )}
@@ -1924,6 +2079,19 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
                 <Shield className="w-3.5 h-3.5" />
                 <span>6: KYT ชี้มือย้ำปาก</span>
               </button>
+
+              <button
+                onClick={() => { playCyberClick(); setSelectedCourseFilter('good-employee-skills'); setCurrentPage(1); }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  selectedCourseFilter === 'good-employee-skills'
+                    ? 'bg-blue-700 text-white shadow-md ring-2 ring-blue-400/40'
+                    : 'text-blue-900 hover:text-blue-950 bg-blue-50 hover:bg-blue-100 border border-blue-300 font-extrabold'
+                }`}
+                title="หลักสูตรพัฒนาศักยภาพพนักงานระดับต้น ทักษะการเป็นพนักงานที่ดี (Good Employee Skills)"
+              >
+                <Award className="w-3.5 h-3.5 text-blue-600" />
+                <span>⭐ 8: ทักษะการเป็นพนักงานที่ดี (GES)</span>
+              </button>
             </div>
 
             {/* Current Course Indicator Badge & Enroll Action */}
@@ -2031,6 +2199,7 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
                 <option value="ai-for-tct">🤖 4: AI for TCT (AI-101)</option>
                 <option value="personality-psychology">🧠 5: จิตวิทยาบุคลิกภาพ (A001)</option>
                 <option value="kyt-shisa-kanko">👉 6: ความปลอดภัย KYT ชี้และเรียก</option>
+                <option value="good-employee-skills">⭐ 8: ทักษะการเป็นพนักงานที่ดี (Good Employee Skills)</option>
               </select>
 
               {/* Department Filter */}
@@ -2153,9 +2322,186 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
             </div>
           )}
 
-          {/* Trainee Table with Rank, Live Step & Attempt History */}
-          <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-            <table className="w-full text-left text-xs border-collapse font-sarabun">
+          {/* Mobile View: 100% Screen Responsive Cards (sm:hidden, matches Lesson Page style) */}
+          <div className="block sm:hidden space-y-2.5 font-sarabun w-full">
+            {paginatedTrainees.length === 0 ? (
+              <div className="p-6 text-center text-slate-500 bg-white rounded-2xl border border-slate-200">
+                <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 text-[#005A9C] flex items-center justify-center mx-auto mb-2">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div className="text-sm font-bold text-slate-700">ไม่พบรายชื่อในเงื่อนไขนี้</div>
+                <div className="text-xs text-slate-400 mt-1">ลองเปลี่ยนคำค้นหา หรือเลือกดูหลักสูตรอื่น</div>
+              </div>
+            ) : (
+              paginatedTrainees.map((t) => {
+                const m = t.preTestScore !== null && t.postTestScore !== null ? calculateLearningMetrics(t.preTestScore, t.postTestScore) : null;
+                const maxCourseMods = (t.selectedCourseId || selectedCourseFilter) === 'advanced-preventive-maintenance' ? 3 : 4;
+                const completedCount = t.completedModules?.length || 0;
+                const progressPercent = Math.round((completedCount / maxCourseMods) * 100);
+                const rankNum = t.examRank;
+
+                return (
+                  <div key={t.id || t.empId} className="w-full bg-white rounded-2xl p-3 border border-slate-200 shadow-2xs space-y-2.5">
+                    {/* Top Row: Rank & ID & Dept & Status */}
+                    <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        {rankNum === 1 ? (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 font-bold font-mono text-[10px]">
+                            🥇 #1
+                          </span>
+                        ) : rankNum === 2 ? (
+                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300 font-bold font-mono text-[10px]">
+                            🥈 #2
+                          </span>
+                        ) : rankNum === 3 ? (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-bold font-mono text-[10px]">
+                            🥉 #3
+                          </span>
+                        ) : rankNum ? (
+                          <span className="font-mono font-bold text-[#005A9C] text-[11px] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                            #{rankNum}
+                          </span>
+                        ) : null}
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenScoreModal(t)}
+                          className="font-mono font-bold text-xs text-[#005A9C] bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 flex items-center gap-1 cursor-pointer"
+                          title="คลิกเพื่อแก้ไขคะแนน"
+                        >
+                          <span>{t.empId}</span>
+                          <Edit3 className="w-3 h-3 text-[#005A9C]" />
+                        </button>
+
+                        <span className="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                          {t.department}
+                        </span>
+                      </div>
+
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${
+                        t.status === 'passed'
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                          : t.status === 'in_progress'
+                            ? 'bg-amber-50 text-amber-800 border-amber-200'
+                            : 'bg-slate-100 text-slate-600 border-slate-200'
+                      }`}>
+                        {t.status === 'passed' ? '🏆 ผ่าน 80%' : t.status === 'in_progress' ? '🟡 กำลังเรียน' : '⚪ ยังไม่เริ่ม'}
+                      </span>
+                    </div>
+
+                    {/* Name & Position */}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playCyberClick();
+                          setSelectedTraineeForCertRecord(t);
+                        }}
+                        className="text-left font-bold text-sm text-[#002D5A] hover:text-[#005A9C] flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <span className="truncate">{t.fullName}</span>
+                        <Award className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      </button>
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                        <span>{t.position || 'พนักงานฝ่ายปฏิบัติการ'}</span>
+                        {completedCount > 0 && (
+                          <span className="text-[#005A9C] font-semibold">({completedCount}/{maxCourseMods} บท)</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Scores Strip */}
+                    <div className="grid grid-cols-3 gap-1 bg-slate-50 p-2 rounded-xl border border-slate-200 text-center text-xs">
+                      <div>
+                        <div className="text-[10px] text-slate-500">Pre-Test</div>
+                        <div className="font-mono font-bold text-slate-800">
+                          {t.preTestScore !== null ? `${t.preTestScore}/10` : '-'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-slate-500">Post-Test</div>
+                        <div className="font-mono font-bold">
+                          {t.postTestScore !== null ? (
+                            <span className={t.postTestScore >= 8 ? 'text-emerald-700 font-black' : 'text-rose-600 font-bold'}>
+                              {t.postTestScore}/10
+                            </span>
+                          ) : '-'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-slate-500">พัฒนาการ</div>
+                        <div className="font-mono font-bold text-[#005A9C]">
+                          {m ? `+${m.scoreDelta}%` : '-'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playCyberClick();
+                          setSelectedTraineeForCertRecord(t);
+                        }}
+                        className="flex-1 py-1.5 px-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#005A9C] border border-blue-200 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <Award className="w-3.5 h-3.5 shrink-0" />
+                        <span>บันทึก/เกียรติบัตร</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenScoreModal(t)}
+                        className="py-1.5 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
+                        title="กรอกคะแนน"
+                      >
+                        <Sliders className="w-3.5 h-3.5" />
+                        <span>คะแนน</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditModal(t)}
+                        className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs cursor-pointer"
+                        title="แก้ไขข้อมูลพนักงาน"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playCyberClick();
+                          setResettingTrainee(t);
+                        }}
+                        className="p-1.5 rounded-xl bg-slate-100 hover:bg-amber-100 text-slate-500 hover:text-amber-800 text-xs cursor-pointer"
+                        title="ล้างประวัติการเรียนเพื่อเข้าเรียนใหม่"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playCyberClick();
+                          setDeletingTrainee(t);
+                        }}
+                        className="p-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-700 text-xs cursor-pointer"
+                        title="ลบรายชื่อ"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Tablet & Desktop View: Full-Featured High-Density Table (hidden sm:block) */}
+          <div className="hidden sm:block w-full max-w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
+            <table className="w-full min-w-[700px] text-left text-xs border-collapse font-sarabun">
               <thead>
                 <tr className="bg-slate-50 text-slate-700 border-b border-slate-200 text-[11px] font-mono">
                   <th className="py-3 px-3 text-center font-bold">อันดับ (Rank)</th>
@@ -3278,24 +3624,24 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
       {/* 🏅 Trainee Record & Certificate Modal (คลิกที่ชื่อเพื่อดูบันทึกและเกียรติบัตร) */}
       {/* =================================================================== */}
       {selectedTraineeForCertRecord && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-fadeIn font-sarabun text-slate-800">
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-5 animate-scaleUp overflow-y-auto max-h-[92vh]">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-5 animate-fadeIn font-sarabun text-slate-800">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full max-w-[95vw] p-4 sm:p-7 shadow-2xl space-y-4 animate-scaleUp overflow-y-auto max-h-[92vh]">
             
             {/* Header */}
-            <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center shrink-0">
-                  <Award className="w-6 h-6 text-amber-500" />
+                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center shrink-0">
+                  <Award className="w-5 h-5 text-slate-700" />
                 </div>
                 <div>
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 inline-block mb-1">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 inline-block mb-1">
                     TRAINEE RECORD & CERTIFICATE
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-slate-900">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900">
                     บันทึกและเกียรติบัตรการฝึกอบรม
                   </h3>
-                  <p className="text-xs text-slate-500">
-                    ศูนย์ฝึกอบรมและพัฒนา TCT Academy (Human Resource Development & Training Center)
+                  <p className="text-[11px] text-slate-500">
+                    ศูนย์ฝึกอบรมและพัฒนา TCT Academy
                   </p>
                 </div>
               </div>
@@ -3303,90 +3649,87 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedTraineeForCertRecord(null)}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
                 title="ปิด"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Trainee Profile Card */}
-            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <div>
-                <span className="text-slate-400 block text-[11px]">รหัสพนักงาน:</span>
-                <span className="font-mono font-bold text-[#005A9C] text-sm">{selectedTraineeForCertRecord.empId}</span>
+                <span className="text-slate-400 block text-[10px]">รหัสพนักงาน:</span>
+                <span className="font-mono font-bold text-[#005A9C] text-xs sm:text-sm">{selectedTraineeForCertRecord.empId}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">ชื่อ - นามสกุล:</span>
+                <span className="text-slate-400 block text-[10px]">ชื่อ - นามสกุล:</span>
                 <span className="font-bold text-slate-900">{selectedTraineeForCertRecord.fullName}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">แผนก / ฝ่าย:</span>
-                <span className="font-semibold text-slate-700">{selectedTraineeForCertRecord.department} ({DEPARTMENT_LOOKUP[selectedTraineeForCertRecord.department]?.nameEn || selectedTraineeForCertRecord.department})</span>
+                <span className="text-slate-400 block text-[10px]">แผนก:</span>
+                <span className="font-semibold text-slate-700">{selectedTraineeForCertRecord.department}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">ตำแหน่ง:</span>
-                <span className="text-slate-700 font-medium">{selectedTraineeForCertRecord.position || 'พนักงานฝ่ายปฏิบัติการ'}</span>
+                <span className="text-slate-400 block text-[10px]">ตำแหน่ง:</span>
+                <span className="text-slate-700 font-medium truncate">{selectedTraineeForCertRecord.position || 'พนักงาน'}</span>
               </div>
             </div>
 
             {/* Course & Score Details */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
-              <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200">
-                <span className="text-[11px] text-blue-700 font-semibold block mb-0.5">คะแนน Pre-Test</span>
-                <span className="font-mono font-bold text-lg text-[#005A9C]">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                <span className="text-[10px] text-slate-600 font-medium block">Pre-Test</span>
+                <span className="font-mono font-bold text-base text-slate-800">
                   {selectedTraineeForCertRecord.preTestScore !== null ? `${selectedTraineeForCertRecord.preTestScore}/10` : 'รอสอบ'}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-200">
-                <span className="text-[11px] text-purple-700 font-semibold block mb-0.5">คะแนน Post-Test</span>
-                <span className="font-mono font-bold text-lg text-purple-900">
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                <span className="text-[10px] text-slate-600 font-medium block">Post-Test</span>
+                <span className="font-mono font-bold text-base text-slate-800">
                   {selectedTraineeForCertRecord.postTestScore !== null ? `${selectedTraineeForCertRecord.postTestScore}/10` : 'รอสอบ'}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
-                <span className="text-[11px] text-emerald-700 font-semibold block mb-0.5">สถานะผลการสอบ</span>
-                <span className="font-bold text-xs text-emerald-800 block mt-1">
-                  {selectedTraineeForCertRecord.status === 'passed' ? '🏆 ผ่านเกณฑ์ 80%' : '🟡 กำลังเรียน'}
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                <span className="text-[10px] text-slate-600 font-medium block">สถานะผลการสอบ</span>
+                <span className="font-bold text-xs text-emerald-800 block mt-0.5">
+                  {selectedTraineeForCertRecord.status === 'passed' ? '✓ ผ่านเกณฑ์ 80%' : 'กำลังเรียน'}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200">
-                <span className="text-[11px] text-amber-700 font-semibold block mb-0.5">บทเรียนที่สำเร็จ</span>
-                <span className="font-mono font-bold text-lg text-amber-800">
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                <span className="text-[10px] text-slate-600 font-medium block">บทเรียนที่สำเร็จ</span>
+                <span className="font-mono font-bold text-base text-slate-800">
                   {selectedTraineeForCertRecord.completedModules ? selectedTraineeForCertRecord.completedModules.length : 0} บท
                 </span>
               </div>
             </div>
 
             {/* Certificate Preview Card */}
-            <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50/80 via-white to-amber-50/40 p-5 text-center space-y-3 relative overflow-hidden shadow-xs">
-              <div className="flex items-center justify-center gap-2 text-xs font-bold text-amber-800 tracking-wider">
-                <Sparkles className="w-4 h-4 text-amber-500" />
-                <span>CERTIFICATE OF COMPLETION • ใบประกาศนียบัตรรับรองผล</span>
-                <Sparkles className="w-4 h-4 text-amber-500" />
+            <div className="rounded-xl border border-slate-300 bg-slate-50 p-4 text-center space-y-2 relative overflow-hidden">
+              <div className="text-xs font-bold text-slate-700 tracking-wider">
+                <span>ใบประกาศนียบัตรรับรองผลการฝึกอบรม (Certificate Preview)</span>
               </div>
 
-              <div className="py-2">
-                <div className="text-[11px] text-slate-500 mb-1">ขอมอบวุฒิบัตรฉบับนี้เพื่อแสดงว่า</div>
-                <div className="text-xl sm:text-2xl font-black text-[#002D5A] tracking-tight">
+              <div className="py-1">
+                <div className="text-lg sm:text-xl font-black text-[#002D5A] tracking-tight">
                   {selectedTraineeForCertRecord.fullName}
                 </div>
                 <div className="text-xs text-slate-500 font-mono mt-0.5">
                   รหัสพนักงาน: {selectedTraineeForCertRecord.empId} • แผนก {selectedTraineeForCertRecord.department}
                 </div>
-                <div className="text-xs text-slate-700 mt-2 font-medium">
-                  ได้ผ่านการฝึกอบรมและทดสอบความรู้ตามเกณฑ์มาตรฐานของศูนย์ฝึกอบรม TCT Academy
+                <div className="text-xs text-slate-600 mt-1">
+                  ได้ผ่านการฝึกอบรมและทดสอบความรู้ตามเกณฑ์มาตรฐาน TCT Academy
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-amber-200/80 flex items-center justify-between text-[11px] text-slate-600 font-mono">
-                <span>รหัสเกียรติบัตร: {selectedTraineeForCertRecord.certificateId || `TCT-CERT-${selectedTraineeForCertRecord.empId}`}</span>
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                <span>รหัส: {selectedTraineeForCertRecord.certificateId || `TCT-CERT-${selectedTraineeForCertRecord.empId}`}</span>
                 <span>วันที่: {selectedTraineeForCertRecord.completedAt || new Date().toLocaleDateString('th-TH')}</span>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+            {/* Action Buttons (Calm Corporate White & Slate) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => {
@@ -3399,10 +3742,10 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
                   }
                   setSelectedTraineeForCertRecord(null);
                 }}
-                className="h-10 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all"
+                className="h-9 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer transition-all"
               >
-                <Award className="w-4 h-4" />
-                <span>🏆 ดูและพิมพ์เกียรติบัตร (Certificate A4)</span>
+                <Award className="w-4 h-4 text-amber-300" />
+                <span>ดูและพิมพ์เกียรติบัตร (Certificate A4)</span>
               </button>
 
               <button
@@ -3415,10 +3758,10 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
                   onNavigate('report');
                   setSelectedTraineeForCertRecord(null);
                 }}
-                className="h-10 px-4 rounded-xl bg-[#002D5A] hover:bg-[#001D3D] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all"
+                className="h-9 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-300 shadow-2xs cursor-pointer transition-all"
               >
-                <FileText className="w-4 h-4" />
-                <span>📊 ดูรายงานผลรายบุคคล A4</span>
+                <FileText className="w-4 h-4 text-slate-600" />
+                <span>ดูรายงานผลรายบุคคล A4</span>
               </button>
 
               <button
@@ -3428,7 +3771,7 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
                   handleOpenScoreModal(selectedTraineeForCertRecord);
                   setSelectedTraineeForCertRecord(null);
                 }}
-                className="h-10 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                className="h-9 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors"
               >
                 <Edit3 className="w-3.5 h-3.5" />
                 <span>แก้ไขคะแนน</span>
@@ -3446,6 +3789,22 @@ export const AdminBackofficeView: React.FC<AdminBackofficeViewProps> = ({
         onEnrollSuccess={() => {
           handleRefresh();
         }}
+      />
+
+      {/* 🔑 Password Reset Management Modal */}
+      <AdminPasswordResetModal
+        isOpen={isPasswordResetModalOpen}
+        onClose={() => {
+          setIsPasswordResetModalOpen(false);
+          setPendingResetCount(getPasswordResetRequests().filter(r => r.status === 'pending').length);
+        }}
+      />
+
+      {/* 📍 Admin Location Bypass Modal (3-Tier: System, Individual, Course) */}
+      <AdminLocationBypassModal
+        isOpen={isLocationBypassModalOpen}
+        onClose={() => setIsLocationBypassModalOpen(false)}
+        onConfigChanged={(cfg) => setBypassConfig(cfg)}
       />
     </div>
   );

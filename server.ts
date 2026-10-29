@@ -1,12 +1,12 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { createServer as createViteServer } from 'vite';
-import { MASTER_EMPLOYEE_ROSTER_230 } from './src/data/employeeDatabase';
-import { APPLIED_PSYCHOLOGY_INITIAL_TRAINEES } from './src/data/appliedPsychologyCourseData';
+import { MASTER_EMPLOYEE_ROSTER_230 } from './src/data/employeeDatabase.ts';
+import { APPLIED_PSYCHOLOGY_INITIAL_TRAINEES } from './src/data/appliedPsychologyCourseData.ts';
 
 const app = express();
-const PORT = 3000;
+// Port 3000 is required by the environment; 8080 is reserved by the container proxy sidecar
+const PORT = (process.env.PORT && process.env.PORT !== '8080') ? parseInt(process.env.PORT, 10) : 3000;
 
 app.use(express.json({ limit: '10mb' }));
 
@@ -38,6 +38,8 @@ interface ServerDatabase {
   trainees: Record<string, any>;
   activities: ServerActivityLog[];
   trainingLogs?: any[];
+  locationCheckIns?: any[];
+  kirkpatrickEvaluations?: any[];
   lastUpdated: string;
 }
 
@@ -113,6 +115,52 @@ function buildDefaultDatabase(): ServerDatabase {
         score: 10
       }
     ],
+    locationCheckIns: [
+      {
+        id: 'chk-srv-01',
+        timestamp: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
+        displayTime: new Date(Date.now() - 1000 * 60 * 20).toLocaleString('th-TH'),
+        empId: '003290',
+        fullName: 'นาย กิตติศักดิ์ ชัยชนะ',
+        department: 'P',
+        position: 'OPERATOR',
+        courseId: 'good-employee-skills',
+        courseTitle: 'ทักษะการเป็นพนักงานที่ดี',
+        lat: 14.338112,
+        lng: 100.627932,
+        accuracyMeters: 3,
+        distanceKm: 0.012,
+        distanceMeters: 12,
+        isWithinGeofence: true,
+        status: 'verified_onsite',
+        statusLabelTh: 'ยืนยันพิกัดในโรงงาน (< 1.0 กม.)',
+        deviceInfo: 'Android Mobile • Chrome',
+        notes: 'เช็คอินเข้าอบรม กะเช้า (Morning Shift)',
+        qrHash: 'TCT-003290-SHIFT-M'
+      },
+      {
+        id: 'chk-srv-02',
+        timestamp: new Date(Date.now() - 1000 * 60 * 55).toISOString(),
+        displayTime: new Date(Date.now() - 1000 * 60 * 55).toLocaleString('th-TH'),
+        empId: '25056',
+        fullName: 'นาย ณฐวัตร พงษ์สาริกิจ',
+        department: 'PS',
+        position: 'SUPERVISOR',
+        courseId: 'applied-psychology',
+        courseTitle: 'จิตวิทยาประยุกต์ในการทำงาน',
+        lat: 14.3380539,
+        lng: 100.6279692,
+        accuracyMeters: 2,
+        distanceKm: 0.0,
+        distanceMeters: 0,
+        isWithinGeofence: true,
+        status: 'verified_onsite',
+        statusLabelTh: 'ยืนยันพิกัดในโรงงาน (< 1.0 กม.)',
+        deviceInfo: 'Desktop Workstation • Chrome',
+        notes: 'อาคารบริหาร แผนกบุคคลและธุรการ',
+        qrHash: 'TCT-25056-HEAD-PS'
+      }
+    ],
     lastUpdated: new Date().toISOString()
   };
 }
@@ -135,6 +183,11 @@ function loadDatabase(): ServerDatabase {
   if (!loadedDb) {
     saveDatabase(defaultDb);
     return defaultDb;
+  }
+
+  // Ensure locationCheckIns is array
+  if (!Array.isArray(loadedDb.locationCheckIns)) {
+    loadedDb.locationCheckIns = defaultDb.locationCheckIns || [];
   }
 
   // Set of authentic October 12 participants
@@ -199,6 +252,8 @@ function loadDatabase(): ServerDatabase {
     trainees: mergedTrainees,
     activities: loadedDb.activities && loadedDb.activities.length > 0 ? loadedDb.activities : defaultDb.activities,
     trainingLogs: loadedDb.trainingLogs || [],
+    locationCheckIns: loadedDb.locationCheckIns || defaultDb.locationCheckIns || [],
+    kirkpatrickEvaluations: loadedDb.kirkpatrickEvaluations || defaultDb.kirkpatrickEvaluations || [],
     lastUpdated: new Date().toISOString()
   };
 
@@ -224,6 +279,27 @@ let db = loadDatabase();
 // -------------------------------------------------------------
 // API Endpoints
 // -------------------------------------------------------------
+
+// Anti-caching middleware for HTML navigation and Service Worker scripts
+app.use((req, res, next) => {
+  if (req.path === '/' || req.path === '/index.html' || req.path === '/sw.js' || req.path === '/manifest.json') {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
+// Version check endpoint for auto-updater
+app.get('/api/version', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.json({
+    version: '2026.10.22-v3-realtime',
+    name: 'TCT E-Training',
+    features: ['1km-geofence', '10char-password-rule', 'continuous-modal-flow', 'realtime-sync'],
+    timestamp: new Date().toISOString()
+  });
+});
 
 // 1. Health check
 app.get('/api/health', (req, res) => {
@@ -352,6 +428,48 @@ app.get('/api/trainees', (req, res) => {
     inProgressCount: ranked.filter((t: any) => t.status === 'in_progress').length,
     notStartedCount: ranked.filter((t: any) => t.status === 'not_started').length,
     lastUpdated: db.lastUpdated
+  });
+});
+
+// 2.5 GET /api/master-employees - Official Master Employees Directory (224 employees)
+app.get('/api/master-employees', (req, res) => {
+  res.json({
+    success: true,
+    count: MASTER_EMPLOYEE_ROSTER_230.length,
+    employees: MASTER_EMPLOYEE_ROSTER_230,
+    lastUpdated: db.lastUpdated
+  });
+});
+
+// 2.6 POST /api/master-employees - Update or add master employee in server database
+app.post('/api/master-employees', (req, res) => {
+  const { employee } = req.body;
+  if (!employee || !employee.empId) {
+    return res.status(400).json({ error: 'Missing employee object or empId' });
+  }
+
+  const cleanId = String(employee.empId).trim().toUpperCase();
+  const existing = db.trainees[cleanId] || {};
+
+  db.trainees[cleanId] = {
+    ...existing,
+    empId: cleanId,
+    fullName: employee.fullName || `${employee.prefix || 'นาย'} ${employee.firstName || ''} ${employee.lastName || ''}`.trim(),
+    prefix: employee.prefix || existing.prefix || 'นาย',
+    department: employee.department || existing.department || 'P',
+    division: employee.division || existing.division || 'P',
+    position: employee.position || existing.position || 'WORKER',
+    yearsOfService: employee.yearsOfService || employee.tenure || existing.yearsOfService || '1 ปี',
+    isMasterRecord: true
+  };
+
+  db.lastUpdated = new Date().toISOString();
+  saveDatabase(db);
+
+  res.json({
+    success: true,
+    message: `Master employee ${cleanId} saved successfully`,
+    employee: db.trainees[cleanId]
   });
 });
 
@@ -782,6 +900,216 @@ app.get('/api/training-tracker/summary', (req, res) => {
   });
 });
 
+// 5.4 Location Check-ins Endpoints (Geofencing & Security Inspection)
+app.get('/api/location-checkins', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  const checkins = db.locationCheckIns || [];
+  res.json({
+    success: true,
+    count: checkins.length,
+    checkIns: checkins,
+    geofence: {
+      factoryName: 'บริษัท เทยิน คอร์ด (ประเทศไทย) จำกัด',
+      targetLat: 14.3380539,
+      targetLng: 100.6279692,
+      radiusKm: 1.0,
+      radiusMeters: 1000
+    }
+  });
+});
+
+app.post('/api/location-checkins', (req, res) => {
+  const item = req.body;
+  if (!item || !item.empId) {
+    return res.status(400).json({ error: 'Missing required employee information' });
+  }
+
+  if (!db.locationCheckIns) {
+    db.locationCheckIns = [];
+  }
+
+  const checkinRecord = {
+    id: item.id || `chk-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    timestamp: item.timestamp || new Date().toISOString(),
+    displayTime: item.displayTime || new Date().toLocaleString('th-TH'),
+    empId: String(item.empId).trim().toUpperCase(),
+    fullName: item.fullName || 'พนักงาน TCT',
+    department: item.department || 'P',
+    position: item.position || 'พนักงาน',
+    courseId: item.courseId || 'applied-psychology',
+    courseTitle: item.courseTitle || 'จิตวิทยาประยุกต์ในการทำงาน',
+    lat: typeof item.lat === 'number' ? item.lat : 14.3380539,
+    lng: typeof item.lng === 'number' ? item.lng : 100.6279692,
+    accuracyMeters: typeof item.accuracyMeters === 'number' ? item.accuracyMeters : 10,
+    distanceKm: typeof item.distanceKm === 'number' ? item.distanceKm : 0,
+    distanceMeters: typeof item.distanceMeters === 'number' ? item.distanceMeters : 0,
+    isWithinGeofence: Boolean(item.isWithinGeofence),
+    status: item.status || (item.isWithinGeofence ? 'verified_onsite' : 'outside_geofence'),
+    statusLabelTh: item.statusLabelTh || (item.isWithinGeofence ? 'ผ่านเกณฑ์ตรวจสอบพิกัด (ภายในโรงงาน)' : 'อยู่นอกพื้นที่โรงงาน (> 1 กม.)'),
+    deviceInfo: item.deviceInfo || req.headers['user-agent'] || 'Web Browser',
+    notes: item.notes || '',
+    qrHash: item.qrHash || `TCT-GPS-${Date.now()}`
+  };
+
+  db.locationCheckIns.unshift(checkinRecord);
+  if (db.locationCheckIns.length > 500) {
+    db.locationCheckIns = db.locationCheckIns.slice(0, 500);
+  }
+
+  // Also log into real-time activity stream
+  const act: ServerActivityLog = {
+    id: `act-loc-${Date.now()}`,
+    timestamp: new Date().toLocaleString('th-TH'),
+    empId: checkinRecord.empId,
+    fullName: checkinRecord.fullName,
+    department: checkinRecord.department,
+    action: 'location_checkin',
+    detail: `เช็คอินพิกัด GPS: ${checkinRecord.statusLabelTh} (${checkinRecord.fullName})`
+  };
+  db.activities.unshift(act);
+  db.activities = db.activities.slice(0, 100);
+
+  saveDatabase(db);
+
+  res.status(201).json({
+    success: true,
+    message: 'Location check-in recorded successfully',
+    record: checkinRecord
+  });
+});
+
+app.delete('/api/location-checkins/:id', (req, res) => {
+  const { id } = req.params;
+  if (!db.locationCheckIns) {
+    db.locationCheckIns = [];
+  }
+  const prevCount = db.locationCheckIns.length;
+  db.locationCheckIns = db.locationCheckIns.filter((c: any) => c.id !== id);
+  saveDatabase(db);
+  res.json({
+    success: true,
+    deleted: prevCount > db.locationCheckIns.length,
+    id
+  });
+});
+
+// 5.5 Kirkpatrick 4 Levels Evaluation Endpoints
+app.get('/api/evaluations/kirkpatrick', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  const evals = db.kirkpatrickEvaluations || [];
+  const { empId, courseId } = req.query;
+
+  let filtered = evals;
+  if (empId) {
+    const cleanId = String(empId).trim().toUpperCase();
+    filtered = filtered.filter((e: any) => e.empId && e.empId.toUpperCase() === cleanId);
+  }
+  if (courseId && courseId !== 'all') {
+    filtered = filtered.filter((e: any) => e.courseId === courseId);
+  }
+
+  // Calculate statistics across all evaluations
+  const totalCount = evals.length;
+  const avgOverall = totalCount > 0 
+    ? Number((evals.reduce((acc: number, e: any) => acc + (e.overallScore || 0), 0) / totalCount).toFixed(2)) 
+    : 0;
+  const avgReaction = totalCount > 0 
+    ? Number((evals.reduce((acc: number, e: any) => acc + (e.reactionScore || 0), 0) / totalCount).toFixed(2)) 
+    : 0;
+  const avgLearning = totalCount > 0 
+    ? Number((evals.reduce((acc: number, e: any) => acc + (e.learningScore || 0), 0) / totalCount).toFixed(2)) 
+    : 0;
+  const avgBehavior = totalCount > 0 
+    ? Number((evals.reduce((acc: number, e: any) => acc + (e.behaviorScore || 0), 0) / totalCount).toFixed(2)) 
+    : 0;
+  const avgResults = totalCount > 0 
+    ? Number((evals.reduce((acc: number, e: any) => acc + (e.resultsScore || 0), 0) / totalCount).toFixed(2)) 
+    : 0;
+
+  res.json({
+    success: true,
+    totalCount,
+    evaluations: filtered,
+    summary: {
+      averageOverall: avgOverall,
+      averagePercentage: Math.round((avgOverall / 5) * 100),
+      averageReaction: avgReaction,
+      averageLearning: avgLearning,
+      averageBehavior: avgBehavior,
+      averageResults: avgResults,
+      recommendRate: totalCount > 0 ? Math.round((evals.filter((e: any) => e.recommendsCourse).length / totalCount) * 100) : 100
+    }
+  });
+});
+
+app.post('/api/evaluations/kirkpatrick', (req, res) => {
+  const item = req.body;
+  if (!item || !item.empId) {
+    return res.status(400).json({ error: 'Missing employee evaluation information' });
+  }
+
+  if (!db.kirkpatrickEvaluations) {
+    db.kirkpatrickEvaluations = [];
+  }
+
+  const cleanId = String(item.empId).trim().toUpperCase();
+  const evalRecord = {
+    id: item.id || `kpk-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    timestamp: item.timestamp || new Date().toISOString(),
+    displayTime: item.displayTime || new Date().toLocaleString('th-TH'),
+    empId: cleanId,
+    fullName: item.fullName || 'พนักงาน TCT',
+    department: item.department || 'P',
+    position: item.position || 'พนักงาน',
+    courseId: item.courseId || 'applied-psychology',
+    courseTitle: item.courseTitle || 'หลักสูตรการฝึกอบรม TCT',
+    reactionScore: typeof item.reactionScore === 'number' ? item.reactionScore : 5,
+    learningScore: typeof item.learningScore === 'number' ? item.learningScore : 5,
+    behaviorScore: typeof item.behaviorScore === 'number' ? item.behaviorScore : 5,
+    resultsScore: typeof item.resultsScore === 'number' ? item.resultsScore : 5,
+    overallScore: typeof item.overallScore === 'number' ? item.overallScore : 5,
+    overallPercentage: typeof item.overallPercentage === 'number' ? item.overallPercentage : 100,
+    gradeLabelTh: item.gradeLabelTh || 'ระดับดีเยี่ยม (Excellent)',
+    gradeBadgeColor: item.gradeBadgeColor || 'bg-emerald-100 text-emerald-900 border-emerald-300',
+    items: Array.isArray(item.items) ? item.items : [],
+    strengths: item.strengths || '',
+    applicationPlan: item.applicationPlan || '',
+    suggestions: item.suggestions || '',
+    recommendsCourse: item.recommendsCourse !== undefined ? Boolean(item.recommendsCourse) : true,
+    evaluationCode: item.evaluationCode || `KPK-${Date.now()}`
+  };
+
+  // Upsert: replace if existing evaluation for same employee and course
+  const existingIdx = db.kirkpatrickEvaluations.findIndex((e: any) => e.empId === cleanId && e.courseId === evalRecord.courseId);
+  if (existingIdx >= 0) {
+    db.kirkpatrickEvaluations[existingIdx] = evalRecord;
+  } else {
+    db.kirkpatrickEvaluations.unshift(evalRecord);
+  }
+
+  // Also log into real-time activity stream
+  const act: ServerActivityLog = {
+    id: `act-kpk-${Date.now()}`,
+    timestamp: new Date().toLocaleString('th-TH'),
+    empId: cleanId,
+    fullName: evalRecord.fullName,
+    department: evalRecord.department,
+    action: 'kirkpatrick_evaluation',
+    detail: `ประเมินผลฝึกอบรม Kirkpatrick 4 ระดับ [${evalRecord.courseTitle}]: ${evalRecord.overallScore}/5.0 (${evalRecord.overallPercentage}%) ${evalRecord.gradeLabelTh}`,
+    score: evalRecord.overallScore
+  };
+  db.activities.unshift(act);
+  db.activities = db.activities.slice(0, 100);
+
+  saveDatabase(db);
+
+  res.status(201).json({
+    success: true,
+    message: 'Kirkpatrick evaluation recorded successfully',
+    evaluation: evalRecord
+  });
+});
+
 // 6. POST /api/trainees/batch-import - Import custom employees
 app.post('/api/trainees/batch-import', (req, res) => {
   const { employees } = req.body;
@@ -830,6 +1158,54 @@ app.post('/api/trainees/reset-all', (req, res) => {
 // 7.0 POST /api/reset-real-baseline - Safe endpoint
 app.post('/api/reset-real-baseline', (req, res) => {
   res.json({ success: true, message: 'Authentic records preserved safely' });
+});
+
+// 7.01 GET /api/location-checkins - Get all employee location check-ins
+app.get('/api/location-checkins', (req, res) => {
+  const checkIns = Array.isArray(db.locationCheckIns) ? db.locationCheckIns : [];
+  res.json({ success: true, count: checkIns.length, checkIns });
+});
+
+// 7.02 POST /api/location-checkins - Record an employee location check-in
+app.post('/api/location-checkins', (req, res) => {
+  const item = req.body;
+  if (!item || !item.empId) {
+    return res.status(400).json({ error: 'empId is required' });
+  }
+
+  if (!Array.isArray(db.locationCheckIns)) {
+    db.locationCheckIns = [];
+  }
+
+  // Prepend new check-in (most recent first)
+  db.locationCheckIns.unshift(item);
+  db.locationCheckIns = db.locationCheckIns.slice(0, 300);
+
+  // Add to activity stream
+  const checkInAct: ServerActivityLog = {
+    id: `act-loc-${Date.now()}`,
+    timestamp: item.displayTime || new Date().toLocaleString('th-TH'),
+    empId: item.empId,
+    fullName: item.fullName || item.empId,
+    department: item.department || 'P',
+    action: 'location_checkin',
+    detail: `พนักงาน ${item.fullName || item.empId} (${item.department}) เช็คอินพิกัด GPS: ${item.statusLabelTh || (item.isWithinGeofence ? 'ในโรงงาน' : 'นอกพื้นที่')} (ระยะห่าง ${item.distanceMeters || 0} ม.)`
+  };
+  db.activities.unshift(checkInAct);
+  db.activities = db.activities.slice(0, 100);
+
+  saveDatabase(db);
+  res.json({ success: true, checkIn: item });
+});
+
+// 7.03 DELETE /api/location-checkins/:id - Delete a check-in record
+app.delete('/api/location-checkins/:id', (req, res) => {
+  const { id } = req.params;
+  if (Array.isArray(db.locationCheckIns)) {
+    db.locationCheckIns = db.locationCheckIns.filter((x: any) => x.id !== id);
+    saveDatabase(db);
+  }
+  res.json({ success: true, message: 'Deleted check-in record' });
 });
 
 // 7.1 POST /api/trainees/:empId/reset - Reset learning and exam history for a single employee (for re-training)
@@ -1126,22 +1502,43 @@ app.post('/api/admin/purge-mock-trainees', (req, res) => {
 // Vite Server Integration (Middleware for Dev, Static for Prod)
 // -------------------------------------------------------------
 async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
+  const distPath = path.join(process.cwd(), 'dist');
+  const distIndexExists = fs.existsSync(path.join(distPath, 'index.html'));
+
+  // In dev (NODE_ENV=development), always run Vite middlewares. In production (NODE_ENV=production or dist exists), serve static build.
+  const isProduction =
+    process.env.NODE_ENV === 'production' ||
+    (process.env.NODE_ENV !== 'development' && distIndexExists);
+
+  if (!isProduction) {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html') || filePath.endsWith('sw.js') || filePath.endsWith('manifest.json')) {
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+        } else if (filePath.includes('/assets/')) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+      }
+    }));
     app.get('*', (req, res) => {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`TCT E-Training Centralized Server running on http://0.0.0.0:${PORT}`);
+    console.log(`TCT E-Training Centralized Server running on http://0.0.0.0:${PORT} (mode: ${isProduction ? 'production' : 'development'})`);
   });
 }
 

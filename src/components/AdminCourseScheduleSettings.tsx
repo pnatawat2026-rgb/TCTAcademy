@@ -98,26 +98,25 @@ export const AdminCourseScheduleSettings: React.FC<AdminCourseScheduleSettingsPr
   };
 
   return (
-    <div className="space-y-6 font-sarabun text-slate-800">
+    <div className="space-y-4 font-sarabun text-slate-800 w-full max-w-full">
       
       {/* Header Info Banner */}
-      <div className="bg-gradient-to-r from-[#002855] via-[#003875] to-[#005A9C] text-white p-5 sm:p-6 rounded-3xl shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-r from-[#002855] via-[#003875] to-[#005A9C] text-white p-4 sm:p-5 rounded-2xl shadow-md relative overflow-hidden w-full max-w-full">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-xs font-bold border border-white/20 whitespace-nowrap">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-amber-300 text-[10px] sm:text-xs font-bold border border-white/20 whitespace-nowrap">
               <Calendar className="w-3.5 h-3.5" />
-              <span>4.2 ระบบจัดการช่วงเวลาเปิด-ปิดหลักสูตรฝึกอบรม (COURSE SCHEDULE CONTROL)</span>
+              <span>ระบบจัดการช่วงเวลาเปิด-ปิดหลักสูตร</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
               กำหนดช่วงวันที่เปิดและปิดรับการอบรมรายหลักสูตร
             </h2>
-            <p className="text-xs sm:text-sm text-blue-100 max-w-2xl leading-relaxed">
-              ผู้ดูแลระบบสามารถกำหนดวันเริ่มต้นและวันสิ้นสุดของแต่ละหลักสูตรได้ 
-              พนักงานจะสามารถมองเห็นและเข้าอบรมได้ <strong>เฉพาะหลักสูตรที่เปิดอยู่ในช่วงเวลาที่กำหนดเท่านั้น</strong>
+            <p className="text-xs text-blue-100 max-w-2xl leading-relaxed">
+              กำหนดวันเริ่มต้นและวันสิ้นสุดของแต่ละหลักสูตร พนักงานจะเข้าอบรมได้เฉพาะหลักสูตรที่เปิดอยู่ในช่วงเวลาที่กำหนด
             </p>
           </div>
 
-          <div className="px-4 py-2.5 rounded-2xl bg-white/10 border border-white/20 text-xs text-blue-100 shrink-0">
+          <div className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-xs text-blue-100 shrink-0 self-start sm:self-auto">
             <span className="font-bold text-amber-300">รวมทั้งหมด:</span> {courses.length} หลักสูตร
           </div>
         </div>
@@ -125,14 +124,14 @@ export const AdminCourseScheduleSettings: React.FC<AdminCourseScheduleSettingsPr
 
       {/* Save Notification */}
       {saveNotice && (
-        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs flex items-center gap-2 shadow-xs animate-fadeIn">
+        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs flex items-center gap-2 shadow-2xs animate-fadeIn">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span className="font-bold">{saveNotice}</span>
         </div>
       )}
 
       {/* Course Schedule Cards Grid */}
-      <div className="space-y-4">
+      <div className="space-y-3 w-full">
         {courses.map((course) => {
           const cfg = schedules[course.id] || {
             courseId: course.id,
@@ -149,9 +148,9 @@ export const AdminCourseScheduleSettings: React.FC<AdminCourseScheduleSettingsPr
           return (
             <div
               key={course.id}
-              className={`p-5 rounded-3xl border-2 transition-all bg-white shadow-xs ${
+              className={`p-3.5 sm:p-4 rounded-2xl border transition-all bg-white shadow-2xs w-full max-w-full ${
                 isNowOpen && isDateActive
-                  ? 'border-emerald-300 hover:shadow-md'
+                  ? 'border-emerald-300 hover:shadow-xs'
                   : !isNowOpen
                   ? 'border-slate-300 bg-slate-50/60 opacity-85'
                   : 'border-amber-300 bg-amber-50/30'
@@ -202,14 +201,14 @@ export const AdminCourseScheduleSettings: React.FC<AdminCourseScheduleSettingsPr
                 </div>
 
                 {/* Right Side: ON/OFF Switch & Date Range Pickers */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto shrink-0">
                   
                   {/* Master Switch */}
-                  <div className="flex items-center gap-2 p-2 rounded-2xl bg-slate-100 border border-slate-200">
+                  <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-100 border border-slate-200 justify-between sm:justify-start">
                     <button
                       type="button"
                       onClick={() => handleToggleOpen(course.id)}
-                      className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                      className={`w-full sm:w-auto px-3 py-1.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                         cfg.isOpen
                           ? 'bg-emerald-600 text-white shadow-xs'
                           : 'bg-rose-600 text-white shadow-xs'
@@ -221,34 +220,34 @@ export const AdminCourseScheduleSettings: React.FC<AdminCourseScheduleSettingsPr
                   </div>
 
                   {/* Date Inputs */}
-                  <div className="flex items-center gap-2 p-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-semibold text-slate-500 whitespace-nowrap">เปิด:</span>
+                  <div className="flex items-center justify-between gap-1.5 p-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 whitespace-nowrap">เปิด:</span>
                       <input
                         type="date"
                         value={cfg.startDate || ''}
                         onChange={(e) => handleDateChange(course.id, 'startDate', e.target.value)}
-                        className="px-2 py-1 rounded-lg bg-white border border-slate-300 font-mono text-xs focus:ring-1 focus:ring-[#005A9C]"
+                        className="px-1.5 py-1 rounded-md bg-white border border-slate-300 font-mono text-[11px] sm:text-xs w-[115px] sm:w-auto focus:ring-1 focus:ring-[#005A9C]"
                       />
                     </div>
                     <span className="text-slate-400 font-bold">-</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-semibold text-slate-500 whitespace-nowrap">ปิด:</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 whitespace-nowrap">ปิด:</span>
                       <input
                         type="date"
                         value={cfg.endDate || ''}
                         onChange={(e) => handleDateChange(course.id, 'endDate', e.target.value)}
-                        className="px-2 py-1 rounded-lg bg-white border border-slate-300 font-mono text-xs focus:ring-1 focus:ring-[#005A9C]"
+                        className="px-1.5 py-1 rounded-md bg-white border border-slate-300 font-mono text-[11px] sm:text-xs w-[115px] sm:w-auto focus:ring-1 focus:ring-[#005A9C]"
                       />
                     </div>
                   </div>
 
                   {/* Preset Shortcuts */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 self-end sm:self-auto">
                     <button
                       type="button"
                       onClick={() => handleQuickPreset(course.id, 'applied_week')}
-                      className="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#005A9C] border border-blue-200 font-bold text-[11px] transition-all cursor-pointer whitespace-nowrap"
+                      className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#005A9C] border border-blue-200 font-bold text-[10px] sm:text-[11px] transition-all cursor-pointer whitespace-nowrap"
                       title="ตั้งค่ารอบ 12-16 ต.ค. 2569"
                     >
                       12-16 ต.ค.
@@ -256,7 +255,7 @@ export const AdminCourseScheduleSettings: React.FC<AdminCourseScheduleSettingsPr
                     <button
                       type="button"
                       onClick={() => handleQuickPreset(course.id, 'month')}
-                      className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-[11px] transition-all cursor-pointer whitespace-nowrap"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-[10px] sm:text-[11px] transition-all cursor-pointer whitespace-nowrap"
                       title="เปิดทั้งเดือน"
                     >
                       ทั้งเดือน

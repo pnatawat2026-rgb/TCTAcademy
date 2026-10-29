@@ -261,35 +261,35 @@ export const TrainingReportView: React.FC<TrainingReportViewProps> = ({
 
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-6 font-sarabun">
-      {/* Top Header & Actions Bar (Hidden during Print) */}
-      <div className="no-print glass-panel-cyan rounded-3xl p-5 sm:p-6 border border-cyan-500/40 shadow-xl">
+    <div className="w-full max-w-5xl mx-auto px-2 sm:px-6 py-4 sm:py-8 space-y-6 font-sarabun text-slate-800 overflow-x-hidden">
+      {/* Top Header & Actions Bar (Calm White / Dark Slate - Hidden during Print) */}
+      <div className="no-print bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-700/80 shadow-lg text-white">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/30 font-semibold">
-                TCT E-TRAINING OFFICIAL A4 REPORT
+              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-semibold">
+                TCT E-TRAINING A4 REPORT
               </span>
-              <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4" />
-                เอกสารรายงานผลรายบุคคล A4 แนวตั้ง (Portrait Document)
+              <span className="text-xs text-slate-300 font-medium flex items-center gap-1">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                รายงานผลการฝึกอบรมรายบุคคล A4
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold text-white">
               รายงานผลการฝึกอบรมรายบุคคล (Individual Training Report)
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1">
-              เอกสารมาตรฐาน <strong>A4 แนวตั้ง</strong> แสดงผลสัมฤทธิ์ เวลาดูวิดีโอ คะแนน Pre/Post-Test รายละเอียดสมรรถนะ พร้อมระบบส่งออกเป็น <strong>PDF และ Excel/CSV</strong> สำหรับฝ่ายบุคคลและธุรการ (Personnel) และผู้บริหาร
+              เอกสารมาตรฐาน <strong>A4</strong> แสดงผลสัมฤทธิ์ เวลาดูวิดีโอ คะแนน Pre/Post-Test รายละเอียดสมรรถนะ พร้อมระบบส่งออกเป็น PDF และ Excel/CSV
             </p>
           </div>
 
-          {/* Action Buttons with Bilingual Labels */}
+          {/* Action Buttons (Calm White & Dark Slate) */}
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             {/* Course Selector */}
             <select
               value={activeCourseId}
               onChange={(e) => { playCyberClick(); setActiveCourseId(e.target.value); }}
-              className="bg-slate-900 border-2 border-cyan-500/50 rounded-xl px-3 py-2 text-xs font-bold text-cyan-300 focus:outline-none focus:border-cyan-400 cursor-pointer shadow-md max-w-[280px] truncate"
+              className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 focus:outline-none focus:border-slate-500 cursor-pointer max-w-[240px] truncate"
             >
               {availableCoursesList.map((c, idx) => (
                 <option key={c.id} value={c.id}>
@@ -298,152 +298,86 @@ export const TrainingReportView: React.FC<TrainingReportViewProps> = ({
               ))}
             </select>
 
-            {/* Page View Selector (Front / Back / Both) */}
-            <div className="flex items-center gap-1 bg-slate-900/90 border-2 border-purple-500/50 rounded-2xl p-1 shadow-lg shadow-purple-500/10">
+            {/* Page View Selector */}
+            <div className="flex items-center gap-1 bg-slate-800/90 border border-slate-700 rounded-xl p-1">
               <button
                 id="report-page-all-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setActivePage('all'); }}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                   activePage === 'all'
-                    ? 'bg-purple-600 text-white shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
-                title="แสดงครบทั้ง 2 หน้า (หน้า 1 ด้านหน้า + หน้า 2 ด้านหลัง)"
+                title="แสดงครบทั้ง 2 หน้า"
               >
-                <span>📄</span>
-                <span>ทั้ง 2 หน้า (หน้า-หลัง)</span>
+                <span>ครบ 2 หน้า</span>
               </button>
               <button
                 id="report-page-1-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setActivePage('page1'); }}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                   activePage === 'page1'
-                    ? 'bg-purple-600 text-white shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
-                title="แสดงเฉพาะหน้า 1 (ด้านหน้า: สรุปผลสัมฤทธิ์และเวลาเรียน)"
+                title="แสดงเฉพาะหน้า 1"
               >
-                <span>1️⃣</span>
-                <span>หน้า 1 (ด้านหน้า)</span>
+                <span>หน้า 1</span>
               </button>
               <button
                 id="report-page-2-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setActivePage('page2'); }}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                   activePage === 'page2'
-                    ? 'bg-purple-600 text-white shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
-                title="แสดงเฉพาะหน้า 2 (ด้านหลัง: รายละเอียดวิชา แผนปฏิบัติ และลายมือชื่ออนุมัติ)"
+                title="แสดงเฉพาะหน้า 2"
               >
-                <span>2️⃣</span>
-                <span>หน้า 2 (ด้านหลัง)</span>
+                <span>หน้า 2</span>
               </button>
             </div>
 
-            {/* Format / Aspect Ratio Selector */}
-            <div className="flex items-center gap-1 bg-slate-900/90 border-2 border-cyan-500/50 rounded-2xl p-1 shadow-lg shadow-cyan-500/10">
+            {/* Format Selector */}
+            <div className="flex items-center gap-1 bg-slate-800/90 border border-slate-700 rounded-xl p-1">
               <button
                 id="report-format-portrait-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setReportFormat('portrait'); }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                   reportFormat === 'portrait'
-                    ? 'bg-cyan-500 text-slate-950 shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
-                title="A4 แนวตั้งมาตรฐาน 210 × 297 mm"
               >
-                <span>📄</span>
-                <span>A4 แนวตั้ง (Portrait)</span>
+                <span>A4 แนวตั้ง</span>
               </button>
               <button
                 id="report-format-landscape-btn"
                 type="button"
                 onClick={() => { playCyberClick(); setReportFormat('landscape'); }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                   reportFormat === 'landscape'
-                    ? 'bg-emerald-400 text-slate-950 shadow-md font-extrabold'
+                    ? 'bg-white text-slate-900 shadow-sm font-extrabold'
                     : 'text-slate-300 hover:text-white'
                 }`}
-                title="A4 แนวนอนมาตรฐาน 297 × 210 mm"
               >
-                <span>📃</span>
-                <span>A4 แนวนอน (Landscape)</span>
-              </button>
-              <button
-                id="report-format-16-9-btn"
-                type="button"
-                onClick={() => { playCyberClick(); setReportFormat('16:9'); }}
-                className={`px-2 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                  reportFormat === '16:9'
-                    ? 'bg-amber-400 text-slate-950 shadow-md font-extrabold'
-                    : 'text-slate-300 hover:text-white'
-                }`}
-                title="สัดส่วน 16:9 Widescreen"
-              >
-                <span>16:9</span>
+                <span>A4 แนวนอน</span>
               </button>
             </div>
 
-            {/* Download PDF Button */}
+            {/* Print / Save PDF Button */}
             <button
-              id="report-download-pdf-btn"
+              id="report-print-btn"
               type="button"
-              onClick={handleDownloadPdf}
-              disabled={isPdfGenerating}
-              className="flex-1 sm:flex-none bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white font-bold text-xs py-2.5 px-3.5 rounded-xl shadow-lg shadow-red-500/30 flex items-center justify-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 min-h-[40px]"
-              title="บันทึกและดาวน์โหลดรายงานเป็นไฟล์ PDF ทันที"
+              onClick={handlePrint}
+              className="bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs py-2 px-3.5 rounded-xl border border-slate-300 shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[38px]"
             >
-              {isPdfGenerating ? (
-                <Sparkles className="w-4 h-4 animate-spin" />
-              ) : (
-                <FileDown className="w-4 h-4" />
-              )}
-              <span>{isPdfGenerating ? 'กำลังสร้าง PDF...' : 'บันทึกไฟล์ PDF'}</span>
-            </button>
-
-            {/* Edit Profile Button */}
-            {onOpenEditProfile && (
-              <button
-                id="report-edit-profile-btn"
-                type="button"
-                onClick={() => { playCyberClick(); onOpenEditProfile(); }}
-                className="flex-1 sm:flex-none bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs py-2.5 px-3.5 rounded-xl shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[40px]"
-                title="แก้ไขข้อมูลส่วนตัว / ชื่อ-นามสกุล / แผนก"
-              >
-                <Edit3 className="w-4 h-4 text-cyan-200" />
-                <span>แก้ไขข้อมูลพนักงาน</span>
-              </button>
-            )}
-
-            {/* Official In-House Training Report 3-Page Modal Button */}
-            {onOpenInhouseReport && (
-              <button
-                id="report-inhouse-3page-btn"
-                type="button"
-                onClick={() => { playCyberClick(); onOpenInhouseReport(); }}
-                className="flex-1 sm:flex-none bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs py-2.5 px-3.5 rounded-xl shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[40px]"
-                title="เปิดแบบรายงานผลการฝึกอบรมภายใน 3 หน้า (IN-HOUSE TRAINING REPORT)"
-              >
-                <FileText className="w-4 h-4 text-indigo-200" />
-                <span>แบบรายงานฝึกอบรมภายใน (3 หน้า)</span>
-              </button>
-            )}
-
-            {/* Export Excel / CSV Button */}
-            <button
-              id="report-export-excel-btn"
-              type="button"
-              onClick={handleExportExcel}
-              className="flex-1 sm:flex-none bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs py-2.5 px-3.5 rounded-xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[40px]"
-              title="ส่งออกรายงานเป็นไฟล์ Excel / CSV สำหรับผู้บริหาร (Export Excel)"
-            >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
-              <span>ส่งออก Excel / CSV</span>
+              <Printer className="w-4 h-4 text-slate-700" />
+              <span>พิมพ์รายงาน (A4)</span>
             </button>
 
             {/* Direct A4 PDF Download Button */}
@@ -452,42 +386,26 @@ export const TrainingReportView: React.FC<TrainingReportViewProps> = ({
               type="button"
               onClick={handleDownloadPdf}
               disabled={isPdfGenerating}
-              className="flex-1 sm:flex-none bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 hover:from-blue-600 hover:to-indigo-800 text-white font-extrabold text-xs py-2.5 px-3.5 rounded-xl shadow-lg shadow-blue-800/30 flex items-center justify-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 min-h-[40px]"
-              title="ดาวน์โหลดเป็นไฟล์ PDF ขนาด A4 1 ต่อ 1 ทันที (Direct A4 PDF)"
+              className="bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs py-2 px-3.5 rounded-xl border border-slate-600 flex items-center justify-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 min-h-[38px]"
             >
               {isPdfGenerating ? (
-                <Sparkles className="w-4 h-4 animate-spin text-cyan-300" />
+                <Sparkles className="w-4 h-4 animate-spin text-slate-300" />
               ) : (
-                <FileCheck2 className="w-4 h-4 text-cyan-300" />
+                <FileCheck2 className="w-4 h-4 text-slate-300" />
               )}
-              <span>{isPdfGenerating ? 'กำลังสร้าง A4 PDF...' : 'ดาวน์โหลด PDF (A4 1:1)'}</span>
+              <span>{isPdfGenerating ? 'กำลังสร้าง PDF...' : 'ดาวน์โหลด PDF'}</span>
             </button>
 
-            {/* Print / Save PDF Button */}
+            {/* Export Excel Button */}
             <button
-              id="report-print-btn"
+              id="report-export-excel-btn"
               type="button"
-              onClick={handlePrint}
-              className="flex-1 sm:flex-none bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 text-white font-bold text-xs py-2.5 px-3.5 rounded-xl shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[40px]"
+              onClick={handleExportExcel}
+              className="bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs py-2 px-3 rounded-xl border border-slate-600 flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[38px]"
+              title="ส่งออกรายงานเป็นไฟล์ Excel"
             >
-              <Printer className="w-4 h-4" />
-              <span>พิมพ์ / บันทึก PDF</span>
-            </button>
-
-            {/* Download Image Button */}
-            <button
-              id="report-download-img-btn"
-              type="button"
-              onClick={handleDownloadImage}
-              disabled={isDownloading}
-              className="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs py-2.5 px-3 rounded-xl border border-slate-700 flex items-center justify-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 min-h-[40px]"
-            >
-              {isDownloading ? (
-                <Sparkles className="w-4 h-4 animate-spin text-cyan-400" />
-              ) : (
-                <Download className="w-4 h-4 text-slate-400" />
-              )}
-              <span>{isDownloading ? 'กำลังสร้าง...' : 'รูปภาพ (PNG)'}</span>
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+              <span>Excel</span>
             </button>
 
             {/* Switch to Certificate - Shown only if passed */}
@@ -496,11 +414,11 @@ export const TrainingReportView: React.FC<TrainingReportViewProps> = ({
                 id="report-goto-cert-btn"
                 type="button"
                 onClick={() => { playCyberClick(); onNavigate('certificate'); }}
-                className="flex-1 sm:flex-none bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-2.5 px-3.5 rounded-xl shadow-lg shadow-amber-600/25 flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[40px]"
-                title="เปิดใบประกาศนียบัตร (พิมพ์/ดาวน์โหลด)"
+                className="bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs py-2 px-3 rounded-xl border border-slate-600 flex items-center justify-center gap-1.5 cursor-pointer transition-all min-h-[38px]"
+                title="เปิดใบประกาศนียบัตร"
               >
-                <Award className="w-4 h-4" />
-                <span>ใบรับรอง A4 (Cert)</span>
+                <Award className="w-4 h-4 text-amber-300" />
+                <span>ใบรับรอง (Cert)</span>
               </button>
             )}
 
@@ -509,38 +427,25 @@ export const TrainingReportView: React.FC<TrainingReportViewProps> = ({
               id="report-back-dashboard-btn"
               type="button"
               onClick={() => { playCyberClick(); onNavigate('dashboard'); }}
-              className="bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1 border border-slate-700 cursor-pointer min-h-[40px]"
+              className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold py-2 px-3 rounded-xl flex items-center justify-center gap-1 border border-slate-700 cursor-pointer min-h-[38px]"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-3.5 h-3.5" />
               <span>แดชบอร์ด</span>
             </button>
           </div>
         </div>
 
-        {/* Official A4 1:1 Standard Assurance Badge */}
-        <div className="mt-3 py-2 px-3.5 rounded-xl bg-blue-900/40 border border-blue-400/30 text-blue-200 text-xs flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span className="font-semibold">
-              จัดหน้าเอกสาร A4 แบบ 1 ต่อ 1 (210 × 297 มม.) — รับประกันพิมพ์ 1 หน้าต่อ 1 แผ่นกระดาษพอดี ไม่ล้นหน้า
-            </span>
-          </div>
-          <span className="text-[11px] font-mono text-cyan-300 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800">
-            A4 1:1 Scale • Zero Overflow
-          </span>
-        </div>
-
         {downloadSuccess && (
-          <div className="mt-3 p-3 bg-emerald-950/80 border border-emerald-500/50 rounded-xl text-emerald-300 text-xs flex items-center gap-2 animate-fadeIn">
+          <div className="mt-3 p-3 bg-slate-800 border border-emerald-500/50 rounded-xl text-emerald-300 text-xs flex items-center gap-2 animate-fadeIn">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{downloadMessage}</span>
           </div>
         )}
 
         {exportNotice && (
-          <div className="mt-3 p-3 rounded-xl bg-teal-950/90 border border-teal-500/60 text-teal-200 text-xs flex items-center gap-2.5 animate-fadeIn">
-            <FileSpreadsheet className="w-5 h-5 text-teal-400 shrink-0" />
-            <span><strong>ส่งออกสำเร็จ!</strong> สร้างและดาวน์โหลดไฟล์ตาราง Excel / CSV สำหรับผู้บริหารเรียบร้อยแล้ว</span>
+          <div className="mt-3 p-3 rounded-xl bg-slate-800 border border-teal-500/60 text-teal-200 text-xs flex items-center gap-2.5 animate-fadeIn">
+            <FileSpreadsheet className="w-4 h-4 text-teal-400 shrink-0" />
+            <span>ส่งออกตาราง Excel เรียบร้อยแล้ว</span>
           </div>
         )}
       </div>
@@ -555,16 +460,10 @@ export const TrainingReportView: React.FC<TrainingReportViewProps> = ({
         }
       `}</style>
 
-      {/* Mobile-Friendly Hint */}
-      <div className="md:hidden no-print w-full max-w-[794px] px-3.5 py-2 bg-blue-50/90 border border-blue-200 rounded-xl text-[11px] text-blue-900 flex items-center justify-between mb-2">
-        <span>📱 บนจอมือถือ: เลื่อนดูเอกสาร A4 เต็มแผ่น หรือกดปุ่ม "ดาวน์โหลด PDF (A4 1:1)"</span>
-        <span className="font-bold text-[10px] bg-white px-2 py-0.5 rounded border border-blue-300">A4 1:1</span>
-      </div>
-
       {/* ========================================================= */}
-      {/* TRAINING REPORT DOCUMENT (PORTRAIT / 16:9 / 4:3) */}
+      {/* TRAINING REPORT DOCUMENT                                  */}
       {/* ========================================================= */}
-      <div className="flex flex-col items-center pb-8 gap-8 w-full overflow-x-auto">
+      <div className="w-full max-w-full overflow-x-auto pb-8 flex flex-col items-center">
         <div
           id="training-report-print-area"
           ref={reportRef}
@@ -582,7 +481,7 @@ export const TrainingReportView: React.FC<TrainingReportViewProps> = ({
                   <span>แบบรายงาน A4 แผ่นที่ 1 (ด้านหน้า: ข้อมูลพนักงานและผลสัมฤทธิ์)</span>
                 </span>
                 <span className="text-[11px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
-                  ขนาด A4 {reportFormat === 'landscape' ? '297 × 210 mm' : '210 × 297 mm'} (1:1)
+                  ขนาด A4 {reportFormat === 'landscape' ? '297 × 210 mm' : '210 × 297 mm'}
                 </span>
               </div>
 
@@ -596,7 +495,7 @@ export const TrainingReportView: React.FC<TrainingReportViewProps> = ({
                     ? 'max-w-[1050px]'
                     : reportFormat === '4:3'
                     ? 'max-w-[920px]'
-                    : 'max-w-[794px] min-h-[1120px] max-h-[1122px] overflow-hidden'
+                    : 'max-w-[794px] min-h-[1120px]'
                 } bg-white text-slate-800 rounded-2xl p-5 sm:p-7 border-2 border-slate-300 shadow-2xl relative font-sarabun flex flex-col justify-between transition-all training-report-page ${reportFormat === 'landscape' ? 'a4-page-landscape' : 'a4-page-portrait'}`}
               >
               <div>
@@ -939,7 +838,7 @@ export const TrainingReportView: React.FC<TrainingReportViewProps> = ({
                   <span>แบบรายงาน A4 แผ่นที่ 2 (ด้านหลัง: เนื้อหาหลักสูตร OJT & ลายมือชื่ออนุมัติ)</span>
                 </span>
                 <span className="text-[11px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
-                  ขนาด A4 {reportFormat === 'landscape' ? '297 × 210 mm' : '210 × 297 mm'} (1:1)
+                  ขนาด A4 {reportFormat === 'landscape' ? '297 × 210 mm' : '210 × 297 mm'}
                 </span>
               </div>
 
@@ -953,7 +852,7 @@ export const TrainingReportView: React.FC<TrainingReportViewProps> = ({
                     ? 'max-w-[1050px]'
                     : reportFormat === '4:3'
                     ? 'max-w-[920px]'
-                    : 'max-w-[794px] min-h-[1120px] max-h-[1122px] overflow-hidden'
+                    : 'max-w-[794px] min-h-[1120px]'
                 } bg-white text-slate-800 rounded-2xl p-5 sm:p-7 border-2 border-slate-300 shadow-2xl relative font-sarabun flex flex-col justify-between transition-all training-report-page ${reportFormat === 'landscape' ? 'a4-page-landscape' : 'a4-page-portrait'}`}
               >
               <div>

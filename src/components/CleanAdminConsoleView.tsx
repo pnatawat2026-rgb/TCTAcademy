@@ -552,7 +552,7 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sarabun">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sarabun w-full max-w-full overflow-x-hidden">
       {/* ============================================================== */}
       {/* TOP ADMIN HEADER                                               */}
       {/* ============================================================== */}
@@ -648,7 +648,7 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-6 space-y-6 overflow-x-hidden">
 
         {/* ============================================================ */}
         {/* TAB 1: TRAINING ROSTERS ("training_rosters")                  */}
@@ -679,8 +679,9 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
                     <option value="ai-for-tct">หลักสูตร 4: AI for TCT เพื่อการผลิตและความปลอดภัย (TCT-AI-101)</option>
                     <option value="personality-psychology">หลักสูตร 5: จิตวิทยาบุคลิกภาพและการปรับตัว (TCT-A001)</option>
                     <option value="kyt-shisa-kanko">หลักสูตร 6: KYT & SHISA KANKO การคาดการณ์อันตราย (TCT-KYT-01)</option>
+                    <option value="good-employee-skills">⭐ หลักสูตร 8: ทักษะการเป็นพนักงานที่ดี (Good Employee Skills - TCT-GES-01)</option>
                     {courses
-                      .filter(c => !['applied-psychology', 'risk-management', 'advanced-preventive-maintenance', 'conflict-management', 'ai-for-tct', 'personality-psychology', 'kyt-shisa-kanko'].includes(c.id))
+                      .filter(c => !['applied-psychology', 'risk-management', 'advanced-preventive-maintenance', 'conflict-management', 'ai-for-tct', 'personality-psychology', 'kyt-shisa-kanko', 'good-employee-skills'].includes(c.id))
                       .map(c => (
                         <option key={c.id} value={c.id}>{c.title} ({c.id})</option>
                       ))
@@ -711,10 +712,10 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
                       setSelectedEmpIdsForEnroll(new Set());
                       setIsEnrollModalOpen(true);
                     }}
-                    className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-xs text-white flex items-center gap-1.5 shadow-md shadow-emerald-600/30 transition-all cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
                     title="เลือกพนักงานจากฐานข้อมูลตั้งต้นหรือผู้สอบผ่านเพื่อดึงเข้าสู่ใบรายชื่อนี้"
                   >
-                    <UserPlus className="w-4 h-4" />
+                    <UserPlus className="w-4 h-4 text-slate-700" />
                     <span>+ ดึงรายชื่อเข้าใบรายชื่อ</span>
                   </button>
 
@@ -724,17 +725,17 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
                     className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
                     title="ล้างสถานะค้างและดึงข้อมูลใหม่จาก Firestore ทันที"
                   >
-                    <RotateCcw className={`w-4 h-4 ${isRosterLoading ? 'animate-spin text-cyan-400' : 'text-slate-400'}`} />
+                    <RotateCcw className={`w-4 h-4 ${isRosterLoading ? 'animate-spin text-slate-400' : 'text-slate-400'}`} />
                     <span>ล้างสถานะ/ดึงรายชื่อใหม่</span>
                   </button>
 
                   {/* Button: Print Roster A4 */}
                   <button
                     onClick={handlePrintRosterA4}
-                    className="px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-blue-600/30 transition-all cursor-pointer"
+                    className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
                     title="เปิดหน้าต่างใหม่เพื่อพิมพ์ใบรายชื่อผู้เข้าอบรมขนาด A4"
                   >
-                    <Printer className="w-4 h-4" />
+                    <Printer className="w-4 h-4 text-slate-300" />
                     <span>พิมพ์ใบรายชื่อ A4</span>
                   </button>
 
@@ -969,9 +970,9 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleExportRecordsCsv}
-                    className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-xs text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-emerald-600/30"
+                    className="py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-4 h-4 text-slate-700" />
                     <span>Export Excel (CSV)</span>
                   </button>
                 </div>
@@ -1008,6 +1009,7 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
                     <option value="ai-for-tct">AI for TCT เพื่อการผลิตและความปลอดภัย</option>
                     <option value="personality-psychology">จิตวิทยาบุคลิกภาพและการปรับตัว</option>
                     <option value="kyt-shisa-kanko">KYT & SHISA KANKO การคาดการณ์อันตราย</option>
+                    <option value="good-employee-skills">⭐ ทักษะการเป็นพนักงานที่ดี (Good Employee Skills)</option>
                   </select>
                 </div>
               </div>
@@ -1343,7 +1345,7 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-3 px-6 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/30 transition-all cursor-pointer text-sm"
+                className="w-full py-3 px-6 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 shadow-md transition-all cursor-pointer text-sm"
               >
                 บันทึกการตั้งค่าทั้งหมดลง Firestore ทันที
               </button>
@@ -1406,20 +1408,21 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
 
                 <button
                   onClick={handlePrintDocument}
-                  className="py-2 px-4 rounded-xl font-black text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-1.5 cursor-pointer text-xs sm:text-sm"
+                  className="py-2 px-4 rounded-xl font-bold text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 shadow-xs transition-all flex items-center gap-1.5 cursor-pointer text-xs sm:text-sm"
                   title="เปิดหน้าต่างใหม่เพื่อพิมพ์เอกสาร A4 เต็มหน้า"
                 >
-                  <Printer className="w-4 h-4" />
+                  <Printer className="w-4 h-4 text-slate-700" />
                   <span>สั่งพิมพ์กระดาษ A4</span>
                 </button>
               </div>
             </div>
 
             {/* A4 DOCUMENT CANVAS */}
-            <div 
-              ref={printCanvasRef}
-              className="bg-white text-slate-900 rounded-2xl shadow-2xl p-8 sm:p-12 max-w-[210mm] mx-auto min-h-[297mm] font-sarabun border border-slate-300"
-            >
+            <div className="w-full max-w-full overflow-x-auto pb-6 flex flex-col items-center">
+              <div 
+                ref={printCanvasRef}
+                className="bg-white text-slate-900 rounded-2xl shadow-2xl p-8 sm:p-12 w-full max-w-[210mm] mx-auto min-h-[297mm] font-sarabun border border-slate-300"
+              >
               {/* 1. OFFICIAL TRAINING REPORT A4 (PS-TR-00-05) */}
               {printDocType === 'course_report' && (
                 <div className="space-y-6 text-xs sm:text-sm leading-relaxed">
@@ -1731,6 +1734,7 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
                   </div>
                 </div>
               )}
+              </div>
             </div>
           </div>
         )}
@@ -1741,7 +1745,7 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
       {/* ============================================================== */}
       {isEnrollModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             {/* Modal Header */}
             <div className="p-4 sm:p-5 bg-gradient-to-r from-blue-900 via-slate-900 to-slate-900 border-b border-slate-700 flex items-center justify-between">
               <div>
@@ -1897,16 +1901,16 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
                   type="button"
                   onClick={handleExecuteEnrollment}
                   disabled={selectedEmpIdsForEnroll.size === 0 || isEnrollingSubmitting}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/30 cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
                   {isEnrollingSubmitting ? (
                     <>
-                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className="w-3.5 h-3.5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
                       <span>กำลังบันทึกลง Firestore...</span>
                     </>
                   ) : (
                     <>
-                      <UserPlus className="w-4 h-4" />
+                      <UserPlus className="w-4 h-4 text-slate-700" />
                       <span>เพิ่มรายชื่อลงใบรายชื่อทันที</span>
                     </>
                   )}
@@ -1922,7 +1926,7 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
       {/* ============================================================== */}
       {editingRosterTrainee && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 w-full max-w-[95vw] sm:max-w-md shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-bold text-white">
                 แก้ไขคะแนนและผลประเมินในใบรายชื่อ
@@ -1987,7 +1991,7 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 text-xs font-bold cursor-pointer"
                 >
                   บันทึกคะแนน
                 </button>
@@ -2002,7 +2006,7 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
       {/* ============================================================== */}
       {isEmpModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 w-full max-w-[95vw] sm:max-w-md shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-bold text-white">
                 {editingEmp ? 'แก้ไขข้อมูลพนักงานตั้งต้น' : 'เพิ่มพนักงานใหม่เข้าฐานข้อมูลตั้งต้น'}
@@ -2098,7 +2102,7 @@ export const CleanAdminConsoleView: React.FC<CleanAdminConsoleViewProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 text-xs font-bold cursor-pointer"
                 >
                   บันทึกลง Firestore
                 </button>

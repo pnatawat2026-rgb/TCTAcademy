@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { UserProfile, Course } from '../types';
-import { getAllAvailableCourses, getCourseModules, getCourseQuestions } from '../utils/courseManager';
+import { getAllAvailableCourses, getCourseModules, getCourseQuestions, getStoredCustomCourses } from '../utils/courseManager';
 import { getStoredTrainees } from '../data/traineeData';
 import { resolveCourseTrainees } from '../utils/courseTraineeHelper';
+import { CourseVisualArtwork } from './CourseVisualArtwork';
 import { ThaiMOOCLogo } from './ThaiMOOCLogo';
 import { 
   BookOpen, 
@@ -40,9 +41,19 @@ import {
   GraduationCap,
   SlidersHorizontal,
   Bookmark,
-  CheckCircle
+  CheckCircle,
+  Star,
+  Image as ImageIcon,
+  Lock,
+  BarChart3,
+  ShieldAlert,
+  BrainCircuit
 } from 'lucide-react';
-import { playCyberClick, playSuccessChime } from '../utils/soundEffects';
+import { playCyberClick, playSuccessChime, playErrorBuzz } from '../utils/soundEffects';
+import { CourseBackgroundManagerModal } from './CourseBackgroundManagerModal';
+import { CourseEvaluationReportModal } from './CourseEvaluationReportModal';
+import { GeofenceSecurityModal } from './GeofenceSecurityModal';
+import { checkUserLocationSecurity, GeoLocationResult, isAdminGeoBypassActive } from '../utils/geolocationSecurity';
 
 interface CourseSelectionViewProps {
   user: UserProfile;
@@ -56,18 +67,20 @@ interface CourseSelectionViewProps {
   onOpenInhouseReport?: (courseId?: string) => void;
   onOpenETrainingRoster?: (courseId?: string) => void;
   onOpenCourseApprovalPdf?: (courseId?: string) => void;
+  onOpenEvaluation?: (courseId?: string, mode?: 'auto_course' | 'external_course' | 'followup_30days') => void;
   onLogout: () => void;
   onResetProgress?: (courseId?: string) => void;
+  onOpenContinuousTraining?: (courseId: string) => void;
 }
 
-// Course Classification
+// Course Classification with Deep Corporate Enterprise Tone
 const getCourseClassification = (courseId: string, idx: number) => {
   if (courseId === 'ai-for-tct') {
     return {
       type: 'future',
       badge: '✨ รายวิชาทักษะแห่งอนาคต (Future Skill)',
-      badgeBg: 'bg-emerald-50 text-emerald-800 border-emerald-300',
-      heroAccent: 'from-emerald-600 to-teal-700',
+      badgeBg: 'bg-slate-900/90 text-white border-slate-700',
+      heroAccent: 'from-[#001428] via-[#002D62] to-[#0A192F]',
       category: 'tech',
       categoryName: 'เทคโนโลยีและ AI'
     };
@@ -75,9 +88,9 @@ const getCourseClassification = (courseId: string, idx: number) => {
   if (courseId === 'kyt-shisa-kanko' || courseId === 'risk-management') {
     return {
       type: 'quality',
-      badge: '🏆 รายวิชามาตรฐานคุณภาพ (Quality Standard)',
-      badgeBg: 'bg-blue-50 text-[#005A9C] border-blue-200',
-      heroAccent: 'from-[#003875] to-[#005A9C]',
+      badge: '🏆 มาตรฐานคุณภาพและความปลอดภัย (Quality & Safety)',
+      badgeBg: 'bg-slate-900/90 text-white border-slate-700',
+      heroAccent: 'from-[#001D3D] via-[#002855] to-[#011020]',
       category: 'safety',
       categoryName: 'ความปลอดภัยและ KYT'
     };
@@ -85,9 +98,9 @@ const getCourseClassification = (courseId: string, idx: number) => {
   if (courseId === 'applied-psychology') {
     return {
       type: 'quality',
-      badge: '🌱 จิตวิทยาประยุกต์ & ความสุขในการทำงาน (รอบที่ 1: 12-16 ต.ค. 2569)',
-      badgeBg: 'bg-emerald-50 text-emerald-800 border-emerald-300',
-      heroAccent: 'from-teal-700 via-emerald-600 to-cyan-700',
+      badge: '🌱 จิตวิทยาประยุกต์ & ความสุขในการทำงาน (รอบ 12-16 ต.ค. 2569)',
+      badgeBg: 'bg-slate-900/90 text-white border-slate-700',
+      heroAccent: 'from-[#021C24] via-[#002D38] to-[#01141C]',
       category: 'personnel',
       categoryName: 'จิตวิทยาและการพัฒนาบุคลากร'
     };
@@ -95,18 +108,18 @@ const getCourseClassification = (courseId: string, idx: number) => {
   if (courseId === 'conflict-management' || courseId === 'personality-psychology') {
     return {
       type: 'quality',
-      badge: '🏆 รายวิชามาตรฐานคุณภาพ (Quality Standard)',
-      badgeBg: 'bg-amber-50 text-amber-800 border-amber-300',
-      heroAccent: 'from-amber-600 to-orange-700',
+      badge: '🏆 มาตรฐานการบริหารและความร่วมมือ (Collaboration)',
+      badgeBg: 'bg-slate-900/90 text-white border-slate-700',
+      heroAccent: 'from-[#021426] via-[#0F243E] to-[#0A1828]',
       category: 'personnel',
       categoryName: 'บุคคลและการจัดการ'
     };
   }
   return {
     type: 'quality',
-    badge: '🏆 รายวิชามาตรฐานคุณภาพ (Quality Standard)',
-    badgeBg: 'bg-blue-50 text-[#005A9C] border-blue-200',
-    heroAccent: 'from-blue-600 to-indigo-700',
+    badge: '🏆 มาตรฐานการผลิตและวิศวกรรม (Engineering Standard)',
+    badgeBg: 'bg-slate-900/90 text-white border-slate-700',
+    heroAccent: 'from-[#001428] via-[#002244] to-[#0A192F]',
     category: 'quality',
     categoryName: 'การผลิตและซ่อมบำรุง'
   };
@@ -124,14 +137,90 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
   onOpenInhouseReport,
   onOpenETrainingRoster,
   onOpenCourseApprovalPdf,
+  onOpenEvaluation,
   onLogout,
-  onResetProgress
+  onResetProgress,
+  onOpenContinuousTraining
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'quality' | 'future' | 'safety' | 'tech' | 'personnel'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'custom' | 'quality' | 'future' | 'safety' | 'tech' | 'personnel'>('all');
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const courses = getAllAvailableCourses();
+  const [coursesList, setCoursesList] = useState<Course[]>(() => getAllAvailableCourses());
+  const customCourses = useMemo(() => getStoredCustomCourses(), [coursesList]);
+  const [isBgManagerOpen, setIsBgManagerOpen] = useState(false);
+  const [isEvalReportOpen, setIsEvalReportOpen] = useState(false);
+  const [evalReportCourseId, setEvalReportCourseId] = useState<string>('risk-management');
+
+  // Confidential GPS Security state (for courses containing company confidential data)
+  const [isConfidentialGpsModalOpen, setIsConfidentialGpsModalOpen] = useState(false);
+  const [pendingConfidentialCourse, setPendingConfidentialCourse] = useState<Course | null>(null);
+  const [isSessionGpsVerified, setIsSessionGpsVerified] = useState(false);
+  const [geofenceResult, setGeofenceResult] = useState<GeoLocationResult | null>(null);
+  const [isGeofenceChecking, setIsGeofenceChecking] = useState(false);
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+
+  const refreshCourses = () => {
+    setCoursesList(getAllAvailableCourses());
+    setFailedImages({});
+  };
+
+  const handleCourseEntryClick = async (targetCourse: Course) => {
+    if (targetCourse.isConfidential && !isAdminGeoBypassActive() && !isSessionGpsVerified) {
+      setPendingConfidentialCourse(targetCourse);
+      setIsGeofenceChecking(true);
+      try {
+        const result = await checkUserLocationSecurity();
+        setGeofenceResult(result);
+        if (result.isAllowed) {
+          setIsSessionGpsVerified(true);
+          playSuccessChime();
+          onSelectCourse(targetCourse.id);
+        } else {
+          setIsConfidentialGpsModalOpen(true);
+        }
+      } catch (e) {
+        setIsConfidentialGpsModalOpen(true);
+      } finally {
+        setIsGeofenceChecking(false);
+      }
+      return;
+    }
+
+    playSuccessChime();
+    onSelectCourse(targetCourse.id);
+  };
+
+  const handleRecheckConfidentialLocation = async () => {
+    setIsGeofenceChecking(true);
+    try {
+      const result = await checkUserLocationSecurity();
+      setGeofenceResult(result);
+      if (result.isAllowed) {
+        playSuccessChime();
+        setIsSessionGpsVerified(true);
+        setIsConfidentialGpsModalOpen(false);
+        if (pendingConfidentialCourse) {
+          onSelectCourse(pendingConfidentialCourse.id);
+          setPendingConfidentialCourse(null);
+        }
+      } else {
+        playErrorBuzz();
+      }
+    } finally {
+      setIsGeofenceChecking(false);
+    }
+  };
+
+  const handleConfidentialBypassApproved = () => {
+    setIsSessionGpsVerified(true);
+    setIsConfidentialGpsModalOpen(false);
+    if (pendingConfidentialCourse) {
+      playSuccessChime();
+      onSelectCourse(pendingConfidentialCourse.id);
+      setPendingConfidentialCourse(null);
+    }
+  };
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -148,7 +237,7 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
 
   // Filter courses by search term and selected category
   const filteredCourses = useMemo(() => {
-    return courses.filter((course, idx) => {
+    return coursesList.filter((course, idx) => {
       const classification = getCourseClassification(course.id, idx);
       const matchesSearch = 
         course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -157,6 +246,9 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
 
       if (!matchesSearch) return false;
       if (selectedCategory === 'all') return true;
+      if (selectedCategory === 'custom') {
+        return customCourses.some(cc => cc.course.id === course.id) || Boolean(course.courseFormat);
+      }
       if (selectedCategory === 'quality' && classification.type === 'quality') return true;
       if (selectedCategory === 'future' && classification.type === 'future') return true;
       if (selectedCategory === 'safety' && classification.category === 'safety') return true;
@@ -164,7 +256,7 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
       if (selectedCategory === 'personnel' && classification.category === 'personnel') return true;
       return false;
     });
-  }, [courses, searchTerm, selectedCategory]);
+  }, [coursesList, searchTerm, selectedCategory]);
 
   return (
     <div className="w-full bg-[#F8FAFC] font-sarabun text-slate-800 pb-16">
@@ -213,7 +305,7 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
                   playCyberClick();
                   onOpenAdmin();
                 }}
-                className="px-3.5 py-2 rounded-xl bg-purple-700 hover:bg-purple-600 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer border border-purple-400/30 whitespace-nowrap"
+                className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer border border-slate-700 whitespace-nowrap"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                 <span className="whitespace-nowrap">ผู้ดูแลระบบ</span>
@@ -225,11 +317,11 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
                   id="btn-course-system-dropdown"
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/30 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md whitespace-nowrap"
+                  className="px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md whitespace-nowrap"
                 >
-                  <FolderKanban className="w-3.5 h-3.5 text-blue-200 shrink-0" />
+                  <FolderKanban className="w-3.5 h-3.5 text-slate-300 shrink-0" />
                   <span className="whitespace-nowrap">เมนูเอกสาร</span>
-                  <ChevronDown className={`w-3 h-3 text-blue-200 transition-transform shrink-0 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3 h-3 text-slate-300 transition-transform shrink-0 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isDropdownOpen && (
@@ -423,9 +515,9 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
               <button
                 type="button"
                 onClick={() => playCyberClick()}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-md"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#002855] hover:bg-[#001D40] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-md border border-[#003875]"
               >
-                <Search className="w-4 h-4" />
+                <Search className="w-4 h-4 text-blue-200" />
                 <span>ค้นหา</span>
               </button>
             </div>
@@ -466,22 +558,37 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
             onClick={() => { playCyberClick(); setSelectedCategory('all'); }}
             className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer ${
               selectedCategory === 'all'
-                ? 'bg-[#005A9C] text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-[#002855] text-white shadow-sm border border-[#003875]'
+                : 'text-slate-700 hover:bg-slate-100'
             }`}
           >
-            รายวิชาทั้งหมด ({courses.length})
+            รายวิชาทั้งหมด ({coursesList.length})
           </button>
+
+          {customCourses.length > 0 && (
+            <button
+              id="filter-custom-courses-btn"
+              onClick={() => { playCyberClick(); setSelectedCategory('custom'); }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === 'custom'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md border border-emerald-500'
+                  : 'text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 font-extrabold'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>หลักสูตรสร้างใหม่ ({customCourses.length})</span>
+            </button>
+          )}
 
           <button
             onClick={() => { playCyberClick(); setSelectedCategory('quality'); }}
             className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
               selectedCategory === 'quality'
-                ? 'bg-[#005A9C] text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-[#002855] text-white shadow-sm border border-[#003875]'
+                : 'text-slate-700 hover:bg-slate-100'
             }`}
           >
-            <Trophy className="w-3.5 h-3.5 text-amber-500" />
+            <Trophy className="w-3.5 h-3.5 text-amber-400" />
             <span>รายวิชามาตรฐานคุณภาพ</span>
           </button>
 
@@ -489,11 +596,11 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
             onClick={() => { playCyberClick(); setSelectedCategory('future'); }}
             className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
               selectedCategory === 'future'
-                ? 'bg-[#005A9C] text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-[#002855] text-white shadow-sm border border-[#003875]'
+                : 'text-slate-700 hover:bg-slate-100'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+            <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
             <span>รายวิชาทักษะแห่งอนาคต</span>
           </button>
 
@@ -501,11 +608,11 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
             onClick={() => { playCyberClick(); setSelectedCategory('safety'); }}
             className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
               selectedCategory === 'safety'
-                ? 'bg-[#005A9C] text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-[#002855] text-white shadow-sm border border-[#003875]'
+                : 'text-slate-700 hover:bg-slate-100'
             }`}
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+            <ShieldCheck className="w-3.5 h-3.5 text-blue-300" />
             <span>ความปลอดภัย & KYT</span>
           </button>
 
@@ -513,11 +620,11 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
             onClick={() => { playCyberClick(); setSelectedCategory('tech'); }}
             className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
               selectedCategory === 'tech'
-                ? 'bg-[#005A9C] text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-[#002855] text-white shadow-sm border border-[#003875]'
+                : 'text-slate-700 hover:bg-slate-100'
             }`}
           >
-            <Tv className="w-3.5 h-3.5 text-teal-500" />
+            <Tv className="w-3.5 h-3.5 text-cyan-300" />
             <span>เทคโนโลยี & AI</span>
           </button>
 
@@ -525,11 +632,11 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
             onClick={() => { playCyberClick(); setSelectedCategory('personnel'); }}
             className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
               selectedCategory === 'personnel'
-                ? 'bg-[#005A9C] text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-[#002855] text-white shadow-sm border border-[#003875]'
+                : 'text-slate-700 hover:bg-slate-100'
             }`}
           >
-            <Building2 className="w-3.5 h-3.5 text-purple-500" />
+            <Building2 className="w-3.5 h-3.5 text-slate-300" />
             <span>บุคคล & บริหาร</span>
           </button>
         </div>
@@ -538,7 +645,7 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
       {/* 3. Course Cards Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 space-y-6">
         {/* Section Heading */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
               <GraduationCap className="w-6 h-6 text-[#005A9C]" />
@@ -549,8 +656,40 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
             </p>
           </div>
 
-          <div className="text-xs font-semibold text-slate-500 font-mono">
-            แสดง {filteredCourses.length} จากทั้งหมด {courses.length} หลักสูตร
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => { playCyberClick(); onOpenAdmin(); }}
+              className="px-3.5 py-1.5 rounded-xl bg-[#002855] hover:bg-[#001D40] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer border border-[#003875]"
+              title="เข้าสู่ระบบจัดการหลักสูตร 4 รูปแบบ (Active VDO, Adult Learning, E-Learning, SOP Teachme biz) และอัปโหลดไฟล์ วิดีโอ รายชื่อ"
+            >
+              <BrainCircuit className="w-4 h-4 text-amber-400" />
+              <span>🛠️ จัดการหลักสูตร 4 รูปแบบ & อัปโหลด</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { playCyberClick(); setIsBgManagerOpen(true); }}
+              className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer border border-slate-700"
+              title="จัดการภาพพื้นหลังหลักสูตรและกำหนดหลักสูตรที่เป็นข้อมูลความลับองค์กร"
+            >
+              <ImageIcon className="w-4 h-4 text-cyan-400" />
+              <span>🖼️ จัดการภาพ & ข้อมูลหลักสูตร</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { playCyberClick(); setEvalReportCourseId(user.selectedCourseId || 'risk-management'); setIsEvalReportOpen(true); }}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+              title="ดูรายงานผลการประเมินประสิทธิภาพและประสิทธิผลหลังฝึกอบรม 30 วัน"
+            >
+              <BarChart3 className="w-4 h-4 text-white" />
+              <span>📊 รายงานประเมินผล 30 วัน</span>
+            </button>
+
+            <div className="text-xs font-semibold text-slate-500 font-mono pl-2 border-l border-slate-300">
+              {filteredCourses.length} หลักสูตร
+            </div>
           </div>
         </div>
 
@@ -589,20 +728,62 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
                   isSelected ? 'border-[#005A9C] ring-2 ring-blue-500/20 shadow-md' : 'border-slate-200/90'
                 } shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group`}
               >
-                {/* Course Header Banner */}
-                <div className={`relative h-44 bg-gradient-to-tr ${classification.heroAccent} p-4 flex flex-col justify-between overflow-hidden text-white`}>
-                  {/* Subtle decorative elements */}
-                  <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
-                  
+                {/* Course Header Banner with Authentic Industrial Course Illustration */}
+                <div className={`relative h-52 bg-[#001428] p-4 flex flex-col justify-between overflow-hidden text-white`}>
+                  {/* Background Artwork Layer (Failsafe SVG Technical Blueprint + Optional Custom Image) */}
+                  <div className="absolute inset-0 z-0 overflow-hidden bg-slate-950">
+                    <CourseVisualArtwork courseId={course.id} />
+
+                    {course.imageUrl && !failedImages[course.id] && (
+                      <img 
+                        src={course.imageUrl} 
+                        alt=""
+                        aria-hidden="true"
+                        onError={() => {
+                          setFailedImages(prev => ({ ...prev, [course.id]: true }));
+                        }}
+                        className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-75"
+                        loading="lazy"
+                      />
+                    )}
+                    {/* Deep corporate gradient scrim for contrast and legibility */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#001428] via-[#001F3F]/75 to-[#001428]/45" />
+                  </div>
+
                   {/* Top Badges */}
-                  <div className="relative z-10 flex items-center justify-between gap-1.5">
-                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/90 text-slate-800 shadow-xs backdrop-blur-xs flex items-center gap-1">
-                      {classification.badge}
+                  <div className="relative z-10 flex items-center justify-between gap-1.5 flex-wrap">
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border shadow-xs backdrop-blur-xs flex items-center gap-1 ${
+                      course.courseFormat 
+                        ? 'bg-emerald-950/95 text-emerald-300 border-emerald-500/80 ring-1 ring-emerald-400/40' 
+                        : 'bg-slate-950/90 text-white border-slate-700/80'
+                    }`}>
+                      {course.courseFormat ? (
+                        <>
+                          <Sparkles className="w-3 h-3 text-amber-300" />
+                          <span>
+                            {course.courseFormat === 'active_vdo_learning' && '🎬 Active VDO'}
+                            {course.courseFormat === 'adult_learning' && '🧠 Adult Learning'}
+                            {course.courseFormat === 'sop_teachme_biz' && '📋 SOP Teachme biz'}
+                            {course.courseFormat === 'standard_elearning' && '💻 Course E-Learning'}
+                            {' • สร้างใหม่'}
+                          </span>
+                        </>
+                      ) : (
+                        classification.badge
+                      )}
                     </span>
 
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 shadow-xs">
-                      เรียนฟรี / มีใบประกาศ
-                    </span>
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {course.isConfidential && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-rose-950/95 text-rose-300 border border-rose-600/60 shadow-xs flex items-center gap-1">
+                          <Lock className="w-3 h-3 text-rose-400" />
+                          <span>ความลับองค์กร (ตรวจ GPS)</span>
+                        </span>
+                      )}
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-[#002855]/95 text-blue-100 border border-blue-400/30 shadow-xs">
+                        E-Learning • มีใบประกาศ
+                      </span>
+                    </div>
                   </div>
 
                   {/* Course Code & Center Graphic */}
@@ -610,21 +791,21 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
                     <div className="text-[11px] font-sarabun text-blue-200 font-bold tracking-wider">
                       {course.code || `COURSE-${idx + 1}`}
                     </div>
-                    <div className="text-lg sm:text-xl font-black leading-snug line-clamp-2 drop-shadow-sm text-white">
+                    <div className="text-base sm:text-lg font-black leading-snug line-clamp-2 drop-shadow-md text-white">
                       {course.title}
                     </div>
                   </div>
 
                   {/* Institution Tag at Bottom of Banner */}
-                  <div className="relative z-10 flex items-center justify-between text-[11px] text-white/90 border-t border-white/20 pt-1.5">
+                  <div className="relative z-10 flex items-center justify-between text-[11px] text-white/90 border-t border-white/20 pt-1.5 backdrop-blur-xs">
                     <div className="flex items-center gap-1.5">
                       <Building2 className="w-3.5 h-3.5 text-amber-300" />
                       <span className="font-semibold">แผนกบุคคลและธุรการ TCT (Personnel)</span>
                     </div>
 
                     {isSelected && (
-                      <span className="bg-emerald-400 text-emerald-950 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" />
+                      <span className="bg-[#002855] text-emerald-300 border border-emerald-400/40 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3 text-emerald-400" />
                         <span>กำลังเรียน</span>
                       </span>
                     )}
@@ -680,25 +861,56 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Course Action Buttons - Streamlined to essentials */}
-                  <div className="space-y-1.5 pt-2">
-                    {/* Primary Button */}
+                  {/* Course Action Buttons - Paired Choice: 1. เข้าเรียนหลักสูตร 2. แบบประเมินความพึงพอใจ */}
+                  <div className="space-y-2 pt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        id={`btn-select-course-${course.id}`}
+                        type="button"
+                        onClick={() => {
+                          handleCourseEntryClick(course);
+                        }}
+                        className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer whitespace-nowrap"
+                        title={`เข้าเรียนหลักสูตร ${course.code}`}
+                      >
+                        <PlayCircle className="w-4 h-4 shrink-0 text-cyan-300" />
+                        <span className="truncate">
+                          {isSelected ? `เข้าเรียน (กำลังเรียน)` : `เข้าเรียนหลักสูตร`}
+                        </span>
+                      </button>
+
+                      <button
+                        id={`btn-eval-course-${course.id}`}
+                        type="button"
+                        onClick={() => {
+                          playCyberClick();
+                          if (onOpenEvaluation) {
+                            onOpenEvaluation(course.id, 'auto_course');
+                          } else {
+                            onSelectCourse(course.id);
+                          }
+                        }}
+                        className="py-2.5 px-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer whitespace-nowrap"
+                        title={`ทำแบบประเมินความพึงพอใจและประสิทธิผลหลักสูตร ${course.code}`}
+                      >
+                        <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0" />
+                        <span className="truncate">แบบประเมินความพึงพอใจ</span>
+                      </button>
+                    </div>
+
+                    {/* 30-Day Evaluation & Effectiveness Report Link */}
                     <button
-                      id={`btn-select-course-${course.id}`}
                       type="button"
                       onClick={() => {
-                        playSuccessChime();
-                        onSelectCourse(course.id);
+                        playCyberClick();
+                        setEvalReportCourseId(course.id);
+                        setIsEvalReportOpen(true);
                       }}
-                      className="w-full py-3 px-4 rounded-xl bg-[#005A9C] hover:bg-[#004070] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer whitespace-nowrap"
+                      className="w-full py-1.5 px-3 rounded-lg text-slate-500 hover:text-amber-800 hover:bg-amber-50/60 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap border border-transparent hover:border-amber-200"
+                      title="ดูรายงานผลการประเมินและประสิทธิผลหลังฝึกอบรม 30 วัน"
                     >
-                      <PlayCircle className="w-4 h-4 shrink-0" />
-                      <span className="whitespace-nowrap">
-                        {isSelected 
-                          ? `เข้าสู่บทเรียน ${course.code} (กำลังเรียนอยู่)` 
-                          : `เข้าสู่บทเรียน: ${course.code}`}
-                      </span>
-                      <ArrowRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-1" />
+                      <BarChart3 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span>รายงานประเมินผล & ประสิทธิผล 30 วัน</span>
                     </button>
 
                     {/* Subtle Syllabus Document Link */}
@@ -725,7 +937,181 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
         </div>
       </section>
 
-      {/* 4. TCT Platform Key Features */}
+      {/* ========================================================================= */}
+      {/* 4. DEDICATED EVALUATION & FOLLOW-UP HUB (ด้านล่างของหลักสูตร - เข้าสู่ระบบแล้ว) */}
+      {/* ========================================================================= */}
+      <section id="training-evaluation-hub" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-14 space-y-6">
+        <div className="bg-gradient-to-br from-slate-900 via-[#002855] to-slate-900 text-white rounded-3xl p-6 sm:p-9 shadow-xl border border-blue-900/50 relative overflow-hidden">
+          {/* Subtle Ambient Decors */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 space-y-6">
+            {/* Header info */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-5">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-blue-200 text-xs font-semibold">
+                  <Star className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
+                  <span>ระบบประเมินผลความพึงพอใจและติดตามประสิทธิผลการฝึกอบรม • TCT ACADEMY</span>
+                </div>
+                <h3 className="text-xl sm:text-3xl font-black text-white tracking-tight">
+                  ระบบวัดผลความพึงพอใจและติดตามการนำไปใช้จริงในงาน
+                </h3>
+                <p className="text-xs sm:text-sm text-blue-100/80 max-w-2xl leading-relaxed">
+                  พนักงานสามารถเข้ามากรอกประเมินผลได้ 2 ทางหลัก และเข้าทำแบบติดตามผลการประยุกต์ใช้ในการทำงานจริงภายใน 30 วัน (ระบบแจ้งเตือนอัตโนมัติ)
+                </p>
+              </div>
+
+              {/* Logged in Employee Quick Card */}
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 shrink-0 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-sm shadow-xs">
+                  {user.fullName?.substring(0, 1) || 'U'}
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-white text-xs sm:text-sm">{user.fullName}</div>
+                  <div className="text-[11px] text-blue-200">
+                    รหัสพนักงาน: <span className="font-mono font-bold text-amber-300">{user.empId}</span> • แผนก {user.department}
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-[10px] text-emerald-300 font-medium mt-0.5">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400" /> เข้าสู่ระบบสำเร็จพร้อมกรอกประเมิน
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Automated 30-Day Alert Banner */}
+            <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-amber-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 backdrop-blur-xs">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center shrink-0 font-bold">
+                  <Clock className="w-4 h-4 animate-pulse" />
+                </div>
+                <div>
+                  <div className="font-bold text-amber-200 text-xs sm:text-sm flex items-center gap-2">
+                    <span>การติดตามผลการนำไปใช้จริงในงาน ภายใน 30 วัน</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-bold">
+                      แจ้งเตือนอัตโนมัติ
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-amber-100/80 mt-0.5">
+                    พนักงานทุกท่านที่สำเร็จการอบรมในทุกหลักสูตร จะต้องเข้ามากรอกแบบประเมินติดตามผลการนำความรู้ไปใช้ในการปฏิบัติงานจริงภายใน 30 วัน
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  playCyberClick();
+                  if (onOpenEvaluation) {
+                    onOpenEvaluation(user.selectedCourseId || 'applied-psychology', 'followup_30days');
+                  }
+                }}
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer shrink-0"
+              >
+                <span>กรอกแบบติดตามผล 30 วัน</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* 3 Action Cards for Evaluation Paths */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              
+              {/* Path 1: Auto Evaluationต่อจากการอบรม */}
+              <div 
+                onClick={() => {
+                  playCyberClick();
+                  if (onOpenEvaluation) {
+                    onOpenEvaluation(user.selectedCourseId || 'applied-psychology', 'auto_course');
+                  }
+                }}
+                className="bg-white/10 hover:bg-white/15 border border-white/20 hover:border-cyan-300 rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.01] flex flex-col justify-between space-y-4 group"
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-cyan-400 text-slate-950">
+                      ทางที่ 1 (อัตโนมัติ)
+                    </span>
+                    <BookOpen className="w-5 h-5 text-cyan-300 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <h4 className="text-base font-bold text-white">
+                    ประเมินต่อจากหลักสูตรของบริษัท
+                  </h4>
+                  <p className="text-xs text-blue-100/70 leading-relaxed">
+                    เข้าอัตโนมัติ โดยการประเมินผลความพึงพอใจที่ต่อจากการฝึกอบรมในหลักสูตรต่างๆ ของ TCT ได้ทันที ในทุกหลักสูตร
+                  </p>
+                </div>
+                <div className="text-xs font-bold text-cyan-300 flex items-center gap-1 pt-2 border-t border-white/10">
+                  <span>เข้าสู่แบบประเมินหลักสูตร TCT</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+
+              {/* Path 2: Evaluation for External / Other Course */}
+              <div 
+                onClick={() => {
+                  playCyberClick();
+                  if (onOpenEvaluation) {
+                    onOpenEvaluation(user.selectedCourseId || 'applied-psychology', 'external_course');
+                  }
+                }}
+                className="bg-white/10 hover:bg-white/15 border border-white/20 hover:border-amber-300 rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.01] flex flex-col justify-between space-y-4 group"
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950">
+                      ทางที่ 2 (หลักสูตรอื่น)
+                    </span>
+                    <ExternalLink className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <h4 className="text-base font-bold text-white">
+                    ประเมินหลังอบรมหลักสูตรอื่นมา
+                  </h4>
+                  <p className="text-xs text-blue-100/70 leading-relaxed">
+                    สำหรับพนักงานที่ไปฝึกอบรมหลักสูตรอื่นหรืออบรมภายนอกมาแล้ว โดยมีหัวข้อให้กรอกชื่อหลักสูตร สถาบัน และวิทยากรครบถ้วน
+                  </p>
+                </div>
+                <div className="text-xs font-bold text-amber-300 flex items-center gap-1 pt-2 border-t border-white/10">
+                  <span>กรอกข้อมูลหลักสูตรอื่นและประเมิน</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+
+              {/* Path 3: 30-Day Follow-Up Review */}
+              <div 
+                onClick={() => {
+                  playCyberClick();
+                  if (onOpenEvaluation) {
+                    onOpenEvaluation(user.selectedCourseId || 'applied-psychology', 'followup_30days');
+                  }
+                }}
+                className="bg-white/10 hover:bg-white/15 border border-white/20 hover:border-emerald-300 rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.01] flex flex-col justify-between space-y-4 group"
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-emerald-400 text-slate-950">
+                      ติดตามผล (30 วัน)
+                    </span>
+                    <Clock className="w-5 h-5 text-emerald-300 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <h4 className="text-base font-bold text-white">
+                    แบบติดตามการนำไปใช้ในงานจริง
+                  </h4>
+                  <p className="text-xs text-blue-100/70 leading-relaxed">
+                    ระบบติดตามผลพนักงานต้องเข้ามากรอกภายใน 30 วัน เพื่อวัดผลการเปลี่ยนแปลงพฤติกรรมและการปรับปรุงหน้างาน
+                  </p>
+                </div>
+                <div className="text-xs font-bold text-emerald-300 flex items-center gap-1 pt-2 border-t border-white/10">
+                  <span>กรอกแบบติดตามผล 30 วัน</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. TCT Platform Key Features */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
         <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm space-y-6">
           <div className="text-center max-w-2xl mx-auto space-y-2">
@@ -804,6 +1190,38 @@ export const CourseSelectionView: React.FC<CourseSelectionViewProps> = ({
           </div>
         </div>
       </section>
+
+      {/* Course Background & Settings Manager Modal */}
+      {isBgManagerOpen && (
+        <CourseBackgroundManagerModal
+          isOpen={isBgManagerOpen}
+          onClose={() => setIsBgManagerOpen(false)}
+          onCoursesUpdated={refreshCourses}
+          initialCourseId={user.selectedCourseId}
+        />
+      )}
+
+      {/* 30-Day Post-Training Effectiveness & Efficiency Report Modal */}
+      {isEvalReportOpen && (
+        <CourseEvaluationReportModal
+          isOpen={isEvalReportOpen}
+          onClose={() => setIsEvalReportOpen(false)}
+          initialCourseId={evalReportCourseId}
+          currentUser={user}
+        />
+      )}
+
+      {/* Confidential Course GPS Geofence Verification Modal */}
+      {isConfidentialGpsModalOpen && (
+        <GeofenceSecurityModal
+          isOpen={isConfidentialGpsModalOpen}
+          locationResult={geofenceResult}
+          isChecking={isGeofenceChecking}
+          onRecheck={handleRecheckConfidentialLocation}
+          onBypassApproved={handleConfidentialBypassApproved}
+          onClose={() => setIsConfidentialGpsModalOpen(false)}
+        />
+      )}
 
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { TraineeRecord, UserProfile } from '../types';
 import { downloadElementAsPdf, downloadMultiPagePdf, printElementViaStandaloneWindow } from '../utils/pdfExport';
 import { TCTLogo } from './TCTLogo';
@@ -24,11 +24,17 @@ import {
   Unlock,
   AlertTriangle,
   Layers,
-  GraduationCap
+  GraduationCap,
+  Plus,
+  Trash2,
+  Edit3,
+  UserPlus,
+  RefreshCw
 } from 'lucide-react';
 import { playCyberClick, playSuccessChime } from '../utils/soundEffects';
 import { getAllAvailableCourses } from '../utils/courseManager';
 import { resolveCourseTrainees, COURSE_OFFICIAL_METADATA, CourseTraineeResolved } from '../utils/courseTraineeHelper';
+import { MASTER_EMPLOYEE_ROSTER_230 } from '../data/employeeDatabase';
 import * as XLSX from 'xlsx';
 
 interface ETrainingRosterReportModalProps {
@@ -45,7 +51,7 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
   onClose
 }) => {
   const reportRef = useRef<HTMLDivElement>(null);
-  const [activePage, setActivePage] = useState<'all' | 'page1' | 'page2'>('all');
+  const [activePage, setActivePage] = useState<string>('all');
   const [reportFormat, setReportFormat] = useState<'a4-portrait' | 'a4-landscape' | '16:9'>('a4-portrait');
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
@@ -89,14 +95,141 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
   const [approverSignerPosition, setApproverSignerPosition] = useState('ผู้จัดการทั่วไปและผู้จัดการโรงงาน / ประธานที่ปรึกษาศูนย์ TCT Academy');
   const [showSignerEditor, setShowSignerEditor] = useState(false);
 
-  // Resolve all trainees specifically for the chosen course
-  const resolvedTrainees = useMemo(() => {
+  // Editable Trainees List with LocalStorage Persistence
+  const [editableTrainees, setEditableTrainees] = useState<CourseTraineeResolved[]>(() => {
+    try {
+      const saved = localStorage.getItem(`tct_roster_report_${selectedCourseId}`);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
     return resolveCourseTrainees(trainees, selectedCourseId);
-  }, [trainees, selectedCourseId]);
+  });
+
+  // Pull Controls State
+  const [selectedEmpToPull, setSelectedEmpToPull] = useState(MASTER_EMPLOYEE_ROSTER_230[0]?.empId || '00021');
+  const [pullDeptFilter, setPullDeptFilter] = useState('all');
+  const [isEditTableMode, setIsEditTableMode] = useState(false);
+
+  // Sync when course changes
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`tct_roster_report_${selectedCourseId}`);
+      if (saved) {
+        setEditableTrainees(JSON.parse(saved));
+        return;
+      }
+    } catch (e) {}
+    setEditableTrainees(resolveCourseTrainees(trainees, selectedCourseId));
+  }, [selectedCourseId]);
+
+  // Auto-save to localStorage
+  useEffect(() => {
+    if (editableTrainees && selectedCourseId) {
+      try {
+        localStorage.setItem(`tct_roster_report_${selectedCourseId}`, JSON.stringify(editableTrainees));
+      } catch (e) {}
+    }
+  }, [editableTrainees, selectedCourseId]);
+
+  // Helper to build full CourseTraineeResolved object
+  const buildCourseTraineeObject = (
+    emp: { empId: string; fullName: string; department: string; position?: string },
+    pre: number = 7,
+    post: number = 10
+  ): CourseTraineeResolved => ({
+    empId: emp.empId,
+    fullName: emp.fullName,
+    department: emp.department,
+    position: emp.position || 'พนักงาน',
+    enrolledAt: '12 ต.ค. 2569',
+    completedAt: '12 ต.ค. 2569',
+    courseId: selectedCourseId,
+    courseTitle: courseMeta.title,
+    courseCode: courseMeta.code,
+    preTestScore: pre,
+    postTestScore: post,
+    preScoreText: `${pre}/10`,
+    postScoreText: `${post}/10`,
+    totalScore20: pre + post,
+    totalScore20Text: `${pre + post}/20`,
+    scaledPostScoreText: `${post * 2}/20`,
+    completedModulesCount: 6,
+    totalModulesCount: 6,
+    isCompleted: true,
+    status: 'passed',
+    statusTextThai: 'ผ่านเกณฑ์แล้ว',
+    currentStageTextThai: 'ผ่านเกณฑ์สมบูรณ์ (Passed)',
+    certificateId: `TCT-CERT-${emp.empId || 'GEN'}-${selectedCourseId.slice(0, 4).toUpperCase()}`,
+    certificateDate: '12 ต.ค. 2569',
+    satisfactionScore: 5
+  });
+
+  // Pull employee - duplicates explicitly allowed!
+  const handlePullSelectedEmployee = () => {
+    const emp = MASTER_EMPLOYEE_ROSTER_230.find(e => e.empId === selectedEmpToPull);
+    if (!emp) return;
+    playCyberClick();
+    const newTrainee = buildCourseTraineeObject(emp, 7, 10);
+    setEditableTrainees(prev => [...prev, newTrainee]);
+  };
+
+  // Add blank custom row
+  const handleAddBlankRow = () => {
+    playCyberClick();
+    const newTrainee = buildCourseTraineeObject({
+      empId: '',
+      fullName: '',
+      department: 'P',
+      position: 'Worker'
+    }, 6, 9);
+    setEditableTrainees(prev => [...prev, newTrainee]);
+  };
+
+  // Delete row
+  const handleDeleteRow = (index: number) => {
+    playCyberClick();
+    setEditableTrainees(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  // Update cell
+  const handleUpdateCell = (index: number, field: keyof CourseTraineeResolved, value: any) => {
+    setEditableTrainees(prev => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  // Pull All 224
+  const handlePullAll224 = () => {
+    playSuccessChime();
+    const allTrainees: CourseTraineeResolved[] = MASTER_EMPLOYEE_ROSTER_230.map((emp) =>
+      buildCourseTraineeObject(emp, 7, 10)
+    );
+    setEditableTrainees(allTrainees);
+  };
+
+  // Pull Department
+  const handlePullDepartment = (dept: string) => {
+    playSuccessChime();
+    const deptEmployees = MASTER_EMPLOYEE_ROSTER_230.filter(e => e.department === dept);
+    const newItems: CourseTraineeResolved[] = deptEmployees.map((emp) =>
+      buildCourseTraineeObject(emp, 7, 10)
+    );
+    setEditableTrainees(prev => [...prev, ...newItems]);
+  };
+
+  // Reset to original
+  const handleResetToOriginal = () => {
+    playCyberClick();
+    try {
+      localStorage.removeItem(`tct_roster_report_${selectedCourseId}`);
+    } catch (e) {}
+    setEditableTrainees(resolveCourseTrainees(trainees, selectedCourseId));
+  };
 
   // Filter trainees by search, department, and completion status
   const filteredTrainees = useMemo(() => {
-    return resolvedTrainees.filter(t => {
+    return editableTrainees.filter(t => {
       const matchDept = selectedDept === 'all' || t.department === selectedDept;
       const matchSearch = searchTerm === '' || 
         t.empId.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -110,19 +243,102 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
 
       return matchDept && matchSearch && matchCompletion;
     });
-  }, [resolvedTrainees, selectedDept, searchTerm, filterCompletion]);
+  }, [editableTrainees, selectedDept, searchTerm, filterCompletion]);
 
-  const departments = ['all', ...Array.from(new Set(trainees.map(t => t.department)))];
+  const departments = ['all', ...Array.from(new Set(MASTER_EMPLOYEE_ROSTER_230.map(t => t.department))).sort()];
 
-  const totalCourseTrainees = resolvedTrainees.length;
-  const completedCourseTrainees = resolvedTrainees.filter(t => t.isCompleted).length;
+  const totalCourseTrainees = editableTrainees.length;
+  const completedCourseTrainees = editableTrainees.filter(t => t.isCompleted).length;
   const inProgressCourseTrainees = totalCourseTrainees - completedCourseTrainees;
 
-  // Pagination for A4 multi-page overflow
-  const pageSize = reportFormat === 'a4-landscape' ? 8 : 12;
-  const isMultiPage = filteredTrainees.length > pageSize;
-  const page1Trainees = isMultiPage ? filteredTrainees.slice(0, pageSize) : filteredTrainees;
-  const page2Trainees = isMultiPage ? filteredTrainees.slice(pageSize) : [];
+  // Dynamic chunking so that NO trainees are cut off or omitted
+  const chunkedPages = useMemo(() => {
+    const isLandscape = reportFormat === 'a4-landscape' || reportFormat === '16:9';
+    const singleMax = isLandscape ? 8 : 10;
+    const page1Size = isLandscape ? 8 : 12;
+    const middleSize = isLandscape ? 12 : 18;
+    const lastPageMax = isLandscape ? 7 : 10;
+
+    if (filteredTrainees.length <= singleMax) {
+      return [{
+        pageNumber: 1,
+        totalPages: 1,
+        isFirst: true,
+        isLast: true,
+        pageTrainees: filteredTrainees,
+        startIndex: 0
+      }];
+    }
+
+    const pages = [];
+    pages.push({
+      pageNumber: 1,
+      totalPages: 1,
+      isFirst: true,
+      isLast: false,
+      pageTrainees: filteredTrainees.slice(0, page1Size),
+      startIndex: 0
+    });
+
+    let remaining = filteredTrainees.slice(page1Size);
+    let currentIndex = page1Size;
+
+    while (remaining.length > 0) {
+      if (remaining.length <= lastPageMax) {
+        pages.push({
+          pageNumber: pages.length + 1,
+          totalPages: 1,
+          isFirst: false,
+          isLast: true,
+          pageTrainees: remaining,
+          startIndex: currentIndex
+        });
+        break;
+      } else if (remaining.length <= lastPageMax + 4) {
+        const midCount = Math.ceil(remaining.length / 2);
+        pages.push({
+          pageNumber: pages.length + 1,
+          totalPages: 1,
+          isFirst: false,
+          isLast: false,
+          pageTrainees: remaining.slice(0, midCount),
+          startIndex: currentIndex
+        });
+        currentIndex += midCount;
+        remaining = remaining.slice(midCount);
+        pages.push({
+          pageNumber: pages.length + 1,
+          totalPages: 1,
+          isFirst: false,
+          isLast: true,
+          pageTrainees: remaining,
+          startIndex: currentIndex
+        });
+        break;
+      } else {
+        pages.push({
+          pageNumber: pages.length + 1,
+          totalPages: 1,
+          isFirst: false,
+          isLast: false,
+          pageTrainees: remaining.slice(0, middleSize),
+          startIndex: currentIndex
+        });
+        currentIndex += middleSize;
+        remaining = remaining.slice(middleSize);
+      }
+    }
+
+    const total = pages.length;
+    pages.forEach(p => { p.totalPages = total; });
+    return pages;
+  }, [filteredTrainees, reportFormat]);
+
+  const displayedPages = useMemo(() => {
+    if (activePage === 'all') return chunkedPages;
+    const match = chunkedPages.find(p => `page-${p.pageNumber}` === activePage);
+    return match ? [match] : chunkedPages;
+  }, [activePage, chunkedPages]);
 
   // Print handler
   const handlePrint = () => {
@@ -151,23 +367,21 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
       const filename = `TCT_ETraining_Roster_${courseMeta.code}_${new Date().toISOString().split('T')[0]}.pdf`;
 
       let success = false;
-      if (isMultiPage && reportRef.current) {
-        const pages = Array.from(reportRef.current.querySelectorAll('.roster-report-page-portrait, .roster-report-page-landscape')) as HTMLElement[];
-        if (pages.length > 0) {
-          success = await downloadMultiPagePdf(pages, {
-            filename,
-            orientation,
-            format: 'a4',
-            scale: 2.5
-          });
-        } else {
-          success = await downloadElementAsPdf(reportRef.current, {
-            filename,
-            orientation,
-            format: 'a4',
-            scale: 2.5
-          });
-        }
+      const pages = Array.from(reportRef.current.querySelectorAll('.roster-report-page-portrait, .roster-report-page-landscape')) as HTMLElement[];
+      if (pages.length > 1) {
+        success = await downloadMultiPagePdf(pages, {
+          filename,
+          orientation,
+          format: 'a4',
+          scale: 2.5
+        });
+      } else if (pages.length === 1) {
+        success = await downloadElementAsPdf(pages[0], {
+          filename,
+          orientation,
+          format: 'a4',
+          scale: 2.5
+        });
       } else {
         success = await downloadElementAsPdf(reportRef.current, {
           filename,
@@ -229,15 +443,15 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
 
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto font-sarabun">
-      <div className="bg-[#0B101E] border border-cyan-500/40 rounded-3xl w-full max-w-6xl shadow-2xl flex flex-col max-h-[96vh] overflow-hidden my-auto animate-fadeIn text-slate-100">
+      <div className="bg-[#0B101E] border border-slate-700 rounded-3xl w-full max-w-[95vw] sm:max-w-6xl shadow-2xl flex flex-col max-h-[96vh] overflow-hidden my-auto animate-fadeIn text-slate-100">
         
         {/* Top Control Header (No-Print) */}
-        <div className="p-3.5 sm:p-4 bg-slate-900/95 border-b border-cyan-500/30 flex flex-col gap-3 no-print">
+        <div className="p-3.5 sm:p-4 bg-slate-900/95 border-b border-slate-800 flex flex-col gap-3 no-print">
           
           <div className="flex flex-wrap items-center justify-between gap-3">
             {/* Title & Info */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-white shadow-md shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 shadow-xs shrink-0">
                 <FileSpreadsheet className="w-5 h-5" />
               </div>
               <div>
@@ -302,7 +516,7 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
                   onClick={() => { playCyberClick(); setFilterCompletion('all'); }}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                     filterCompletion === 'all'
-                      ? 'bg-cyan-600 text-white font-bold'
+                      ? 'bg-slate-800 text-white font-bold border border-slate-700'
                       : 'text-slate-400 hover:text-white'
                   }`}
                   title="แสดงพนักงานทั้งหมดที่ลงทะเบียนในหลักสูตรนี้"
@@ -313,20 +527,20 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
                   onClick={() => { playCyberClick(); setFilterCompletion('completed_only'); }}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
                     filterCompletion === 'completed_only'
-                      ? 'bg-emerald-600 text-white font-bold'
-                      : 'text-emerald-400 hover:text-emerald-200'
+                      ? 'bg-slate-800 text-white font-bold border border-slate-700'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                   title="พิมพ์เฉพาะผู้ที่จบการอบรมและผ่านเกณฑ์แล้วเท่านั้น"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-slate-300" />
                   <span>จบการอบรมแล้ว ({completedCourseTrainees})</span>
                 </button>
                 <button
                   onClick={() => { playCyberClick(); setFilterCompletion('in_progress'); }}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                     filterCompletion === 'in_progress'
-                      ? 'bg-amber-600 text-white font-bold'
-                      : 'text-amber-400 hover:text-amber-200'
+                      ? 'bg-slate-800 text-white font-bold border border-slate-700'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                   title="แสดงผู้ที่กำลังอยู่ระหว่างการฝึกอบรม"
                 >
@@ -368,13 +582,31 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
                 <span>กำหนดผู้ลงนาม</span>
               </button>
 
+              {/* Toggle Employee Pull & Edit Toolbar */}
+              <button
+                type="button"
+                onClick={() => {
+                  playCyberClick();
+                  setIsEditTableMode(!isEditTableMode);
+                }}
+                className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  isEditTableMode 
+                    ? 'bg-amber-500 text-slate-950 font-bold border-amber-400' 
+                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:text-white'
+                }`}
+                title="เปิด/ปิด แถบจัดการและดึงรายชื่อพนักงาน"
+              >
+                <Users className="w-3.5 h-3.5 text-amber-400" />
+                <span>{isEditTableMode ? 'ปิดแถบดึงรายชื่อ' : 'ดึง & แก้ไขรายชื่อ'}</span>
+              </button>
+
               {/* Format Toggle */}
               <div className="bg-slate-950 p-0.5 rounded-xl border border-slate-800 flex items-center text-xs">
                 <button
                   onClick={() => { playCyberClick(); setReportFormat('a4-portrait'); }}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer font-bold flex items-center gap-1 ${
                     reportFormat === 'a4-portrait' 
-                      ? 'bg-cyan-600 text-white shadow' 
+                      ? 'bg-slate-800 text-white shadow-xs border border-slate-700' 
                       : 'text-slate-400 hover:text-white'
                   }`}
                   title="เอกสารเต็มแผ่น A4 แนวตั้ง (สัดส่วน 9:16 เต็มหน้า)"
@@ -386,7 +618,7 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
                   onClick={() => { playCyberClick(); setReportFormat('a4-landscape'); }}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer font-medium ${
                     reportFormat === 'a4-landscape' 
-                      ? 'bg-cyan-600 text-white font-bold shadow' 
+                      ? 'bg-slate-800 text-white font-bold shadow-xs border border-slate-700' 
                       : 'text-slate-400 hover:text-white'
                   }`}
                   title="เอกสารเต็มแผ่น A4 แนวนอน"
@@ -397,7 +629,7 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
                   onClick={() => { playCyberClick(); setReportFormat('16:9'); }}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 font-medium ${
                     reportFormat === '16:9' 
-                      ? 'bg-purple-600 text-white font-bold shadow' 
+                      ? 'bg-slate-800 text-white font-bold shadow-xs border border-slate-700' 
                       : 'text-slate-400 hover:text-white'
                   }`}
                   title="มุมมองแบบจอกว้าง 16:9"
@@ -407,60 +639,50 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
                 </button>
               </div>
 
-              {/* Multi-page Front/Back Switcher when exceeding A4 capacity */}
-              {isMultiPage && (
-                <div className="bg-slate-950 p-0.5 rounded-xl border border-purple-500/50 flex items-center text-xs shadow-md">
+              {/* Dynamic Multi-page Switcher */}
+              {chunkedPages.length > 1 && (
+                <div className="bg-slate-950 p-0.5 rounded-xl border border-purple-500/50 flex items-center text-xs shadow-md max-w-full overflow-x-auto gap-1">
                   <button
                     onClick={() => { playCyberClick(); setActivePage('all'); }}
-                    className={`px-2 py-1 rounded-lg transition-all cursor-pointer font-bold flex items-center gap-1 ${
+                    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer font-bold whitespace-nowrap flex items-center gap-1 ${
                       activePage === 'all' 
                         ? 'bg-purple-600 text-white shadow' 
                         : 'text-slate-400 hover:text-white'
                     }`}
-                    title="พิมพ์หรือแสดงทั้ง 2 หน้า (หน้า 1 ด้านหน้า + หน้า 2 ด้านหลัง)"
                   >
-                    <span>📄 ทั้ง 2 หน้า</span>
+                    <span>📄 ทุกหน้า ({chunkedPages.length})</span>
                   </button>
-                  <button
-                    onClick={() => { playCyberClick(); setActivePage('page1'); }}
-                    className={`px-2 py-1 rounded-lg transition-all cursor-pointer font-bold flex items-center gap-1 ${
-                      activePage === 'page1' 
-                        ? 'bg-purple-600 text-white shadow' 
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                    title="แสดงเฉพาะหน้า 1 (ด้านหน้า: ลำดับ 1 ถึง 12)"
-                  >
-                    <span>1️⃣ หน้า 1</span>
-                  </button>
-                  <button
-                    onClick={() => { playCyberClick(); setActivePage('page2'); }}
-                    className={`px-2 py-1 rounded-lg transition-all cursor-pointer font-bold flex items-center gap-1 ${
-                      activePage === 'page2' 
-                        ? 'bg-purple-600 text-white shadow' 
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                    title="แสดงเฉพาะหน้า 2 (ด้านหลัง: ลำดับที่เหลือ + ลายมือชื่อ)"
-                  >
-                    <span>2️⃣ หน้า 2</span>
-                  </button>
+                  {chunkedPages.map(p => (
+                    <button
+                      key={p.pageNumber}
+                      onClick={() => { playCyberClick(); setActivePage(`page-${p.pageNumber}`); }}
+                      className={`px-2 py-1 rounded-lg transition-all cursor-pointer font-bold whitespace-nowrap flex items-center gap-1 ${
+                        activePage === `page-${p.pageNumber}` 
+                          ? 'bg-purple-600 text-white shadow' 
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <span>หน้า {p.pageNumber}{p.isLast ? ' (ท้าย)' : ''}</span>
+                    </button>
+                  ))}
                 </div>
               )}
 
               {/* Export Excel */}
               <button
                 onClick={handleExportExcel}
-                className="px-3 py-1.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
               >
-                <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                <FileSpreadsheet className="w-4 h-4 text-slate-400" />
                 <span className="hidden sm:inline">Excel</span>
               </button>
 
               {/* Print Button */}
               <button
                 onClick={handlePrint}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-slate-700 cursor-pointer shadow-sm"
+                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-slate-700 cursor-pointer shadow-xs"
               >
-                <Printer className="w-4 h-4 text-cyan-400" />
+                <Printer className="w-4 h-4 text-slate-300" />
                 <span>พิมพ์เอกสาร</span>
               </button>
 
@@ -468,9 +690,9 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
               <button
                 onClick={handleDownloadPdf}
                 disabled={isPdfGenerating}
-                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer disabled:opacity-50"
+                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-50"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 text-slate-700" />
                 <span>{isPdfGenerating ? 'กำลังสร้าง...' : 'PDF'}</span>
               </button>
             </div>
@@ -568,6 +790,113 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
               </div>
             </div>
           )}
+
+          {/* Employee Puller Toolbar Drawer */}
+          {isEditTableMode && (
+            <div className="bg-slate-950/95 border border-amber-500/50 rounded-2xl p-3 text-xs space-y-2.5 animate-fadeIn no-print mt-2">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-amber-400" />
+                  <span className="font-bold text-white text-xs">
+                    เครื่องมือดึงและแก้ไขรายชื่อพนักงาน (Master Roster 224 ท่าน)
+                  </span>
+                  <span className="text-[10px] text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30">
+                    ดึงได้ไม่จำกัด • ดึงซ้ำได้ • ลบได้ • แก้ไขได้ทุกช่อง
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResetToOriginal}
+                  className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span>คืนค่าเริ่มต้น</span>
+                </button>
+              </div>
+
+              {/* Selector & Pull Action */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                <div className="sm:col-span-3">
+                  <label className="text-[10px] text-slate-400 block mb-0.5">กรองตามแผนก:</label>
+                  <select
+                    value={pullDeptFilter}
+                    onChange={(e) => setPullDeptFilter(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs outline-none focus:border-amber-400"
+                  >
+                    <option value="all">ทุกแผนกในบริษัท</option>
+                    {Array.from(new Set(MASTER_EMPLOYEE_ROSTER_230.map(e => e.department))).sort().map(d => (
+                      <option key={d} value={d}>แผนก {d}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="sm:col-span-6">
+                  <label className="text-[10px] text-slate-400 block mb-0.5">เลือกพนักงานจากทะเบียน (224 ท่าน):</label>
+                  <select
+                    value={selectedEmpToPull}
+                    onChange={(e) => setSelectedEmpToPull(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs outline-none focus:border-amber-400 font-mono"
+                  >
+                    {MASTER_EMPLOYEE_ROSTER_230
+                      .filter(e => pullDeptFilter === 'all' || e.department === pullDeptFilter)
+                      .map(e => (
+                        <option key={e.empId} value={e.empId}>
+                          [{e.empId}] {e.fullName} • แผนก {e.department} ({e.position})
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <div className="sm:col-span-3 flex items-end">
+                  <button
+                    type="button"
+                    onClick={handlePullSelectedEmployee}
+                    className="w-full py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span>ดึงพนักงานท่านนี้ (+ซ้ำได้)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Batch Pulls */}
+              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-800 text-[11px]">
+                <span className="text-slate-400">ดึงแบบกลุ่ม:</span>
+                <button
+                  type="button"
+                  onClick={handleAddBlankRow}
+                  className="px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 font-medium flex items-center gap-1 border border-slate-700 cursor-pointer"
+                >
+                  <Plus className="w-3 h-3 text-emerald-400" />
+                  <span>เพิ่มแถวเปล่า</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePullDepartment(pullDeptFilter === 'all' ? 'P' : pullDeptFilter)}
+                  className="px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 font-medium flex items-center gap-1 border border-slate-700 cursor-pointer"
+                >
+                  <Layers className="w-3 h-3 text-cyan-400" />
+                  <span>ดึงพนักงานแผนก {pullDeptFilter === 'all' ? 'P' : pullDeptFilter} ทั้งหมด</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePullAll224}
+                  className="px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 font-medium flex items-center gap-1 border border-slate-700 cursor-pointer"
+                >
+                  <Users className="w-3 h-3 text-amber-400" />
+                  <span>ดึงพนักงานทั้งบริษัท (224 ท่าน)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditableTrainees([])}
+                  className="px-2.5 py-1 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 font-medium flex items-center gap-1 border border-rose-800/50 cursor-pointer ml-auto"
+                >
+                  <Trash2 className="w-3 h-3 text-rose-400" />
+                  <span>ล้างตารางทั้งหมด</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {downloadSuccess && (
@@ -588,271 +917,27 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
         `}</style>
 
         {/* Scrollable Printable Document Container */}
-        <div className="flex-1 overflow-y-auto p-2 sm:p-6 bg-slate-950/90 flex justify-center items-start">
+        <div className="flex-1 overflow-y-auto overflow-x-auto w-full max-w-full p-2 sm:p-6 bg-slate-950/90 flex justify-center items-start">
           
           <div ref={reportRef} id="etraining-roster-print-area" className="flex flex-col items-center gap-8 w-full max-w-full">
-            
-            {/* Single Page Mode (when trainees <= pageSize) */}
-            {!isMultiPage && (
+            {displayedPages.map(page => (
               <div 
+                key={page.pageNumber}
+                id={"etraining-roster-page-" + page.pageNumber}
                 style={{
                   fontFamily: "'TH Sarabun New', 'Sarabun', 'Prompt', sans-serif"
                 }}
-                className={`bg-white text-black p-4 sm:p-7 shadow-2xl transition-all border border-slate-300 text-xs sm:text-sm leading-tight rounded-sm ${
-                  reportFormat === 'a4-portrait'
-                    ? 'w-full max-w-[850px] min-h-[1050px] flex flex-col justify-between a4-page-portrait roster-report-page-portrait'
-                    : reportFormat === 'a4-landscape'
-                    ? 'w-full max-w-[1120px] min-h-[760px] flex flex-col justify-between a4-page-landscape roster-report-page-landscape'
-                    : 'w-full max-w-[1150px] min-h-[640px] aspect-[16/9] flex flex-col justify-between roster-landscape-box'
-                }`}
+                className={"bg-white text-black shadow-2xl transition-all border border-slate-300 text-xs sm:text-sm leading-tight rounded-sm " + (
+                  reportFormat === "a4-portrait"
+                    ? "w-full max-w-[794px] min-h-[1120px] p-5 sm:p-7 flex flex-col justify-between a4-page-portrait roster-report-page-portrait"
+                    : reportFormat === "a4-landscape"
+                    ? "w-full max-w-[1120px] min-h-[790px] p-4 sm:p-6 flex flex-col justify-between a4-page-landscape roster-report-page-landscape"
+                    : "w-full max-w-[1120px] min-h-[630px] aspect-[16/9] p-4 sm:p-6 flex flex-col justify-between roster-landscape-box"
+                )}
               >
                 <div>
-                  {/* Header: Company Name & Official TCT Logo */}
-                  <div className="flex items-center justify-between pb-2 mb-2 border-b-2 border-black">
-                    <div>
-                      <h3 className="font-bold text-sm sm:text-base tracking-wider text-black">
-                        {companyName}
-                      </h3>
-                      <div className="text-[11px] sm:text-xs text-slate-800 font-bold">
-                        {divisionName}
-                      </div>
-                    </div>
-                    <div className="w-28 flex justify-end">
-                      <TCTLogo size="xs" theme="light" showSubtitle={false} />
-                    </div>
-                  </div>
-
-                  {/* Document Title Block */}
-                  <div className="text-center my-2.5">
-                    <h1 className="text-base sm:text-lg font-bold text-black tracking-tight leading-snug">
-                      รายชื่อผู้เข้าอบรมในระบบ TCT ACADEMY E-TRAINING ONLINE
-                    </h1>
-                    <div className="mt-1 flex flex-col items-center justify-center gap-0.5">
-                      <span className="text-xs sm:text-sm text-black font-bold">
-                        ชื่อหลักสูตร/Course Title: <span className="text-blue-900 underline decoration-blue-900/40">{courseMeta.title}</span>
-                      </span>
-                      <div className="flex items-center justify-center gap-3 text-[11px] sm:text-xs text-slate-800 font-semibold flex-wrap">
-                        <span>รหัสหลักสูตร: <strong className="text-black">{courseMeta.code}</strong></span>
-                        <span>|</span>
-                        <span>{courseMeta.batch}</span>
-                        <span>|</span>
-                        <span>{courseMeta.trainingDates}</span>
-                        <span>|</span>
-                        <span>แผนกที่เข้าอบรม: <strong className="text-blue-950 font-bold">{selectedDept === 'all' ? 'ทุกแผนก (All Departments)' : `แผนก ${selectedDept}`}</strong></span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Status & Scope Banner */}
-                  <div className="mb-2 bg-slate-50 border border-slate-300 rounded px-3 py-1 flex items-center justify-between text-[11px] text-slate-700">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-black">สถานะรายงาน:</span>
-                      {filterCompletion === 'completed_only' ? (
-                        <span className="text-emerald-700 font-bold flex items-center gap-1">
-                          <Check className="w-3.5 h-3.5" /> รายชื่อเฉพาะผู้ผ่านการอบรมและได้รับวุฒิบัตร (Official Certified Roster)
-                        </span>
-                      ) : (
-                        <span>แสดงรายชื่อและขั้นตอนการเรียนของผู้เข้าอบรมตามจริงในระบบ E-Training</span>
-                      )}
-                    </div>
-                    <div className="text-slate-600 font-mono">
-                      เกณฑ์ผ่าน: ≥ {courseMeta.passingScorePercent}% (16/20 หรือ 8/10)
-                    </div>
-                  </div>
-
-                  {/* Main Trainee Roster Table with Summary */}
-                  <div className="border-2 border-black mb-3 overflow-hidden">
-                    <table className="w-full border-collapse text-center text-[10px] sm:text-xs">
-                      <thead>
-                        <tr className="bg-slate-200 border-b-2 border-black font-bold text-black">
-                          <th rowSpan={2} className="border-r border-black p-1.5 w-10">ลำดับที่</th>
-                          <th rowSpan={2} className="border-r border-black p-1.5 w-20">รหัสประจำตัว<br/>พนักงาน</th>
-                          <th rowSpan={2} className="border-r border-black p-1.5 text-left min-w-[130px]">ชื่อ - สกุล</th>
-                          <th rowSpan={2} className="border-r border-black p-1.5 w-12">แผนก</th>
-                          <th rowSpan={2} className="border-r border-black p-1.5 w-14">ตำแหน่ง</th>
-                          <th rowSpan={2} className="border-r border-black p-1.5 w-28">ขั้นตอน / สถานะการอบรม<br/>ในหลักสูตร</th>
-                          <th colSpan={3} className="border-r border-black p-1 bg-slate-300">ผลการประเมินความรู้ (คะแนนสอบ)</th>
-                          <th rowSpan={2} className="border-r border-black p-1.5 w-16">ผลประเมิน</th>
-                          <th rowSpan={2} className="p-1.5 w-24">ลายมือชื่อ /<br/>การรับรองผล</th>
-                        </tr>
-                        <tr className="bg-slate-100 border-b-2 border-black font-bold text-[9px] sm:text-[10px] text-black">
-                          <th className="border-r border-black p-1 w-14">ก่อนอบรม<br/>(เต็ม 10)</th>
-                          <th className="border-r border-black p-1 w-14">หลังอบรม<br/>(เต็ม 10)</th>
-                          <th className="border-r border-black p-1 w-16">คะแนนรวม<br/>(เต็ม 20)</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-black">
-                        {filteredTrainees.length > 0 ? (
-                          filteredTrainees.map((trainee, idx) => (
-                            <tr key={trainee.empId} className="hover:bg-slate-50">
-                              <td className="border-r border-black p-1 font-mono font-bold text-center">
-                                {idx + 1}
-                              </td>
-                              <td className="border-r border-black p-1 font-mono text-center font-semibold">
-                                {trainee.empId}
-                              </td>
-                              <td className="border-r border-black p-1 text-left font-semibold text-black">
-                                {trainee.fullName}
-                              </td>
-                              <td className="border-r border-black p-1 font-bold text-center">
-                                {trainee.department}
-                              </td>
-                              <td className="border-r border-black p-1 text-center text-slate-700">
-                                {trainee.position || 'SUPERVISOR'}
-                              </td>
-                              <td className="border-r border-black p-1 text-left px-2 font-medium text-[10px] sm:text-[11px]">
-                                {trainee.isCompleted ? (
-                                  <span className="text-emerald-800 font-bold flex items-center gap-1">
-                                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                    <span>{trainee.currentStageTextThai}</span>
-                                  </span>
-                                ) : (
-                                  <span className="text-slate-800">
-                                    {trainee.currentStageTextThai}
-                                  </span>
-                                )}
-                              </td>
-                              <td className="border-r border-black p-1 font-mono font-bold text-center text-purple-950">
-                                {trainee.preScoreText}
-                              </td>
-                              <td className="border-r border-black p-1 font-mono font-bold text-center">
-                                {trainee.postTestScore !== null ? (
-                                  <span className={trainee.postTestScore >= 8 ? 'text-black font-extrabold' : 'text-red-700'}>
-                                    {trainee.postScoreText}
-                                  </span>
-                                ) : '-'}
-                              </td>
-                              <td className="border-r border-black p-1 font-mono font-extrabold text-center text-blue-950">
-                                {trainee.totalScore20Text}
-                              </td>
-                              <td className="border-r border-black p-1 font-bold text-center">
-                                {trainee.isCompleted ? (
-                                  <span className="text-black font-extrabold">ผ่านเกณฑ์</span>
-                                ) : trainee.postTestScore !== null ? (
-                                  <span className="text-red-700">ไม่ผ่าน</span>
-                                ) : (
-                                  <span className="text-slate-500">รอทดสอบ</span>
-                                )}
-                              </td>
-                              <td className="p-1 text-center font-script text-[11px] text-slate-800 font-medium">
-                                {trainee.isCompleted ? (
-                                  <span className="text-black font-bold">
-                                    ✓ รับรองผล (E-Cert)
-                                  </span>
-                                ) : (
-                                  <span className="text-slate-400 text-[10px]">
-                                    (ยังไม่จบการอบรม)
-                                  </span>
-                                )}
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={10} className="p-6 text-center text-slate-500 italic">
-                              ไม่พบข้อมูลผู้เข้าอบรมตามเงื่อนไขที่เลือก
-                            </td>
-                          </tr>
-                        )}
-
-                        {/* Summary Row */}
-                        <tr className="bg-slate-100 font-bold border-t-2 border-black text-black">
-                          <td colSpan={5} className="border-r border-black p-1.5 text-center font-bold">
-                            ผู้เข้าอบรมในรายงาน: {filteredTrainees.length} คน (จากทั้งหมด {totalCourseTrainees} คน)
-                          </td>
-                          <td className="border-r border-black p-1.5 text-center font-bold">
-                            ผ่านการอบรมครบถ้วน: {filteredTrainees.filter(t => t.isCompleted).length} คน
-                          </td>
-                          <td colSpan={3} className="border-r border-black p-1.5 text-center font-bold text-black font-mono">
-                            เกณฑ์ผ่านสอบ: ≥ 8/10 (≥ 16/20)
-                          </td>
-                          <td className="border-r border-black p-1.5 text-center font-bold text-black">
-                            อัตราผ่าน {filteredTrainees.length > 0 ? Math.round((filteredTrainees.filter(t => t.isCompleted).length / filteredTrainees.length) * 100) : 0}%
-                          </td>
-                          <td className="p-1.5 text-center text-[10px] text-slate-800 font-bold">
-                            ระบบ TCT E-Training
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Sign-off Dual Boxes */}
-                <div className="pt-2 border-t border-slate-300">
-                  <div className="text-[10px] sm:text-[11px] text-slate-700 space-y-0.5 mb-2">
-                    <div className="italic font-medium">* ใช้สำหรับเป็นหลักฐานการฝึกอบรมภายในและออกรายงานสรุปผล E-Training ประจำหลักสูตร</div>
-                    <div className="text-slate-600">
-                      * จะออกวุฒิบัตรและพิมพ์รายงานผลฉบับสมบูรณ์เมื่อผู้เข้าอบรมศึกษาครบทุกบทเรียนและทำแบบทดสอบผ่านเกณฑ์ ≥80% เท่านั้น
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6 pt-1 font-sarabun text-xs">
-                    <div className="text-center bg-slate-50/70 p-2.5 border border-slate-300 rounded">
-                      <div className="mb-6 font-bold text-slate-900 text-xs">
-                        ผู้จัดการฝึกอบรมในหลักสูตร
-                      </div>
-                      <div className="mb-1 font-mono text-slate-500 text-xs">
-                        .................................................................................
-                      </div>
-                      <div className="font-bold text-black text-sm">
-                        ({trainerSignerName})
-                      </div>
-                      <div className="text-slate-900 font-semibold text-xs mt-0.5">
-                        ตำแหน่ง: {trainerSignerPosition}
-                      </div>
-                      <div className="text-slate-700 text-[11px] font-medium">
-                        {divisionName}
-                      </div>
-                      <div className="text-slate-600 text-[10px]">
-                        {companyName}
-                      </div>
-                    </div>
-
-                    <div className="text-center bg-slate-50/70 p-2.5 border border-slate-300 rounded">
-                      <div className="mb-6 font-bold text-slate-900 text-xs">
-                        ผู้รับรองรายชื่อและผลการทดสอบ
-                      </div>
-                      <div className="mb-1 font-mono text-slate-500 text-xs">
-                        .................................................................................
-                      </div>
-                      <div className="font-bold text-black text-sm">
-                        ({certifierSignerName})
-                      </div>
-                      <div className="text-slate-900 font-semibold text-xs mt-0.5">
-                        ตำแหน่ง: {certifierSignerPosition}
-                      </div>
-                      <div className="text-slate-700 text-[11px] font-medium">
-                        {divisionName}
-                      </div>
-                      <div className="text-slate-600 text-[10px]">
-                        {companyName}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* Multi-Page Mode (when trainees > pageSize) */}
-            {isMultiPage && (
-              <>
-                {/* Page 1 (Front Page: ด้านหน้า) */}
-                {(activePage === 'all' || activePage === 'page1') && (
-                  <div 
-                    style={{
-                      fontFamily: "'TH Sarabun New', 'Sarabun', 'Prompt', sans-serif"
-                    }}
-                    className={`bg-white text-black p-4 sm:p-7 shadow-2xl transition-all border border-slate-300 text-xs sm:text-sm leading-tight rounded-sm a4-page-portrait roster-report-page-portrait ${
-                      reportFormat === 'a4-portrait'
-                        ? 'w-full max-w-[850px] min-h-[1050px] flex flex-col justify-between'
-                        : reportFormat === 'a4-landscape'
-                        ? 'w-full max-w-[1120px] min-h-[760px] flex flex-col justify-between a4-page-landscape roster-report-page-landscape'
-                        : 'w-full max-w-[1150px] min-h-[640px] aspect-[16/9] flex flex-col justify-between roster-landscape-box'
-                    }`}
-                  >
-                    <div>
+                  {page.isFirst ? (
+                    <>
                       {/* Header: Company Name & Official TCT Logo */}
                       <div className="flex items-center justify-between pb-2 mb-2 border-b-2 border-black">
                         <div>
@@ -869,9 +954,9 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
                       </div>
 
                       {/* Document Title Block */}
-                      <div className="text-center my-2.5">
+                      <div className="text-center my-2">
                         <h1 className="text-base sm:text-lg font-bold text-black tracking-tight leading-snug">
-                          รายชื่อผู้เข้าอบรมในระบบ TCT ACADEMY E-TRAINING ONLINE
+                          แบบรายงานรายชื่อผู้เข้ารับการอบรมและผลสัมฤทธิ์รายบุคคล
                         </h1>
                         <div className="mt-1 flex flex-col items-center justify-center gap-0.5">
                           <span className="text-xs sm:text-sm text-black font-bold">
@@ -884,7 +969,7 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
                             <span>|</span>
                             <span>{courseMeta.trainingDates}</span>
                             <span>|</span>
-                            <span>แผนกที่เข้าอบรม: <strong className="text-blue-950 font-bold">{selectedDept === 'all' ? 'ทุกแผนก (All Departments)' : `แผนก ${selectedDept}`}</strong></span>
+                            <span>แผนก: <strong className="text-blue-950 font-bold">{selectedDept === "all" ? "ทุกแผนก" : "แผนก " + selectedDept}</strong></span>
                           </div>
                         </div>
                       </div>
@@ -893,342 +978,339 @@ export const ETrainingRosterReportModal: React.FC<ETrainingRosterReportModalProp
                       <div className="mb-2 bg-slate-50 border border-slate-300 rounded px-3 py-1 flex items-center justify-between text-[11px] text-slate-700">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-black">สถานะรายงาน:</span>
-                          {filterCompletion === 'completed_only' ? (
+                          {filterCompletion === "completed_only" ? (
                             <span className="text-emerald-700 font-bold flex items-center gap-1">
                               <Check className="w-3.5 h-3.5" /> รายชื่อเฉพาะผู้ผ่านการอบรมและได้รับวุฒิบัตร (Official Certified Roster)
                             </span>
                           ) : (
-                            <span>แสดงรายชื่อและขั้นตอนการเรียนของผู้เข้าอบรมตามจริงในระบบ E-Training</span>
+                            <span>แสดงรายชื่อและผลคะแนนตามจริงในระบบ TCT E-Training Platform</span>
                           )}
                         </div>
-                        <div className="text-slate-600 font-mono">
-                          เกณฑ์ผ่าน: ≥ {courseMeta.passingScorePercent}% (16/20 หรือ 8/10)
+                        <div className="text-slate-700 font-mono text-[10.5px]">
+                          เกณฑ์ผ่าน: ≥ {courseMeta.passingScorePercent}% (8/10 หรือ 16/20)
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    /* Compact Continuation Header for Pages 2+ */
+                    <div className="pb-2 mb-2 border-b-2 border-black">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-xs sm:text-sm text-black">
+                            {companyName} • {divisionName}
+                          </div>
+                          <div className="text-xs font-bold text-blue-950 mt-0.5">
+                            รายงานรายชื่อผู้เข้าอบรม: {courseMeta.title} ({courseMeta.code}) — {courseMeta.batch}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">
+                            หน้า {page.pageNumber} จาก {page.totalPages}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Main Trainee Roster Table */}
+                  <div className="space-y-1 mb-2">
+                    <div className="flex items-center justify-between text-[11px] text-slate-700 font-bold">
+                      <span className="flex items-center gap-1 text-black">
+                        <Users className="w-3.5 h-3.5 text-blue-900" />
+                        บัญชีรายชื่อและผลการทดสอบ {page.totalPages > 1 ? "(ชุดที่ " + page.pageNumber + ")" : ""}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-500">
+                        ลำดับที่ {page.startIndex + 1} - {page.startIndex + page.pageTrainees.length} จาก {filteredTrainees.length} ท่าน
+                      </span>
+                    </div>
+
+                    <div className="border-2 border-black overflow-x-auto w-full max-w-full">
+                      <table className="w-full border-collapse text-center text-[10px] sm:text-xs">
+                        <thead>
+                          <tr className="bg-slate-200 border-b-2 border-black font-bold text-black">
+                            <th rowSpan={2} className="border-r border-black p-1 w-8 sm:w-10">ลำดับ</th>
+                            <th rowSpan={2} className="border-r border-black p-1 w-16 sm:w-20">รหัสพนักงาน</th>
+                            <th rowSpan={2} className="border-r border-black p-1 text-left min-w-[120px] px-1.5">ชื่อ - สกุล</th>
+                            <th rowSpan={2} className="border-r border-black p-1 w-12 sm:w-14">แผนก</th>
+                            <th rowSpan={2} className="border-r border-black p-1 w-14 sm:w-16">ตำแหน่ง</th>
+                            <th rowSpan={2} className="border-r border-black p-1 w-24 sm:w-28">ขั้นตอน / สถานะ</th>
+                            <th colSpan={3} className="border-r border-black p-0.5 bg-slate-300">ผลการประเมินความรู้</th>
+                            <th rowSpan={2} className="border-r border-black p-1 w-14 sm:w-16">ผลประเมิน</th>
+                            <th rowSpan={2} className="p-1 w-20 sm:w-24 border-r border-black">การรับรองผล</th>
+                            {isEditTableMode && (
+                              <th rowSpan={2} className="p-1 w-8 no-print bg-rose-100 text-rose-900">ลบ</th>
+                            )}
+                          </tr>
+                          <tr className="bg-slate-100 border-b-2 border-black font-bold text-[9px] sm:text-[10px] text-black">
+                            <th className="border-r border-black p-0.5 w-12 sm:w-14">ก่อนอบรม<br/>(เต็ม 10)</th>
+                            <th className="border-r border-black p-0.5 w-12 sm:w-14">หลังอบรม<br/>(เต็ม 10)</th>
+                            <th className="border-r border-black p-0.5 w-14 sm:w-16">รวม<br/>(เต็ม 20)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-black">
+                          {page.pageTrainees.length > 0 ? (
+                            page.pageTrainees.map((trainee, idx) => {
+                              const globalIndex = page.startIndex + idx + 1;
+                              const traineeActualIndex = editableTrainees.indexOf(trainee);
+                              return (
+                                <tr key={`${trainee.empId || 't'}-${globalIndex}`} className="hover:bg-slate-50">
+                                  <td className="border-r border-black p-1 font-mono font-bold text-center">
+                                    {globalIndex}
+                                  </td>
+                                  <td className="border-r border-black p-1 font-mono text-center font-semibold text-[#0F2A4A]">
+                                    {isEditTableMode ? (
+                                      <input
+                                        type="text"
+                                        value={trainee.empId}
+                                        onChange={(e) => handleUpdateCell(traineeActualIndex, 'empId', e.target.value)}
+                                        className="w-full text-center bg-transparent border-b border-slate-300 font-mono text-[10px] outline-none focus:border-blue-600"
+                                      />
+                                    ) : (
+                                      trainee.empId
+                                    )}
+                                  </td>
+                                  <td className="border-r border-black p-1 text-left font-semibold text-black px-1.5">
+                                    {isEditTableMode ? (
+                                      <input
+                                        type="text"
+                                        value={trainee.fullName}
+                                        onChange={(e) => handleUpdateCell(traineeActualIndex, 'fullName', e.target.value)}
+                                        className="w-full bg-transparent border-b border-slate-300 text-[10px] outline-none focus:border-blue-600 font-semibold"
+                                      />
+                                    ) : (
+                                      trainee.fullName
+                                    )}
+                                  </td>
+                                  <td className="border-r border-black p-1 font-bold text-center">
+                                    {isEditTableMode ? (
+                                      <input
+                                        type="text"
+                                        value={trainee.department}
+                                        onChange={(e) => handleUpdateCell(traineeActualIndex, 'department', e.target.value)}
+                                        className="w-full text-center bg-transparent border-b border-slate-300 text-[10px] outline-none focus:border-blue-600 font-bold"
+                                      />
+                                    ) : (
+                                      trainee.department
+                                    )}
+                                  </td>
+                                  <td className="border-r border-black p-1 text-center text-slate-700">
+                                    {isEditTableMode ? (
+                                      <input
+                                        type="text"
+                                        value={trainee.position || 'พนักงาน'}
+                                        onChange={(e) => handleUpdateCell(traineeActualIndex, 'position', e.target.value)}
+                                        className="w-full text-center bg-transparent border-b border-slate-300 text-[10px] outline-none focus:border-blue-600"
+                                      />
+                                    ) : (
+                                      trainee.position || "พนักงาน"
+                                    )}
+                                  </td>
+                                  <td className="border-r border-black p-1 text-left px-1.5 font-medium text-[9.5px] sm:text-[10.5px]">
+                                    {trainee.isCompleted ? (
+                                      <span className="text-emerald-800 font-bold flex items-center gap-1">
+                                        <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                                        <span>{trainee.currentStageTextThai}</span>
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-800">
+                                        {trainee.currentStageTextThai}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="border-r border-black p-1 font-mono font-bold text-center text-purple-950">
+                                    {isEditTableMode ? (
+                                      <input
+                                        type="text"
+                                        value={trainee.preScoreText}
+                                        onChange={(e) => handleUpdateCell(traineeActualIndex, 'preScoreText', e.target.value)}
+                                        className="w-full text-center bg-transparent border-b border-slate-300 text-[10px] outline-none focus:border-blue-600 font-mono"
+                                      />
+                                    ) : (
+                                      trainee.preScoreText
+                                    )}
+                                  </td>
+                                  <td className="border-r border-black p-1 font-mono font-bold text-center">
+                                    {isEditTableMode ? (
+                                      <input
+                                        type="text"
+                                        value={trainee.postScoreText}
+                                        onChange={(e) => handleUpdateCell(traineeActualIndex, 'postScoreText', e.target.value)}
+                                        className="w-full text-center bg-transparent border-b border-slate-300 text-[10px] outline-none focus:border-blue-600 font-mono font-bold"
+                                      />
+                                    ) : (
+                                      trainee.postTestScore !== null ? (
+                                        <span className={trainee.postTestScore >= 8 ? "text-black font-extrabold" : "text-red-700"}>
+                                          {trainee.postScoreText}
+                                        </span>
+                                      ) : "-"
+                                    )}
+                                  </td>
+                                  <td className="border-r border-black p-1 font-mono font-extrabold text-center text-blue-950">
+                                    {trainee.totalScore20Text}
+                                  </td>
+                                  <td className="border-r border-black p-1 font-bold text-center">
+                                    {trainee.isCompleted ? (
+                                      <span className="text-emerald-900 font-extrabold">ผ่านเกณฑ์</span>
+                                    ) : trainee.postTestScore !== null ? (
+                                      <span className="text-red-700">ไม่ผ่าน</span>
+                                    ) : (
+                                      <span className="text-slate-500">รอทดสอบ</span>
+                                    )}
+                                  </td>
+                                  <td className="border-r border-black p-1 text-center text-[10px] text-slate-800 font-medium">
+                                    {trainee.isCompleted ? (
+                                      <span className="text-emerald-900 font-bold">
+                                        ✓ E-Cert ออกแล้ว
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-400">
+                                        (อยู่ระหว่างเรียน)
+                                      </span>
+                                    )}
+                                  </td>
+                                  {isEditTableMode && (
+                                    <td className="p-1 text-center no-print">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteRow(traineeActualIndex)}
+                                        className="p-1 text-rose-600 hover:bg-rose-100 rounded transition-colors cursor-pointer"
+                                        title="ลบแถวนี้"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </td>
+                                  )}
+                                </tr>
+                              );
+                            })
+                          ) : (
+                            <tr>
+                              <td colSpan={10} className="p-6 text-center text-slate-500 italic">
+                                ไม่พบข้อมูลผู้เข้าอบรมตามเงื่อนไขที่เลือก
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Summary Row on the final page */}
+                          {page.isLast && (
+                            <tr className="bg-slate-100 font-bold border-t-2 border-black text-black text-[10px]">
+                              <td colSpan={5} className="border-r border-black p-1.5 text-center font-bold">
+                                รวมผู้เข้าอบรม: {filteredTrainees.length} คน (จากทั้งหลักสูตร {totalCourseTrainees} คน)
+                              </td>
+                              <td className="border-r border-black p-1.5 text-center font-bold text-emerald-900">
+                                ผ่านเกณฑ์ครบ: {filteredTrainees.filter(t => t.isCompleted).length} คน
+                              </td>
+                              <td colSpan={3} className="border-r border-black p-1.5 text-center font-bold text-black font-mono">
+                                เกณฑ์ผ่าน: ≥ 80% (8/10 หรือ 16/20)
+                              </td>
+                              <td className="border-r border-black p-1.5 text-center font-bold text-blue-950">
+                                ผ่าน {filteredTrainees.length > 0 ? Math.round((filteredTrainees.filter(t => t.isCompleted).length / filteredTrainees.length) * 100) : 0}%
+                              </td>
+                              <td className="p-1.5 text-center text-[9.5px] text-slate-800 font-bold">
+                                TCT Academy
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Section: Signatures on Final Page OR Continuation Notice on Non-Final Pages */}
+                <div>
+                  {page.isLast ? (
+                    <div className="pt-2 border-t-2 border-slate-300">
+                      <div className="text-[10px] text-slate-600 space-y-0.5 mb-1.5">
+                        <div className="italic font-medium">* ใช้เป็นหลักฐานการฝึกอบรมภายในและบันทึกประวัติการพัฒนาบุคลากรประจำปี บริษัท เทยิน คอร์ด (ประเทศไทย) จำกัด</div>
+                        <div>* ผู้ผ่านเกณฑ์จะได้รับใบรับรองอิเล็กทรอนิกส์ (E-Certificate) พร้อมรหัสตรวจสอบความถูกต้องในระบบ</div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-center text-xs">
+                        {/* Signatory 1: Center Head */}
+                        <div className="bg-slate-50/80 p-2 border border-slate-300 rounded space-y-0.5">
+                          <div className="text-[10px] font-bold text-slate-800">
+                            1. ผู้รวบรวมและจัดทำบัญชีรายชื่อ
+                          </div>
+                          <div className="font-mono text-slate-400 text-[10px] pt-1">
+                            ............................................................
+                          </div>
+                          <div className="font-bold text-black text-[11px]">
+                            ({trainerSignerName})
+                          </div>
+                          <div className="text-slate-800 font-semibold text-[9.5px]">
+                            {trainerSignerPosition}
+                          </div>
+                          <div className="text-slate-500 text-[8.5px]">
+                            {companyName}
+                          </div>
+                        </div>
+
+                        {/* Signatory 2: Center Manager */}
+                        <div className="bg-slate-50/80 p-2 border border-slate-300 rounded space-y-0.5">
+                          <div className="text-[10px] font-bold text-slate-800">
+                            2. ผู้ตรวจสอบและรับรองผลการทดสอบ
+                          </div>
+                          <div className="font-mono text-slate-400 text-[10px] pt-1">
+                            ............................................................
+                          </div>
+                          <div className="font-bold text-black text-[11px]">
+                            ({certifierSignerName})
+                          </div>
+                          <div className="text-slate-800 font-semibold text-[9.5px]">
+                            {certifierSignerPosition}
+                          </div>
+                          <div className="text-slate-500 text-[8.5px]">
+                            {companyName}
+                          </div>
+                        </div>
+
+                        {/* Signatory 3: General Manager */}
+                        <div className="bg-slate-50/80 p-2 border border-slate-300 rounded space-y-0.5">
+                          <div className="text-[10px] font-bold text-slate-800">
+                            3. ผู้อนุมัติรายงานการฝึกอบรม
+                          </div>
+                          <div className="font-mono text-slate-400 text-[10px] pt-1">
+                            ............................................................
+                          </div>
+                          <div className="font-bold text-black text-[11px]">
+                            ({approverSignerName})
+                          </div>
+                          <div className="text-slate-800 font-semibold text-[9.5px]">
+                            {approverSignerPosition}
+                          </div>
+                          <div className="text-slate-500 text-[8.5px]">
+                            {companyName}
+                          </div>
                         </div>
                       </div>
 
-                      {/* Trainee Table Page 1 (Rows 1 to pageSize) */}
-                      <div className="border-2 border-black mb-3 overflow-hidden">
-                        <table className="w-full border-collapse text-center text-[10px] sm:text-xs">
-                          <thead>
-                            <tr className="bg-slate-200 border-b-2 border-black font-bold text-black">
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-10">ลำดับที่</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-20">รหัสประจำตัว<br/>พนักงาน</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 text-left min-w-[130px]">ชื่อ - สกุล</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-12">แผนก</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-14">ตำแหน่ง</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-28">ขั้นตอน / สถานะการอบรม<br/>ในหลักสูตร</th>
-                              <th colSpan={3} className="border-r border-black p-1 bg-slate-300">ผลการประเมินความรู้ (คะแนนสอบ)</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-16">ผลประเมิน</th>
-                              <th rowSpan={2} className="p-1.5 w-24">ลายมือชื่อ /<br/>การรับรองผล</th>
-                            </tr>
-                            <tr className="bg-slate-100 border-b-2 border-black font-bold text-[9px] sm:text-[10px] text-black">
-                              <th className="border-r border-black p-1 w-14">ก่อนอบรม<br/>(เต็ม 10)</th>
-                              <th className="border-r border-black p-1 w-14">หลังอบรม<br/>(เต็ม 10)</th>
-                              <th className="border-r border-black p-1 w-16">คะแนนรวม<br/>(เต็ม 20)</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-black">
-                            {page1Trainees.map((trainee, idx) => (
-                              <tr key={trainee.empId} className="hover:bg-slate-50">
-                                <td className="border-r border-black p-1 font-mono font-bold text-center">
-                                  {idx + 1}
-                                </td>
-                                <td className="border-r border-black p-1 font-mono text-center font-semibold">
-                                  {trainee.empId}
-                                </td>
-                                <td className="border-r border-black p-1 text-left font-semibold text-black">
-                                  {trainee.fullName}
-                                </td>
-                                <td className="border-r border-black p-1 font-bold text-center">
-                                  {trainee.department}
-                                </td>
-                                <td className="border-r border-black p-1 text-center text-slate-700">
-                                  {trainee.position || 'SUPERVISOR'}
-                                </td>
-                                <td className="border-r border-black p-1 text-left px-2 font-medium text-[10px] sm:text-[11px]">
-                                  {trainee.isCompleted ? (
-                                    <span className="text-emerald-800 font-bold flex items-center gap-1">
-                                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                      <span>{trainee.currentStageTextThai}</span>
-                                    </span>
-                                  ) : (
-                                    <span className="text-slate-800">
-                                      {trainee.currentStageTextThai}
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="border-r border-black p-1 font-mono font-bold text-center text-purple-950">
-                                  {trainee.preScoreText}
-                                </td>
-                                <td className="border-r border-black p-1 font-mono font-bold text-center">
-                                  {trainee.postTestScore !== null ? (
-                                    <span className={trainee.postTestScore >= 8 ? 'text-black font-extrabold' : 'text-red-700'}>
-                                      {trainee.postScoreText}
-                                    </span>
-                                  ) : '-'}
-                                </td>
-                                <td className="border-r border-black p-1 font-mono font-extrabold text-center text-blue-950">
-                                  {trainee.totalScore20Text}
-                                </td>
-                                <td className="border-r border-black p-1 font-bold text-center">
-                                  {trainee.isCompleted ? (
-                                    <span className="text-black font-extrabold">ผ่านเกณฑ์</span>
-                                  ) : trainee.postTestScore !== null ? (
-                                    <span className="text-red-700">ไม่ผ่าน</span>
-                                  ) : (
-                                    <span className="text-slate-500">รอทดสอบ</span>
-                                  )}
-                                </td>
-                                <td className="p-1 text-center font-script text-[11px] text-slate-800 font-medium">
-                                  {trainee.isCompleted ? (
-                                    <span className="text-black font-bold">
-                                      ✓ รับรองผล (E-Cert)
-                                    </span>
-                                  ) : (
-                                    <span className="text-slate-400 text-[10px]">
-                                      (ยังไม่จบการอบรม)
-                                    </span>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      {/* Footer */}
+                      <div className="mt-2 pt-1 border-t border-slate-200 flex justify-between items-center text-[10px] text-slate-500 font-mono">
+                        <span>ศูนย์ฝึกอบรมและพัฒนา TCT Academy • บริษัท เทยิน คอร์ด (ประเทศไทย) จำกัด</span>
+                        <div className="flex items-center gap-3">
+                          <span>วันที่ออกเอกสาร: {new Date().toLocaleDateString("th-TH")}</span>
+                          <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">
+                            หน้า {page.pageNumber} จาก {page.totalPages} (แผ่นสุดท้าย / ลายมือชื่ออนุมัติ)
+                          </span>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Page 1 Bottom Overflow Notice & Page Indicator */}
+                  ) : (
+                    /* Non-last Page Footer Notice */
                     <div className="pt-2 border-t-2 border-slate-300 flex items-center justify-between text-[11px] text-slate-700">
                       <div className="flex items-center gap-1.5 text-blue-900 font-semibold">
                         <FileText className="w-4 h-4 text-blue-700" />
-                        <span>* มีรายชื่อผู้เข้าอบรมลำดับที่ {pageSize + 1} เป็นต้นไป และการลงนามรับรองผล จัดพิมพ์ต่อในหน้า 2 (ด้านหลัง)</span>
+                        <span>* มีรายชื่อผู้เข้าอบรมลำดับที่ {page.startIndex + page.pageTrainees.length + 1} เป็นต้นไป จัดพิมพ์ต่อในหน้า {page.pageNumber + 1}</span>
                       </div>
-                      <div className="font-bold px-2 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-800">
-                        หน้า 1 จาก 2 (ด้านหน้า)
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Page 2 (Back Page: ด้านหลัง - Overflow trainees + Sign-off) */}
-                {(activePage === 'all' || activePage === 'page2') && (
-                  <div 
-                    style={{
-                      fontFamily: "'TH Sarabun New', 'Sarabun', 'Prompt', sans-serif"
-                    }}
-                    className={`bg-white text-black p-4 sm:p-7 shadow-2xl transition-all border border-slate-300 text-xs sm:text-sm leading-tight rounded-sm a4-page-portrait roster-report-page-portrait ${
-                      reportFormat === 'a4-portrait'
-                        ? 'w-full max-w-[850px] min-h-[1050px] flex flex-col justify-between'
-                        : reportFormat === 'a4-landscape'
-                        ? 'w-full max-w-[1120px] min-h-[760px] flex flex-col justify-between a4-page-landscape roster-report-page-landscape'
-                        : 'w-full max-w-[1150px] min-h-[640px] aspect-[16/9] flex flex-col justify-between roster-landscape-box'
-                    }`}
-                  >
-                    <div>
-                      {/* Header Continuation */}
-                      <div className="flex items-center justify-between pb-2 mb-2 border-b-2 border-black">
-                        <div>
-                          <h3 className="font-bold text-sm sm:text-base tracking-wider text-black">
-                            {companyName}
-                          </h3>
-                          <div className="text-[11px] sm:text-xs text-slate-800 font-bold">
-                            {divisionName}
-                          </div>
-                        </div>
-                        <div className="w-28 flex justify-end">
-                          <TCTLogo size="xs" theme="light" showSubtitle={false} />
-                        </div>
-                      </div>
-
-                      <div className="text-center my-2">
-                        <h2 className="text-sm sm:text-base font-bold text-black tracking-tight">
-                          รายชื่อผู้เข้าอบรมในระบบ TCT ACADEMY E-TRAINING ONLINE (ต่อจากหน้าแรก / ด้านหลัง)
-                        </h2>
-                        <div className="text-xs text-slate-800 font-medium">
-                          หลักสูตร: <span className="font-bold text-black">{courseMeta.title}</span> ({courseMeta.code}) | {courseMeta.batch}
-                        </div>
-                      </div>
-
-                      {/* Trainee Table Page 2 (Rows pageSize+1 to N) + Summary Row */}
-                      <div className="border-2 border-black mb-3 overflow-hidden">
-                        <table className="w-full border-collapse text-center text-[10px] sm:text-xs">
-                          <thead>
-                            <tr className="bg-slate-200 border-b-2 border-black font-bold text-black">
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-10">ลำดับที่</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-20">รหัสประจำตัว<br/>พนักงาน</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 text-left min-w-[130px]">ชื่อ - สกุล</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-12">แผนก</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-14">ตำแหน่ง</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-28">ขั้นตอน / สถานะการอบรม<br/>ในหลักสูตร</th>
-                              <th colSpan={3} className="border-r border-black p-1 bg-slate-300">ผลการประเมินความรู้ (คะแนนสอบ)</th>
-                              <th rowSpan={2} className="border-r border-black p-1.5 w-16">ผลประเมิน</th>
-                              <th rowSpan={2} className="p-1.5 w-24">ลายมือชื่อ /<br/>การรับรองผล</th>
-                            </tr>
-                            <tr className="bg-slate-100 border-b-2 border-black font-bold text-[9px] sm:text-[10px] text-black">
-                              <th className="border-r border-black p-1 w-14">ก่อนอบรม<br/>(เต็ม 10)</th>
-                              <th className="border-r border-black p-1 w-14">หลังอบรม<br/>(เต็ม 10)</th>
-                              <th className="border-r border-black p-1 w-16">คะแนนรวม<br/>(เต็ม 20)</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-black">
-                            {page2Trainees.map((trainee, idx) => (
-                              <tr key={trainee.empId} className="hover:bg-slate-50">
-                                <td className="border-r border-black p-1 font-mono font-bold text-center">
-                                  {pageSize + idx + 1}
-                                </td>
-                                <td className="border-r border-black p-1 font-mono text-center font-semibold">
-                                  {trainee.empId}
-                                </td>
-                                <td className="border-r border-black p-1 text-left font-semibold text-black">
-                                  {trainee.fullName}
-                                </td>
-                                <td className="border-r border-black p-1 font-bold text-center">
-                                  {trainee.department}
-                                </td>
-                                <td className="border-r border-black p-1 text-center text-slate-700">
-                                  {trainee.position || 'SUPERVISOR'}
-                                </td>
-                                <td className="border-r border-black p-1 text-left px-2 font-medium text-[10px] sm:text-[11px]">
-                                  {trainee.isCompleted ? (
-                                    <span className="text-emerald-800 font-bold flex items-center gap-1">
-                                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                      <span>{trainee.currentStageTextThai}</span>
-                                    </span>
-                                  ) : (
-                                    <span className="text-slate-800">
-                                      {trainee.currentStageTextThai}
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="border-r border-black p-1 font-mono font-bold text-center text-purple-950">
-                                  {trainee.preScoreText}
-                                </td>
-                                <td className="border-r border-black p-1 font-mono font-bold text-center">
-                                  {trainee.postTestScore !== null ? (
-                                    <span className={trainee.postTestScore >= 8 ? 'text-black font-extrabold' : 'text-red-700'}>
-                                      {trainee.postScoreText}
-                                    </span>
-                                  ) : '-'}
-                                </td>
-                                <td className="border-r border-black p-1 font-mono font-extrabold text-center text-blue-950">
-                                  {trainee.totalScore20Text}
-                                </td>
-                                <td className="border-r border-black p-1 font-bold text-center">
-                                  {trainee.isCompleted ? (
-                                    <span className="text-black font-extrabold">ผ่านเกณฑ์</span>
-                                  ) : trainee.postTestScore !== null ? (
-                                    <span className="text-red-700">ไม่ผ่าน</span>
-                                  ) : (
-                                    <span className="text-slate-500">รอทดสอบ</span>
-                                  )}
-                                </td>
-                                <td className="p-1 text-center font-script text-[11px] text-slate-800 font-medium">
-                                  {trainee.isCompleted ? (
-                                    <span className="text-black font-bold">
-                                      ✓ รับรองผล (E-Cert)
-                                    </span>
-                                  ) : (
-                                    <span className="text-slate-400 text-[10px]">
-                                      (ยังไม่จบการอบรม)
-                                    </span>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-
-                            {/* Summary Row */}
-                            <tr className="bg-slate-100 font-bold border-t-2 border-black text-black">
-                              <td colSpan={5} className="border-r border-black p-1.5 text-center font-bold">
-                                รวมผู้เข้าอบรมทั้งหมด: {filteredTrainees.length} คน (จากทั้งหมด {totalCourseTrainees} คน)
-                              </td>
-                              <td className="border-r border-black p-1.5 text-center font-bold">
-                                ผ่านการอบรมครบถ้วน: {filteredTrainees.filter(t => t.isCompleted).length} คน
-                              </td>
-                              <td colSpan={3} className="border-r border-black p-1.5 text-center font-bold text-black font-mono">
-                                เกณฑ์ผ่านสอบ: ≥ 8/10 (≥ 16/20)
-                              </td>
-                              <td className="border-r border-black p-1.5 text-center font-bold text-black">
-                                อัตราผ่าน {filteredTrainees.length > 0 ? Math.round((filteredTrainees.filter(t => t.isCompleted).length / filteredTrainees.length) * 100) : 0}%
-                              </td>
-                              <td className="p-1.5 text-center text-[10px] text-slate-800 font-bold">
-                                ระบบ TCT E-Training
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
+                      <div className="font-bold px-2.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-800 font-mono">
+                        หน้า {page.pageNumber} จาก {page.totalPages} (ต่อเนื่อง)
                       </div>
                     </div>
-
-                    {/* Official Sign-off Dual Boxes */}
-                    <div className="pt-2 border-t border-slate-300">
-                      <div className="text-[10px] sm:text-[11px] text-slate-700 space-y-0.5 mb-2">
-                        <div className="italic font-medium">* ใช้สำหรับเป็นหลักฐานการฝึกอบรมภายในและออกรายงานสรุปผล E-Training ประจำหลักสูตร</div>
-                        <div className="text-slate-600">
-                          * จะออกวุฒิบัตรและพิมพ์รายงานผลฉบับสมบูรณ์เมื่อผู้เข้าอบรมศึกษาครบทุกบทเรียนและทำแบบทดสอบผ่านเกณฑ์ ≥80% เท่านั้น
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 font-sarabun text-xs">
-                        <div className="text-center bg-slate-50/70 p-2 border border-slate-300 rounded space-y-1">
-                          <div className="text-[11px] font-bold text-slate-900">
-                            1. หัวหน้าศูนย์ TCT Academy
-                          </div>
-                          <div className="h-7 border-b border-slate-400 mx-auto w-full max-w-[140px]"></div>
-                          <div className="font-bold text-black text-xs mt-1">
-                            ({trainerSignerName})
-                          </div>
-                          <div className="text-slate-800 font-semibold text-[10px]">
-                            {trainerSignerPosition}
-                          </div>
-                          <div className="text-slate-600 text-[9px]">
-                            {companyName}
-                          </div>
-                        </div>
-
-                        <div className="text-center bg-slate-50/70 p-2 border border-slate-300 rounded space-y-1">
-                          <div className="text-[11px] font-bold text-slate-900">
-                            2. ผู้จัดการศูนย์ TCT Academy
-                          </div>
-                          <div className="h-7 border-b border-slate-400 mx-auto w-full max-w-[140px]"></div>
-                          <div className="font-bold text-black text-xs mt-1">
-                            ({certifierSignerName})
-                          </div>
-                          <div className="text-slate-800 font-semibold text-[10px]">
-                            {certifierSignerPosition}
-                          </div>
-                          <div className="text-slate-600 text-[9px]">
-                            {companyName}
-                          </div>
-                        </div>
-
-                        <div className="text-center bg-slate-50/70 p-2 border border-slate-300 rounded space-y-1">
-                          <div className="text-[11px] font-bold text-slate-900">
-                            3. ผู้จัดการทั่วไป/โรงงาน (ประธานที่ปรึกษา)
-                          </div>
-                          <div className="h-7 border-b border-slate-400 mx-auto w-full max-w-[140px]"></div>
-                          <div className="font-bold text-black text-xs mt-1">
-                            ({approverSignerName})
-                          </div>
-                          <div className="text-slate-800 font-semibold text-[10px]">
-                            {approverSignerPosition}
-                          </div>
-                          <div className="text-slate-600 text-[9px]">
-                            {companyName}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Page 2 Bottom Indicator */}
-                      <div className="mt-3 pt-1 border-t border-slate-200 flex justify-end text-[10px] text-slate-600 font-bold">
-                        <span>หน้า 2 จาก 2 (ด้านหลัง)</span>
-                      </div>
-                    </div>
-
-                  </div>
-                )}
-              </>
-            )}
-
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

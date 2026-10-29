@@ -63,12 +63,72 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
   onNavigate
 }) => {
   const { t, language } = useLanguage();
-  const currentCourseId = module.courseId || user.selectedCourseId || 'advanced-preventive-maintenance';
-  const isAlreadyCompleted = user.completedModules.includes(module.id);
+  const currentCourseId = module?.courseId || user?.selectedCourseId || 'advanced-preventive-maintenance';
+  const isAlreadyCompleted = Boolean(user?.completedModules && user.completedModules.includes(module?.id));
   const [activeTab, setActiveTab] = useState<'content' | 'quiz'>('content');
+
+  // Module Quiz questions with shuffled choices (computed safely before useEffect)
+  const quizQuestions: ShuffledQuestion[] = useMemo(() => {
+    if (!module || !Array.isArray(questions)) return [];
+
+    // 1. If explicit quizQuestionIds array provided and not empty
+    if (Array.isArray(module.quizQuestionIds) && module.quizQuestionIds.length > 0) {
+      return module.quizQuestionIds.reduce((acc, id) => {
+        const q = questions.find((item) => item && item.id === id);
+        if (q) {
+          acc.push({
+            id: q.id,
+            moduleId: q.moduleId || module.id,
+            questionText: q.questionText || '',
+            shuffledChoices: shuffleArray(q.choices || []),
+            explanation: q.explanation || ''
+          });
+        }
+        return acc;
+      }, [] as ShuffledQuestion[]);
+    }
+
+    // 2. Fallback: match by moduleId
+    const moduleQuestions = questions.filter((q) => q && q.moduleId === module.id);
+    if (moduleQuestions.length > 0) {
+      return moduleQuestions.map((q) => ({
+        id: q.id,
+        moduleId: q.moduleId || module.id,
+        questionText: q.questionText || '',
+        shuffledChoices: shuffleArray(q.choices || []),
+        explanation: q.explanation || ''
+      }));
+    }
+
+    return [];
+  }, [module?.id, module?.quizQuestionIds, questions]);
+
+  // Safely compute summary points with fallbacks to avoid undefined.map crashes
+  const effectiveSummaryPoints = useMemo<string[]>(() => {
+    if (Array.isArray(module?.summaryPoints) && module.summaryPoints.length > 0) {
+      return module.summaryPoints;
+    }
+    if (module?.keyTakeaway) {
+      return [module.keyTakeaway];
+    }
+    if (Array.isArray(module?.sections) && module.sections.length > 0) {
+      return module.sections
+        .slice(0, 3)
+        .map((s) => s.keyHighlight || s.title)
+        .filter(Boolean) as string[];
+    }
+    return [];
+  }, [module]);
+
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
+  const [quizSubmitted, setQuizSubmitted] = useState<boolean>(isAlreadyCompleted);
+  const [quizScore, setQuizScore] = useState<number | null>(isAlreadyCompleted ? quizQuestions.length : null);
+
+  const isQuizPassed = isAlreadyCompleted || quizQuestions.length === 0 || (quizSubmitted && quizScore === quizQuestions.length);
   const [isVideoComplete, setIsVideoComplete] = useState<boolean>(() => {
-    return isAlreadyCompleted || checkIsVideoWatched(user.empId, module.id, currentCourseId);
+    return isAlreadyCompleted || checkIsVideoWatched(user?.empId || '', module?.id, currentCourseId);
   });
+  const isModuleFullyPassed = isAlreadyCompleted || (isVideoComplete && isQuizPassed);
 
   const [notification, setNotification] = useState<string | null>(null);
   const videoSectionRef = useRef<HTMLDivElement>(null);
@@ -76,13 +136,13 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
   // Scroll to top on mount or module change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    const isWatched = isAlreadyCompleted || checkIsVideoWatched(user.empId, module.id, currentCourseId);
+    const isWatched = isAlreadyCompleted || checkIsVideoWatched(user?.empId || '', module?.id, currentCourseId);
     setIsVideoComplete(isWatched);
     if (isAlreadyCompleted) {
       setQuizSubmitted(true);
-      setQuizScore(module.quizQuestionIds.length);
+      setQuizScore(quizQuestions.length);
     }
-  }, [module.id, currentCourseId, user.empId, isAlreadyCompleted, module.quizQuestionIds.length]);
+  }, [module?.id, currentCourseId, user?.empId, isAlreadyCompleted, quizQuestions.length]);
 
   // Reading duration timer (<= 2 minutes as requested: "กำหนดระยะเวลาการอ่านตามข้อความไม่เกิน 2 นาที")
   const [readingSecondsRemaining, setReadingSecondsRemaining] = useState<number>(() => {
@@ -112,7 +172,7 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [module.id, isAlreadyCompleted]);
+  }, [module?.id, isAlreadyCompleted]);
 
   // Interactive Tools states
   const [selectedMatrixCell, setSelectedMatrixCell] = useState<{ severity: number; likelihood: number } | null>({
@@ -150,31 +210,6 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
     5: false
   });
   const [passportTraineeStatus, setPassportTraineeStatus] = useState<'pending' | 'registered' | 'certified'>('registered');
-
-  // Module Quiz questions with shuffled choices
-  const quizQuestions: ShuffledQuestion[] = useMemo(() => {
-    if (!module || !Array.isArray(module.quizQuestionIds) || !Array.isArray(questions)) return [];
-    return module.quizQuestionIds.reduce((acc, id) => {
-      const q = questions.find((item) => item && item.id === id);
-      if (q) {
-        acc.push({
-          id: q.id,
-          moduleId: q.moduleId || module.id,
-          questionText: q.questionText || '',
-          shuffledChoices: shuffleArray(q.choices || []),
-          explanation: q.explanation || ''
-        });
-      }
-      return acc;
-    }, [] as ShuffledQuestion[]);
-  }, [module?.id, module?.quizQuestionIds, questions]);
-
-  const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
-  const [quizSubmitted, setQuizSubmitted] = useState<boolean>(isAlreadyCompleted);
-  const [quizScore, setQuizScore] = useState<number | null>(isAlreadyCompleted ? quizQuestions.length : null);
-
-  const isQuizPassed = isAlreadyCompleted || (quizSubmitted && quizScore === quizQuestions.length);
-  const isModuleFullyPassed = isAlreadyCompleted || (isVideoComplete && isQuizPassed);
 
   const handleSelectQuizAnswer = (qId: number, cId: string) => {
     if (quizSubmitted && isQuizPassed) return;
@@ -215,11 +250,17 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
 
   // Handle attempt to open Quiz tab
   const handleAttemptOpenQuiz = () => {
+    if (quizQuestions.length === 0) {
+      playSuccessChime();
+      setNotification('🎉 บทเรียนนี้ไม่มีแบบทดสอบท้ายบท สามารถกดปุ่ม "ไปบทเรียนถัดไป" ได้ทันที');
+      setTimeout(() => setNotification(null), 5000);
+      return;
+    }
     if (!isVideoComplete && !isAlreadyCompleted) {
       playErrorBuzz();
       setNotification('🔒 กรุณากดลิงก์เพื่อไปดูวิดีโอในบทนี้จนจบก่อน จึงจะสามารถทำแบบทดสอบท้ายบทได้ (ระบบไม่อนุญาตให้กดข้าม)');
       setTimeout(() => setNotification(null), 6000);
-      const vidEl = document.getElementById(`module-video-container-${module.id}`);
+      const vidEl = document.getElementById(`module-video-container-${module?.id}`);
       if (vidEl) vidEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -236,12 +277,12 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
   };
 
   const handleModuleTabClick = (targetModId: number) => {
-    if (targetModId === module.id) return;
+    if (targetModId === module?.id) return;
     playCyberClick();
 
     if (isModuleUnlocked(targetModId)) {
       if (isModuleFullyPassed) {
-        onCompleteModule(module.id);
+        onCompleteModule(module?.id || 1);
       }
       onNavigate(`module${targetModId}` as ViewState);
     } else {
@@ -258,7 +299,7 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
       playErrorBuzz();
       setNotification('🔒 กรุณารับชมวิดีโอให้จบ และทำแบบทดสอบท้ายบทให้ผ่านก่อน จึงจะไปบทถัดไปได้');
       setTimeout(() => setNotification(null), 5000);
-      const vidEl = document.getElementById(`module-video-container-${module.id}`);
+      const vidEl = document.getElementById(`module-video-container-${module?.id}`);
       if (vidEl) vidEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -273,10 +314,13 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
     }
 
     // Ensure completion is saved permanently
-    onCompleteModule(module.id);
+    if (module?.id) {
+      onCompleteModule(module.id);
+    }
 
-    if (module.id < modules.length) {
-      onNavigate(`module${module.id + 1}` as ViewState);
+    const totalMods = modules?.length || 0;
+    if ((module?.id || 1) < totalMods) {
+      onNavigate(`module${(module?.id || 1) + 1}` as ViewState);
     } else {
       onNavigate('game');
     }
@@ -286,10 +330,10 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8 cyber-grid space-y-4 font-sarabun">
       {/* Top Quick Switcher Tabs with Strict Locks */}
-      <div className={`grid ${modules.length >= 7 ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7' : modules.length > 4 ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6' : 'grid-cols-2 sm:grid-cols-4'} gap-1.5 sm:gap-2`}>
-        {modules.map((m) => {
-          const isCurrent = m.id === module.id;
-          const isDone = user.completedModules.includes(m.id) || (isCurrent && isQuizPassed);
+      <div className={`grid ${(modules?.length || 0) >= 7 ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7' : (modules?.length || 0) > 4 ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6' : 'grid-cols-2 sm:grid-cols-4'} gap-1.5 sm:gap-2`}>
+        {(modules || []).map((m) => {
+          const isCurrent = m.id === module?.id;
+          const isDone = (user?.completedModules || []).includes(m.id) || (isCurrent && isQuizPassed);
           const isUnlocked = isModuleUnlocked(m.id);
 
           return (
@@ -565,22 +609,24 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
           </div>
 
           {/* Key Summary Infographic Card */}
-          <div className="bg-gradient-to-br from-slate-900/90 to-cyan-950/40 rounded-2xl p-5 border border-cyan-500/30">
-            <div className="text-xs font-mono text-cyan-400 mb-2 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>สรุปประเด็นสำคัญ (Key Takeaways - Module {module.id})</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {module.summaryPoints.map((point, idx) => (
-                <div key={idx} className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 text-xs text-slate-200 leading-relaxed flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-md bg-cyan-500/20 text-cyan-300 flex items-center justify-center font-mono font-bold shrink-0 mt-0.5">
-                    {idx + 1}
+          {effectiveSummaryPoints.length > 0 && (
+            <div className="bg-gradient-to-br from-slate-900/90 to-cyan-950/40 rounded-2xl p-5 border border-cyan-500/30">
+              <div className="text-xs font-mono text-cyan-400 mb-2 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>สรุปประเด็นสำคัญ (Key Takeaways - Module {module?.id})</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {effectiveSummaryPoints.map((point, idx) => (
+                  <div key={idx} className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 text-xs text-slate-200 leading-relaxed flex items-start gap-2.5">
+                    <div className="w-5 h-5 rounded-md bg-cyan-500/20 text-cyan-300 flex items-center justify-center font-mono font-bold shrink-0 mt-0.5">
+                      {idx + 1}
+                    </div>
+                    <span>{point}</span>
                   </div>
-                  <span>{point}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* 2-Minute Reading Duration Timer Banner (ตามข้อกำหนด: กำหนดระยะเวลาการอ่านไม่เกิน 2 นาที) */}
           <div className={`p-4 rounded-2xl border transition-all ${
@@ -659,7 +705,7 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
 
           {/* Lesson Sections */}
           <div className="space-y-6">
-            {module.sections.map((section) => (
+            {(module?.sections || []).map((section) => (
               <div key={section.id} className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
                 <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-cyan-400" />
@@ -667,12 +713,12 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
                 </h2>
 
                 <div className="space-y-2.5 text-sm text-slate-300 leading-relaxed">
-                  {section.content.map((paragraph, pIdx) => (
+                  {(Array.isArray(section.content) ? section.content : typeof section.content === 'string' ? [section.content] : []).map((paragraph, pIdx) => (
                     <p key={pIdx}>{paragraph}</p>
                   ))}
                 </div>
 
-                {section.bulletPoints && (
+                {Array.isArray(section.bulletPoints) && section.bulletPoints.length > 0 && (
                   <div className="bg-slate-900/70 rounded-xl p-4 border border-slate-800 space-y-2 text-xs text-slate-300">
                     {section.bulletPoints.map((bp, bpIdx) => (
                       <div key={bpIdx} className="flex items-start gap-2">
@@ -1791,31 +1837,38 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
 
             <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
               {/* Button to Open Quiz */}
-              <button
-                id={`goto-quiz-mod-${module.id}-btn`}
-                onClick={handleAttemptOpenQuiz}
-                className={`w-full sm:w-auto h-11 px-5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                  isVideoComplete || isAlreadyCompleted
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25 hover:scale-[1.02]'
-                    : 'bg-slate-900 text-slate-400 border border-slate-800 hover:border-amber-500/40 hover:text-amber-300'
-                }`}
-              >
-                {isVideoComplete || isAlreadyCompleted ? (
-                  <HelpCircle className="w-4 h-4 text-white" />
-                ) : (
-                  <Lock className="w-4 h-4 text-amber-400" />
-                )}
-                <span>ทำแบบทดสอบท้ายบท (Quiz {quizQuestions.length} ข้อ)</span>
-              </button>
+              {quizQuestions.length > 0 ? (
+                <button
+                  id={`goto-quiz-mod-${module?.id}-btn`}
+                  onClick={handleAttemptOpenQuiz}
+                  className={`w-full sm:w-auto h-11 px-5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    isVideoComplete || isAlreadyCompleted
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25 hover:scale-[1.02]'
+                      : 'bg-slate-900 text-slate-400 border border-slate-800 hover:border-amber-500/40 hover:text-amber-300'
+                  }`}
+                >
+                  {isVideoComplete || isAlreadyCompleted ? (
+                    <HelpCircle className="w-4 h-4 text-white" />
+                  ) : (
+                    <Lock className="w-4 h-4 text-amber-400" />
+                  )}
+                  <span>ทำแบบทดสอบท้ายบท (Quiz {quizQuestions.length} ข้อ)</span>
+                </button>
+              ) : (
+                <div className="h-11 px-4 rounded-xl bg-slate-900/60 border border-slate-800 text-emerald-400 text-xs font-semibold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>บทนี้ไม่มีแบบทดสอบ (ผ่านอัตโนมัติ)</span>
+                </div>
+              )}
 
               {/* Proceed to Next Module Button - Strictly Enforces Video & Quiz Completion */}
               <button
-                id={`proceed-next-mod-${module.id}-btn`}
+                id={`proceed-next-mod-${module?.id}-btn`}
                 type="button"
                 onClick={handleProceedNext}
                 className={`w-full sm:w-auto h-11 px-5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all ${
                   isModuleFullyPassed
-                    ? module.id < modules.length
+                    ? (module?.id || 1) < (modules?.length || 0)
                       ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20 cursor-pointer hover:scale-[1.02]'
                       : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black font-bold shadow-lg shadow-emerald-500/20 cursor-pointer hover:scale-[1.02]'
                     : 'bg-slate-900/90 text-slate-400 border border-slate-800 hover:border-slate-700 cursor-pointer'
@@ -1824,8 +1877,8 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
               >
                 {!isModuleFullyPassed && <Lock className="w-3.5 h-3.5 text-slate-400" />}
                 <span>
-                  {module.id < modules.length 
-                    ? `ไปบทเรียนถัดไป: บทที่ ${module.id + 1}` 
+                  {(module?.id || 1) < (modules?.length || 0) 
+                    ? `ไปบทเรียนถัดไป: บทที่ ${(module?.id || 1) + 1}` 
                     : 'ไปเล่น AI Mini-Game & Post-test'}
                 </span>
                 <ArrowRight className="w-4 h-4" />
@@ -1940,12 +1993,12 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
                   <span className="whitespace-nowrap">ผ่านครบทุกข้อ ({quizQuestions.length}/{quizQuestions.length})</span>
                 </span>
                 <button
-                  id={`next-step-mod-${module.id}-btn`}
+                  id={`next-step-mod-${module?.id}-btn`}
                   onClick={() => {
                     playCyberClick();
-                    onCompleteModule(module.id);
-                    if (module.id < modules.length) {
-                      onNavigate(`module${module.id + 1}` as ViewState);
+                    onCompleteModule(module?.id || 1);
+                    if ((module?.id || 1) < (modules?.length || 0)) {
+                      onNavigate(`module${(module?.id || 1) + 1}` as ViewState);
                     } else {
                       onNavigate('game');
                     }
@@ -1953,7 +2006,7 @@ export const ModuleView: React.FC<ModuleViewProps> = ({
                   }}
                   className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black font-bold text-xs py-2.5 px-5 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 cursor-pointer hover:scale-[1.02] transition-transform whitespace-nowrap"
                 >
-                  <span className="whitespace-nowrap">{module.id < modules.length ? `ไปบทเรียนที่ ${module.id + 1}` : 'ไปกิจกรรมถัดไป'}</span>
+                  <span className="whitespace-nowrap">{(module?.id || 1) < (modules?.length || 0) ? `ไปบทเรียนที่ ${(module?.id || 1) + 1}` : 'ไปกิจกรรมถัดไป'}</span>
                   <ArrowRight className="w-4 h-4 shrink-0" />
                 </button>
               </div>

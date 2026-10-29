@@ -1,4 +1,4 @@
-import { CourseModule, MiniGameScenario, Question, TraineeRecord } from '../types';
+import type { CourseModule, MiniGameScenario, Question, TraineeRecord } from '../types.ts';
 
 export const APPLIED_PSYCHOLOGY_QUESTIONS: Question[] = [
   {

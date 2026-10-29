@@ -32,12 +32,15 @@ import {
   Calculator,
   UserCheck,
   Percent,
-  ListOrdered
+  ListOrdered,
+  UserPlus
 } from 'lucide-react';
 import { playCyberClick, playSuccessChime } from '../utils/soundEffects';
 import { getAllAvailableCourses, getCourseModules } from '../utils/courseManager';
 import { resolveCourseTrainees } from '../utils/courseTraineeHelper';
+import { MASTER_EMPLOYEE_ROSTER_230 } from '../data/employeeDatabase';
 import * as XLSX from 'xlsx';
+import { TCTLogo } from './TCTLogo';
 
 interface InhouseTrainingReportModalProps {
   trainees: TraineeRecord[];
@@ -563,6 +566,112 @@ const BASE_KNOWN_REPORTS: Record<string, Partial<CourseReportDetail>> = {
       activityPhotos: true,
       othersText: 'ผลการทดสอบ Pre-Test / Post-Test ระบบอิเล็กทรอนิกส์ & แฟ้มใบรับรอง'
     }
+  },
+  'good-employee-skills': {
+    courseTitle: 'หลักสูตรพัฒนาศักยภาพพนักงานระดับต้น “ทักษะการเป็นพนักงานที่ดี” (Good Employee Skills: ปฐมนิเทศ ระเบียบวินัย มารยาท และวัฒนธรรมองค์กร)',
+    courseTitleEn: 'Good Employee Skills: New Employee Orientation, Work Rules, Etiquette and Corporate Culture (TCT-GES-01)',
+    trainingDates: 'วันที่ 20 - 24 ตุลาคม 2569 (08:00 - 16:00 น.)',
+    duration: '6 ชั่วโมง (Onsite Training 6 ชั่วโมง / Online Micro-Training 30 นาที)',
+    location: 'ศูนย์ฝึกอบรมและพัฒนาบุคลากร TCT Academy (Personnel Development And Training Center) บริษัท เทยิน คอร์ด (ประเทศไทย) จำกัด',
+    trainer: 'นายณฐวัตร พงษ์สาริกิจ (หัวหน้าแผนกบุคคลและธุรการ) และทีมวิทยากร TCT Academy',
+    trainerType: 'internal',
+    targetGroup: 'พนักงานปฏิบัติการ (Worker) ที่บรรจุใหม่ทุกคน ก่อนหรือภายใน 7 วันแรกของการเริ่มปฏิบัติงาน',
+    budget: '0 บาท (หลักสูตรพัฒนาและอบรมภายในสถานประกอบการ Internal In-House Training)',
+    learningFormat: '2 รูปแบบผสมผสาน: Onsite Training 6 ชั่วโมง (บรรยาย, กิจกรรมกลุ่มละลายพฤติกรรม, Role Play, เดินสำรวจหน้างาน) และ Online Micro-Training 30 นาที (7 Micro-lessons + Online Quiz ผ่านระบบ e-Learning)',
+    plannedCount: 20,
+    actualCount: 20,
+    passedCount: 20,
+    passRate: 100,
+    avgPreScore: '55.0',
+    avgPostScore: '96.0',
+    scoreGrowthPercent: '+74.5%',
+    assessmentRemarks: '✓ ผู้เข้ารับการอบรมทุกคนผ่านเกณฑ์มาตรฐานการประเมิน (Onsite ≥70%, Online ≥80%) ครบ 100%',
+    showTraineeRosterTable: true,
+    satisfactionScores: {
+      overall: '4.95',
+      content: '4.94',
+      trainer: '4.97',
+      media: '4.93',
+      application: '4.96'
+    },
+    gaps: [
+      'พนักงานปฏิบัติการใหม่จำเป็นต้องเข้าใจกฎ ระเบียบ ข้อบังคับ เวลาทำงาน 4 กะ วันหยุด และสิทธิการลาตั้งแต่วันแรกที่เริ่มงาน',
+      'การรับรู้กฎระเบียบเพียงอย่างเดียวไม่เพียงพอ ต้องสร้างทักษะเชิงพฤติกรรม (Soft Skills) มารยาทการสื่อสารตามสายบังคับบัญชา และ Anti-Harassment',
+      'ต้องสร้างความตระหนักด้านความปลอดภัย อาชีวอนามัย การสวมใส่ PPE ครบชุด 5ส และรู้จักเส้นทางหนีไฟพร้อมจุดรวมพลเพื่อมุ่งสู่ Zero Accident'
+    ],
+    objectives: [
+      'เพื่อให้พนักงานปฏิบัติการใหม่มีความรู้ความเข้าใจในระเบียบข้อบังคับเกี่ยวกับการทำงานของบริษัทฯ ตามระเบียบข้อบังคับฉบับปรับปรุง 1 ม.ค. 2569',
+      'เพื่อให้พนักงานใหม่เข้าใจและปฏิบัติตนตามมารยาทและวัฒนธรรมการทำงานร่วมกันในองค์กรได้อย่างถูกต้อง (Chain of Command & Anti-Harassment)',
+      'เพื่อให้พนักงานตระหนักถึงความปลอดภัยในการทำงาน สวมใส่ PPE ครบถ้วน และปฏิบัติตามขั้นตอนกรณีเหตุฉุกเฉิน/จุดรวมพล',
+      'เพื่อให้พนักงานรับทราบสิทธิประโยชน์ สวัสดิการ และช่องทางการสื่อสาร/ร้องทุกข์ภายในองค์กร (หมวดที่ 9 และ 12)',
+      'เพื่อสร้างเจตคติเชิงบวก ความรู้สึกผูกพันต่อองค์กร (Employee Engagement) และปลูกฝังทัศนคติใฝ่พัฒนาตนเอง (Growth Mindset)'
+    ],
+    kpis: [
+      'อัตราการผ่านการทดสอบหลังเรียน 100% (Onsite Post-test ≥ 70%, Online Quiz ≥ 80%)',
+      'ความพึงพอใจต่อหลักสูตรและวิทยากรเฉลี่ย ≥ 95% (≥ 4.75 เต็ม 5.00 ตามแบบประเมิน 6 ข้อ ภาคผนวก หน้า 20)',
+      'ลดอัตราความผิดพลาดจากการฝ่าฝืนกฎระเบียบและอุบัติเหตุในการทำงานของพนักงานใหม่ลง 100%'
+    ],
+    sessions: [
+      'โมดูลที่ 1 : พิธีเปิด และกิจกรรมละลายพฤติกรรม "รู้จักฉัน รู้จักเธอ" (30 นาที)',
+      'โมดูลที่ 2 : รู้จักองค์กร วิสัยทัศน์ พันธกิจ ค่านิยมหลัก และวัฒนธรรมองค์กร TCT (60 นาที)',
+      'โมดูลที่ 3 : ระเบียบข้อบังคับเกี่ยวกับการทำงาน เวลาทำงาน 4 กะ วันหยุด การลา 8 ประเภท และวินัย 5 ขั้น (60 นาที)',
+      'โมดูลที่ 4 : มารยาทและพฤติกรรมในการทำงาน การสื่อสารตามสายบังคับบัญชา และนโยบาย Anti-Harassment (60 นาที)',
+      'โมดูลที่ 5 : ความปลอดภัย อาชีวอนามัย PPE ป้ายสัญลักษณ์ 5ส และเส้นทางหนีไฟ/จุดรวมพล (60 นาที)',
+      'โมดูลที่ 6 : สวัสดิการ โบนัส กองทุน ช่องทางการสื่อสาร และการยื่นเรื่องร้องทุกข์ (45 นาที)',
+      'โมดูลที่ 7 : กิจกรรมกลุ่มสรุปความรู้ Quiz Show แบบทดสอบ Post-Test และพิธีมอบเกียรติบัตร (45 นาที)'
+    ],
+    methodologies: {
+      lecture: true,
+      workshop: true,
+      ojt: true,
+      caseStudy: true,
+      microLearning: true,
+      othersText: 'บรรยาย + กิจกรรมกลุ่มละลายพฤติกรรม + Role Play + เดินสำรวจเส้นทางหนีไฟจริง + Micro E-Learning'
+    },
+    actionPlans: [
+      'นำระเบียบวินัย 4 กะ การบันทึกเวลา และการยื่นใบลาอย่างถูกต้องมาปฏิบัติจริง 100%',
+      'สวมใส่อุปกรณ์ PPE ครบชุดตามป้ายบังคับสีน้ำเงินทุกครั้งก่อนเข้าพื้นที่ปฏิบัติงาน',
+      'ปฏิบัติตามมาตรฐาน 5ส และยึดมั่นการสื่อสารที่สุภาพตามสายบังคับบัญชา (Chain of Command)'
+    ],
+    workEvidences: [
+      'แบบบันทึกผลการทดสอบ Pre-Test และ Post-Test 20 ข้อ (Onsite) และ 10 ข้อ (Online Quiz) ระบบดิจิทัล',
+      'แบบประเมินผลการฝึกอบรม 6 หัวข้อประเมิน (ภาคผนวก หน้า 20) และวุฒิบัตรอิเล็กทรอนิกส์ TCT-GES-01',
+      'ภาพถ่ายการทำกิจกรรมกลุ่มละลายพฤติกรรม Role Play และการเดินสำรวจเส้นทางหนีไฟและจุดรวมพล'
+    ],
+    supervisorFollowUps: {
+      day30: 'พนักงานใหม่สามารถปฏิบัติตามกฎระเบียบ การบันทึกเวลา และการสวมใส่ PPE ได้ถูกต้อง 100%',
+      day60: 'การปรับตัวเข้ากับทีมงานและการสื่อสารราบรื่น ไม่มีข้อร้องเรียนเรื่องพฤติกรรมหรือการขาดลามาสาย',
+      day90: 'ผ่านการประเมินผลทดลองงาน (Probation 90 วัน) บรรจุเป็นพนักงานประจำที่มีคุณภาพและมีวินัย'
+    },
+    gapClosures: [
+      {
+        gap: 'พนักงานใหม่ยังไม่เข้าใจกฎระเบียบ วินัย และวัฒนธรรมองค์กร',
+        target: 'ผ่านการทดสอบมาตรฐาน ≥ 80%',
+        actualResult: 'ผ่านเกณฑ์ 100% (คะแนนเฉลี่ย 96.0%)',
+        status: 'ปิด Gap สมบูรณ์ (Closed)'
+      },
+      {
+        gap: 'ความตระหนักด้านความปลอดภัยและการปฏิบัติตามขั้นตอนฉุกเฉิน',
+        target: 'สวมใส่ PPE 100% และรู้จักจุดรวมพล',
+        actualResult: 'ฝึกปฏิบัติจริงและผ่านการประเมิน 100%',
+        status: 'บรรลุเป้าหมาย (Achieved)'
+      }
+    ],
+    problemsAndSuggestions: {
+      problems: 'พนักงานใหม่บางท่านยังมีความประหม่าและกังวลเกี่ยวกับการปรับตัวในโรงงานอุตสาหกรรมขนาดใหญ่',
+      solutions: 'ใช้กิจกรรมกลุ่มละลายพฤติกรรม (Ice Breaking) และแต่งตั้งพี่เลี้ยง (Buddy) ประกบดูแลใน 7 วันแรก',
+      recommendations: 'จัดให้มีการติดตามผลเชิงบวกโดยหัวหน้ากะและฝ่ายบุคคลทุกสัปดาห์ตลอดช่วงทดลองงาน'
+    },
+    followUpPlans: [
+      'บันทึกประวัติการปฐมนิเทศลงในระบบฐานข้อมูล HRIS และแฟ้มประวัติพนักงาน',
+      'จัดหลักสูตรต่อเนื่อง "ทักษะการเป็นหัวหน้างาน" สำหรับผู้มีศักยภาพในการเลื่อนตำแหน่งต่อไป'
+    ],
+    appendices: {
+      rosterSigned: true,
+      fullEvaluation: true,
+      activityPhotos: true,
+      othersText: 'ผลทดสอบ Onsite Post-test 20 ข้อ, Online Quiz 10 ข้อ, ใบประเมิน 6 ข้อ และวุฒิบัตร TCT-GES-01'
+    }
   }
 };
 
@@ -577,30 +686,31 @@ function buildFullReportDetail(
   const targetCourse = allCoursesList.find(c => c.id === courseId);
   const known = BASE_KNOWN_REPORTS[courseId];
   const dynamicModules = getCourseModules(courseId);
+  const isNoSimulatedCourse = courseId === 'good-employee-skills';
 
   const initialTrainees: ReportTrainee[] = (resolvedTraineesList.length > 0 ? resolvedTraineesList : []).map((t, idx) => ({
     id: `tr-${idx + 1}`,
     empId: t.empId,
     fullName: t.fullName,
     department: t.department,
-    position: (t as any).position || 'พนักงาน',
+    position: (t as any).position || 'พนักงานปฏิบัติการ',
     preTestScore: t.preTestScore ?? 6,
     postTestScore: t.postTestScore ?? 10,
     status: 'ผ่านเกณฑ์มาตรฐาน (100%)'
   }));
 
-  const total = initialTrainees.length > 0 ? initialTrainees.length : 13;
-  const passed = initialTrainees.filter(t => Number(t.postTestScore) >= 8).length || total;
+  const total = initialTrainees.length > 0 ? initialTrainees.length : (isNoSimulatedCourse ? 0 : 13);
+  const passed = initialTrainees.length > 0 ? initialTrainees.filter(t => Number(t.postTestScore) >= 8).length : (isNoSimulatedCourse ? 0 : total);
   const pRate = total > 0 ? Math.round((passed / total) * 100) : 100;
 
   const validPre = initialTrainees.filter(t => !isNaN(Number(t.preTestScore)));
   const validPost = initialTrainees.filter(t => !isNaN(Number(t.postTestScore)));
   const avgPre = validPre.length > 0 
     ? (validPre.reduce((acc, t) => acc + Number(t.preTestScore), 0) / validPre.length * 10).toFixed(1)
-    : '50.0';
+    : (known?.avgPreScore || '50.0');
   const avgPost = validPost.length > 0 
     ? (validPost.reduce((acc, t) => acc + Number(t.postTestScore), 0) / validPost.length * 10).toFixed(1)
-    : '95.0';
+    : (known?.avgPostScore || '95.0');
   const scoreDiffPercent = (((Number(avgPost) - Number(avgPre)) / Number(avgPre)) * 100).toFixed(1);
 
   const titleTh = known?.courseTitle || targetCourse?.thaiTitle || targetCourse?.title || `หลักสูตรการฝึกอบรม ${courseId}`;
@@ -730,14 +840,15 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
 }) => {
   // Modes: 'preview' (ดูตัวอย่างและพิมพ์) | 'edit' (แก้ไขข้อมูลและเลือกรายการพิมพ์เองทั้งหมด)
   const [viewMode, setViewMode] = useState<'preview' | 'edit'>('preview');
-  const [activeTab, setActiveTab] = useState<'all' | 'page1' | 'page2' | 'page3'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'page1' | 'page2' | 'page3' | 'roster'>('all');
   const [editSectionTab, setEditSectionTab] = useState<'general' | 'trainees' | 'gaps_objectives' | 'sessions' | 'satisfaction' | 'actions' | 'closures' | 'signatories'>('trainees');
   
   // Custom print selection flags
   const [printSelection, setPrintSelection] = useState({
     page1: true, // หน้าปก & เสนอพิจารณา
     page2: true, // ข้อมูลหลักสูตร & ผลการประเมินความรู้
-    page3: true  // ผลลัพธ์ต่อองค์กร & ลายมือชื่อ
+    page3: true, // ผลลัพธ์ต่อองค์กร & ลายมือชื่อ
+    roster: true // เอกสารแนบท้าย บัญชีรายชื่อผู้เข้าอบรม
   });
 
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
@@ -781,6 +892,108 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
     return DEFAULT_SIGNATORIES;
   });
 
+  // Master Employee Puller State
+  const [selectedEmpToPull, setSelectedEmpToPull] = useState(MASTER_EMPLOYEE_ROSTER_230[0]?.empId || '00021');
+  const [pullDeptFilter, setPullDeptFilter] = useState('all');
+
+  const masterDepartments = useMemo(() => {
+    const set = new Set<string>();
+    MASTER_EMPLOYEE_ROSTER_230.forEach(e => {
+      if (e.department) set.add(e.department);
+    });
+    return Array.from(set).sort();
+  }, []);
+
+  const filteredMasterEmployees = useMemo(() => {
+    if (pullDeptFilter === 'all') return MASTER_EMPLOYEE_ROSTER_230;
+    return MASTER_EMPLOYEE_ROSTER_230.filter(e => e.department === pullDeptFilter);
+  }, [pullDeptFilter]);
+
+  const handleClearTrainees = () => {
+    if (!window.confirm('คุณแน่ใจหรือไม่ว่าต้องการล้างรายชื่อผู้เข้ารับการอบรมทั้งหมดในตาราง?')) return;
+    playCyberClick();
+    setReportData(prev => ({
+      ...prev,
+      traineesList: [],
+      plannedCount: 0,
+      actualCount: 0,
+      passedCount: 0
+    }));
+  };
+
+  const handlePullSelectedEmployeeToReport = () => {
+    const emp = MASTER_EMPLOYEE_ROSTER_230.find(e => e.empId === selectedEmpToPull);
+    if (!emp) return;
+    playCyberClick();
+    const newTrainee: ReportTrainee = {
+      id: `tr-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+      empId: emp.empId,
+      fullName: emp.fullName,
+      department: emp.department,
+      position: emp.position || 'พนักงาน',
+      preTestScore: 7,
+      postTestScore: 10,
+      status: 'ผ่านเกณฑ์มาตรฐาน (100%)'
+    };
+    setReportData(prev => {
+      const nextList = [...prev.traineesList, newTrainee];
+      const count = nextList.length;
+      return {
+        ...prev,
+        traineesList: nextList,
+        plannedCount: count,
+        actualCount: count,
+        passedCount: count
+      };
+    });
+  };
+
+  const handlePullAll224ToReport = () => {
+    playSuccessChime();
+    const allTrainees: ReportTrainee[] = MASTER_EMPLOYEE_ROSTER_230.map((emp, idx) => ({
+      id: `tr-all-${idx + 1}-${emp.empId}-${Date.now()}`,
+      empId: emp.empId,
+      fullName: emp.fullName,
+      department: emp.department,
+      position: emp.position || 'พนักงาน',
+      preTestScore: 7,
+      postTestScore: 10,
+      status: 'ผ่านเกณฑ์มาตรฐาน (100%)'
+    }));
+    setReportData(prev => ({
+      ...prev,
+      traineesList: allTrainees,
+      plannedCount: allTrainees.length,
+      actualCount: allTrainees.length,
+      passedCount: allTrainees.length
+    }));
+  };
+
+  const handlePullDepartmentToReport = (dept: string) => {
+    playSuccessChime();
+    const deptEmployees = MASTER_EMPLOYEE_ROSTER_230.filter(e => e.department === dept);
+    const newItems: ReportTrainee[] = deptEmployees.map((emp, idx) => ({
+      id: `tr-dept-${dept}-${idx + 1}-${emp.empId}-${Date.now()}`,
+      empId: emp.empId,
+      fullName: emp.fullName,
+      department: emp.department,
+      position: emp.position || 'พนักงาน',
+      preTestScore: 7,
+      postTestScore: 10,
+      status: 'ผ่านเกณฑ์มาตรฐาน (100%)'
+    }));
+    setReportData(prev => {
+      const nextList = [...prev.traineesList, ...newItems];
+      return {
+        ...prev,
+        traineesList: nextList,
+        plannedCount: nextList.length,
+        actualCount: nextList.length,
+        passedCount: nextList.length
+      };
+    });
+  };
+
   // Update reportData ONLY when selectedCourseId changes (never wipe on background polling!)
   useEffect(() => {
     try {
@@ -810,6 +1023,26 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
       localStorage.setItem('tct_inhouse_signatories', JSON.stringify(signatories));
     } catch (e) {}
   }, [signatories]);
+
+  // Dynamic chunking for Trainee Roster Annex sheets so no trainees are omitted or truncated
+  const ROSTER_PAGE_SIZE = 18;
+  const rosterPages = useMemo(() => {
+    const list = reportData.traineesList || [];
+    if (list.length === 0) return [];
+    const pages = [];
+    const total = Math.ceil(list.length / ROSTER_PAGE_SIZE);
+    for (let i = 0; i < total; i++) {
+      const start = i * ROSTER_PAGE_SIZE;
+      pages.push({
+        pageNumber: i + 1,
+        totalPages: total,
+        trainees: list.slice(start, start + ROSTER_PAGE_SIZE),
+        startIndex: start,
+        isLast: i === total - 1
+      });
+    }
+    return pages;
+  }, [reportData.traineesList]);
 
   // Page DOM Refs for multi-page export
   const page1Ref = useRef<HTMLDivElement>(null);
@@ -1002,6 +1235,10 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
     if (printSelection.page1 && page1Ref.current) pages.push(page1Ref.current);
     if (printSelection.page2 && page2Ref.current) pages.push(page2Ref.current);
     if (printSelection.page3 && page3Ref.current) pages.push(page3Ref.current);
+    if (printSelection.roster && printableContainerRef.current) {
+      const rosterEls = Array.from(printableContainerRef.current.querySelectorAll('.inhouse-roster-page')) as HTMLElement[];
+      rosterEls.forEach(el => pages.push(el));
+    }
     return pages;
   };
 
@@ -1168,7 +1405,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
         }
       `}</style>
 
-      <div className="relative w-full max-w-6xl max-h-[96vh] bg-slate-900 border border-slate-700/80 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-100">
+      <div className="relative w-full max-w-[95vw] sm:max-w-6xl max-h-[96vh] bg-slate-900 border border-slate-700/80 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-100">
         
         {/* Top Header & Toolbar (No-Print) */}
         <div className="p-3 sm:p-4 bg-slate-950/90 border-b border-slate-800 flex flex-col gap-3 shrink-0 no-print">
@@ -1176,7 +1413,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
             
             {/* Left: Title & Mode Toggle */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 shrink-0">
                 <FileText className="w-5 h-5" />
               </div>
               <div>
@@ -1184,7 +1421,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                   <h2 className="text-sm sm:text-base font-bold text-white tracking-wide">
                     แบบรายงานผลการฝึกอบรมภายใน (IN-HOUSE TRAINING REPORT)
                   </h2>
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-blue-900/60 text-blue-200 border border-blue-500/30 font-bold">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-bold">
                     A4 แนวตั้ง (3 แผ่น)
                   </span>
                 </div>
@@ -1196,7 +1433,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
 
             {/* Course Selector Dropdown */}
             <div className="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-700">
-              <span className="text-xs font-bold text-cyan-400 shrink-0">หลักสูตร:</span>
+              <span className="text-xs font-bold text-slate-400 shrink-0">หลักสูตร:</span>
               <select
                 value={selectedCourseId}
                 onChange={(e) => {
@@ -1221,7 +1458,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                   type="button"
                   onClick={() => { playCyberClick(); setViewMode('preview'); }}
                   className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                    viewMode === 'preview' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                    viewMode === 'preview' ? 'bg-slate-800 text-white shadow-xs border border-slate-700' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   <Eye className="w-3.5 h-3.5" />
@@ -1231,7 +1468,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                   type="button"
                   onClick={() => { playCyberClick(); setViewMode('edit'); }}
                   className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                    viewMode === 'edit' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                    viewMode === 'edit' ? 'bg-slate-800 text-white shadow-xs border border-slate-700' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   <Edit3 className="w-3.5 h-3.5" />
@@ -1242,30 +1479,30 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
               <button
                 type="button"
                 onClick={handleSaveReport}
-                className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-slate-300 shadow-xs"
                 title="บันทึกข้อมูลรายงานเพื่อไม่ให้ข้อมูลหายและไม่กลับเป็นค่าเดิม"
               >
-                <Check className="w-4 h-4 text-emerald-200" />
+                <Check className="w-4 h-4 text-slate-700" />
                 <span>บันทึกข้อมูลรายงาน</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleExportExcel}
-                className="px-3 py-1.5 rounded-xl bg-emerald-950 hover:bg-emerald-900 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-all border border-emerald-500/40 cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all border border-slate-700 cursor-pointer"
                 title="ส่งออกสรุปรายงานและรายชื่อผู้เรียนเป็น Excel"
               >
-                <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                <FileSpreadsheet className="w-4 h-4 text-slate-400" />
                 <span>Excel</span>
               </button>
 
               <button
                 type="button"
                 onClick={handlePrint}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-slate-700 cursor-pointer shadow-sm"
+                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-slate-700 cursor-pointer shadow-xs"
                 title="พิมพ์หน้าที่เลือกในขนาด A4 แนวตั้ง"
               >
-                <Printer className="w-4 h-4 text-cyan-400" />
+                <Printer className="w-4 h-4 text-slate-300" />
                 <span>พิมพ์เอกสาร (A4)</span>
               </button>
 
@@ -1273,7 +1510,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                 type="button"
                 onClick={handleDownloadPdf}
                 disabled={isPdfGenerating}
-                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow cursor-pointer disabled:opacity-50"
+                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-slate-700 shadow-xs cursor-pointer disabled:opacity-50"
               >
                 {isPdfGenerating ? (
                   <>
@@ -1316,7 +1553,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                       activeTab === 'all' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    ดูทั้ง 3 แผ่น
+                    ดูทุกแผ่น ({3 + rosterPages.length} แผ่น)
                   </button>
                   <button
                     type="button"
@@ -1325,7 +1562,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                       activeTab === 'page1' ? 'bg-cyan-600 text-white font-bold' : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    แผ่นที่ 1 (หน้าปก &amp; เสนอพิจารณา)
+                    แผ่นที่ 1 (หน้าปก)
                   </button>
                   <button
                     type="button"
@@ -1343,13 +1580,24 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                       activeTab === 'page3' ? 'bg-cyan-600 text-white font-bold' : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    แผ่นที่ 3 (ผลลัพธ์ &amp; ลายมือชื่อ)
+                    แผ่นที่ 3 (ลายมือชื่อ)
                   </button>
+                  {rosterPages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => { playCyberClick(); setActiveTab('roster'); }}
+                      className={`px-2.5 py-1 rounded transition-all cursor-pointer ${
+                        activeTab === 'roster' ? 'bg-purple-600 text-white font-bold shadow' : 'text-purple-300 hover:text-white'
+                      }`}
+                    >
+                      เอกสารแนบท้าย ({reportData.traineesList.length} ท่าน)
+                    </button>
+                  )}
                 </div>
               </div>
 
               {/* Page selection checkboxes for print */}
-              <div className="flex items-center gap-3 bg-slate-950 px-3 py-1 rounded-lg border border-slate-800 text-[11.5px]">
+              <div className="flex items-center gap-3 bg-slate-950 px-3 py-1 rounded-lg border border-slate-800 text-[11.5px] flex-wrap">
                 <span className="text-amber-400 font-bold">พิมพ์/PDF เฉพาะ:</span>
                 <label className="flex items-center gap-1 cursor-pointer text-slate-300 hover:text-white">
                   <input
@@ -1378,6 +1626,17 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                   />
                   <span>แผ่นที่ 3</span>
                 </label>
+                {rosterPages.length > 0 && (
+                  <label className="flex items-center gap-1 cursor-pointer text-purple-300 hover:text-white font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={printSelection.roster}
+                      onChange={(e) => setPrintSelection(prev => ({ ...prev, roster: e.target.checked }))}
+                      className="accent-purple-500 rounded"
+                    />
+                    <span>เอกสารแนบท้าย ({reportData.traineesList.length} ท่าน)</span>
+                  </label>
+                )}
               </div>
             </div>
           )}
@@ -1612,7 +1871,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                 </div>
 
                 {/* Trainees Table Management */}
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h4 className="font-bold text-white text-sm flex items-center gap-2">
@@ -1620,11 +1879,11 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                         <span>รายชื่อผู้เข้ารับการอบรม ({reportData.traineesList.length} ท่าน)</span>
                       </h4>
                       <p className="text-[11px] text-slate-400 mt-0.5">
-                        สามารถแก้ไขรายชื่อ, รหัสพนักงาน, แผนก, คะแนน Pre-Test, Post-Test หรือเพิ่ม/ลบผู้เรียนได้
+                        เชื่อมโยงทะเบียนพนักงานทางการ ({MASTER_EMPLOYEE_ROSTER_230.length} ท่าน) ดึงรายชื่อมาได้ไม่จำกัด ดึงซ้ำได้ ลบได้ และแก้ไขได้ทุกช่อง
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
                         <input
                           type="checkbox"
@@ -1637,21 +1896,12 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
 
                       <button
                         type="button"
-                        onClick={handlePullTraineesFromSystem}
-                        className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1.5 shadow cursor-pointer"
-                        title="ดึงรายชื่อผู้ที่ลงทะเบียนหรือส่งข้อสอบหลักสูตรนี้เข้าตารางรายงานทันที"
+                        onClick={handleAutoCalculateStats}
+                        className="px-3 py-1.5 rounded-xl bg-purple-600/80 hover:bg-purple-600 text-white text-xs font-bold flex items-center gap-1.5 shadow cursor-pointer"
+                        title="คำนวณจำนวนผู้เรียน คะแนนเฉลี่ย และผลการประเมินจากตารางรายชื่ออัตโนมัติ"
                       >
-                        <Users className="w-4 h-4" />
-                        <span>📥 ดึงรายชื่อจากระบบ</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleAddTrainee}
-                        className="px-3.5 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold flex items-center gap-1.5 shadow cursor-pointer"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span>เพิ่มผู้เรียน</span>
+                        <Calculator className="w-3.5 h-3.5" />
+                        <span>คำนวณสถิติ</span>
                       </button>
 
                       <button
@@ -1662,6 +1912,121 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                       >
                         <Check className="w-4 h-4" />
                         <span>💾 บันทึกรายชื่อ</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* MASTER EMPLOYEE ROSTER PULLER TOOLBAR */}
+                  <div className="bg-slate-950 border border-cyan-500/30 rounded-xl p-3 space-y-3">
+                    <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-slate-800 text-xs">
+                      <span className="font-bold text-cyan-400 flex items-center gap-1.5">
+                        <UserPlus className="w-4 h-4" />
+                        <span>ดึงรายชื่อจากทะเบียนพนักงานทางการ (MASTER ROSTER {MASTER_EMPLOYEE_ROSTER_230.length} คน)</span>
+                      </span>
+                      <span className="text-[11px] text-slate-400">
+                        *สามารถดึงมาซ้ำได้ ไม่จำกัดจำนวน และแก้ไขได้ทุกเซลล์
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-end">
+                      {/* Filter Dept */}
+                      <div className="md:col-span-3 space-y-1">
+                        <label className="text-[10px] text-slate-400 font-bold block">กรองตามแผนก:</label>
+                        <select
+                          value={pullDeptFilter}
+                          onChange={(e) => setPullDeptFilter(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none cursor-pointer"
+                        >
+                          <option value="all">ทั้งหมด ทุกแผนก ({MASTER_EMPLOYEE_ROSTER_230.length} คน)</option>
+                          {masterDepartments.map(dept => (
+                            <option key={dept} value={dept}>
+                              {dept} ({MASTER_EMPLOYEE_ROSTER_230.filter(e => e.department === dept).length} คน)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Select Employee */}
+                      <div className="md:col-span-5 space-y-1">
+                        <label className="text-[10px] text-slate-400 font-bold block">เลือกพนักงานที่ต้องการดึง:</label>
+                        <select
+                          value={selectedEmpToPull}
+                          onChange={(e) => setSelectedEmpToPull(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none cursor-pointer"
+                        >
+                          {filteredMasterEmployees.map(emp => (
+                            <option key={emp.empId} value={emp.empId}>
+                              [{emp.empId}] {emp.fullName} ({emp.department} - {emp.position || 'พนักงาน'})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Pull Button */}
+                      <div className="md:col-span-4 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handlePullSelectedEmployeeToReport}
+                          className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow transition-all cursor-pointer"
+                          title="ดึงพนักงานท่านนี้ลงในตารางรายงาน (สามารถดึงซ้ำได้ไม่จำกัด)"
+                        >
+                          <UserPlus className="w-4 h-4" />
+                          <span>+ ดึงพนักงานท่านนี้ (ซ้ำได้)</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Batch Actions Bar */}
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={handlePullAll224ToReport}
+                        className="px-2.5 py-1 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                        title="ดึงพนักงานทั้งบริษัท 224 คน เข้าสู่ตารางรายงาน"
+                      >
+                        <Users className="w-3.5 h-3.5" />
+                        <span>ดึงพนักงานทั้งบริษัท 224 คน</span>
+                      </button>
+
+                      {pullDeptFilter !== 'all' && (
+                        <button
+                          type="button"
+                          onClick={() => handlePullDepartmentToReport(pullDeptFilter)}
+                          className="px-2.5 py-1 rounded-lg bg-teal-600/80 hover:bg-teal-600 text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                          title={`ดึงเฉพาะแผนก ${pullDeptFilter} ทั้งหมด`}
+                        >
+                          <Building className="w-3.5 h-3.5" />
+                          <span>ดึงแผนก {pullDeptFilter} ({filteredMasterEmployees.length} คน)</span>
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={handlePullTraineesFromSystem}
+                        className="px-2.5 py-1 rounded-lg bg-amber-600/80 hover:bg-amber-600 text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                        title="ดึงรายชื่อผู้ที่ลงทะเบียนหรือส่งข้อสอบหลักสูตรนี้เข้าตารางรายงานทันที"
+                      >
+                        <Users className="w-3.5 h-3.5" />
+                        <span>📥 ดึงผู้ลงทะเบียนในระบบ</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleAddTrainee}
+                        className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>เพิ่มแถวเปล่า</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleClearTrainees}
+                        className="px-2.5 py-1 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/40 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ml-auto"
+                        title="ลบรายชื่อทั้งหมดในตาราง"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>ล้างตาราง</span>
                       </button>
                     </div>
                   </div>
@@ -2403,9 +2768,9 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                   playSuccessChime();
                   setViewMode('preview');
                 }}
-                className="px-6 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold flex items-center gap-2 shadow cursor-pointer"
+                className="px-6 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-4 h-4 text-slate-700" />
                 <span>บันทึกการแก้ไขและดูตัวอย่าง (Apply Changes)</span>
               </button>
             </div>
@@ -2415,9 +2780,9 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
           /* ========================================================================= */
           /* VIEW MODE 2: PREVIEW & PRINT (3 หน้า A4 แนวตั้ง - ฟ้อนต์ Sarabun สม่ำเสมอ) */
           /* ========================================================================= */
-          <div className="flex-1 overflow-y-auto p-2 sm:p-6 bg-slate-950/95 flex flex-col items-center gap-6">
+          <div className="flex-1 overflow-y-auto overflow-x-auto w-full max-w-full p-2 sm:p-6 bg-slate-950/95 flex flex-col items-center gap-6">
             
-            <div ref={printableContainerRef} className="w-full flex flex-col items-center gap-8">
+            <div ref={printableContainerRef} className="w-full max-w-full flex flex-col items-center gap-8">
               
               {/* ========================================================================= */}
               {/* PAGE 1: หน้าปกรายงาน & สายการพิจารณา (COVER PAGE & APPROVAL ROUTING)      */}
@@ -2429,7 +2794,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                   style={{
                     fontFamily: "'TH Sarabun New', 'THSarabunNew', 'Sarabun', 'TH Sarabun PSK', sans-serif"
                   }}
-                  className="bg-white text-black p-6 sm:p-8 shadow-2xl transition-all border border-slate-300 text-xs sm:text-[13px] leading-snug rounded-sm w-full max-w-[794px] min-h-[1120px] max-h-[1122px] overflow-hidden flex flex-col justify-between inhouse-portrait-page"
+                  className="bg-white text-black p-6 sm:p-8 shadow-2xl transition-all border border-slate-300 text-xs sm:text-[13px] leading-snug rounded-sm w-full max-w-[794px] min-h-[1120px] flex flex-col justify-between inhouse-portrait-page a4-page-portrait"
                 >
                   <div>
                     {/* Top Confidential Header - Pure Typography */}
@@ -2656,7 +3021,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                   style={{
                     fontFamily: "'TH Sarabun New', 'THSarabunNew', 'Sarabun', 'TH Sarabun PSK', sans-serif"
                   }}
-                  className="bg-white text-black p-6 sm:p-8 shadow-2xl transition-all border border-slate-300 text-xs sm:text-[12.5px] leading-snug rounded-sm w-full max-w-[794px] min-h-[1120px] max-h-[1122px] overflow-hidden flex flex-col justify-between inhouse-portrait-page"
+                  className="bg-white text-black p-6 sm:p-8 shadow-2xl transition-all border border-slate-300 text-xs sm:text-[12.5px] leading-snug rounded-sm w-full max-w-[794px] min-h-[1120px] flex flex-col justify-between inhouse-portrait-page a4-page-portrait"
                 >
                   <div>
                     {/* Top Header */}
@@ -2822,40 +3187,51 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                           {reportData.assessmentRemarks}
                         </div>
 
-                        {/* Optional Roster Table on Page 2 if enabled */}
-                        {reportData.showTraineeRosterTable && reportData.traineesList.length > 0 && (
-                          <div className="mt-2.5 border border-black">
-                            <div className="bg-slate-100 px-2 py-1 font-bold text-[11px] text-black border-b border-black flex justify-between items-center">
-                              <span>ตารางรายชื่อผู้เข้าอบรมและผลสัมฤทธิ์ ({reportData.traineesList.length} ท่าน)</span>
-                              <span className="text-[10px] text-emerald-900 font-bold">เกณฑ์ผ่าน ≥80% (100% Pass)</span>
-                            </div>
-                            <table className="w-full border-collapse text-[10.5px]">
-                              <thead>
-                                <tr className="bg-slate-200 border-b border-black font-bold text-center">
-                                  <th className="border-r border-black p-1 w-7">ลำดับ</th>
-                                  <th className="border-r border-black p-1 w-20">รหัส</th>
-                                  <th className="border-r border-black p-1 text-left">ชื่อ-นามสกุล</th>
-                                  <th className="border-r border-black p-1 text-left w-24">แผนก</th>
-                                  <th className="border-r border-black p-1 w-14">Pre-Test</th>
-                                  <th className="border-r border-black p-1 w-14">Post-Test</th>
-                                  <th className="p-1 w-24">ผลการประเมิน</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-black text-center">
-                                {reportData.traineesList.map((t, idx) => (
-                                  <tr key={t.id || idx} className="hover:bg-slate-50">
-                                    <td className="border-r border-black p-0.5">{idx + 1}</td>
-                                    <td className="border-r border-black p-0.5 font-bold">{t.empId}</td>
-                                    <td className="border-r border-black p-0.5 text-left font-medium px-1.5">{t.fullName}</td>
-                                    <td className="border-r border-black p-0.5 text-left px-1.5">{t.department}</td>
-                                    <td className="border-r border-black p-0.5">{t.preTestScore}/10</td>
-                                    <td className="border-r border-black p-0.5 font-bold text-emerald-900">{t.postTestScore}/10</td>
-                                    <td className="p-0.5 font-bold text-emerald-900 text-[10px]">✓ {t.status || 'ผ่านเกณฑ์ 100%'}</td>
+                        {/* Trainee Roster Summary & Reference to Annex Sheets */}
+                        {reportData.showTraineeRosterTable && (
+                          reportData.traineesList.length > 0 ? (
+                            <div className="mt-2 border border-black rounded overflow-hidden">
+                              <div className="bg-slate-100 px-2 py-1 font-bold text-[10.5px] text-black border-b border-black flex justify-between items-center">
+                                <span>สรุปบัญชีรายชื่อผู้เข้าอบรม ({reportData.traineesList.length} ท่าน)</span>
+                                <span className="text-[10px] text-emerald-900 font-bold">เกณฑ์ผ่าน ≥80% (100% Pass)</span>
+                              </div>
+                              <table className="w-full border-collapse text-[10px]">
+                                <thead>
+                                  <tr className="bg-slate-200 border-b border-black font-bold text-center">
+                                    <th className="border-r border-black p-0.5 w-7">ลำดับ</th>
+                                    <th className="border-r border-black p-0.5 w-20">รหัส</th>
+                                    <th className="border-r border-black p-0.5 text-left px-1.5">ชื่อ-นามสกุล</th>
+                                    <th className="border-r border-black p-0.5 text-left px-1.5 w-24">แผนก</th>
+                                    <th className="border-r border-black p-0.5 w-12">Pre</th>
+                                    <th className="border-r border-black p-0.5 w-12">Post</th>
+                                    <th className="p-0.5 w-20">ผลประเมิน</th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
+                                </thead>
+                                <tbody className="divide-y divide-black text-center">
+                                  {reportData.traineesList.slice(0, 3).map((t, idx) => (
+                                    <tr key={t.id || idx} className="hover:bg-slate-50">
+                                      <td className="border-r border-black p-0.5">{idx + 1}</td>
+                                      <td className="border-r border-black p-0.5 font-bold font-mono">{t.empId}</td>
+                                      <td className="border-r border-black p-0.5 text-left font-medium px-1.5">{t.fullName}</td>
+                                      <td className="border-r border-black p-0.5 text-left px-1.5">{t.department}</td>
+                                      <td className="border-r border-black p-0.5">{t.preTestScore}/10</td>
+                                      <td className="border-r border-black p-0.5 font-bold text-emerald-900">{t.postTestScore}/10</td>
+                                      <td className="p-0.5 font-bold text-emerald-900 text-[9.5px]">✓ ผ่านเกณฑ์</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                              <div className="bg-slate-50 px-2 py-0.5 text-[9.5px] text-slate-700 flex justify-between items-center border-t border-slate-300">
+                                <span className="italic">* ดูรายชื่อและผลคะแนนฉบับเต็มครบทั้ง {reportData.traineesList.length} ท่าน ในเอกสารแนบท้าย (Annex)</span>
+                                <span className="font-bold text-blue-900">แผ่นแนบท้าย {rosterPages.length} หน้า</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="mt-2 border border-dashed border-slate-300 rounded p-2.5 text-center text-xs bg-slate-50/80">
+                              <p className="font-bold text-slate-700">ไม่มีรายชื่อจำลองในหลักสูตรนี้ (ระบบตั้งค่า: ไม่จำลองรายชื่อ)</p>
+                              <p className="text-[10px] text-slate-500 mt-0.5">ระบบพร้อมบันทึกรายชื่อและผลคะแนนจริงโดยอัตโนมัติเมื่อพนักงานเข้าสู่ระบบเพื่อฝึกอบรม</p>
+                            </div>
+                          )
                         )}
                       </div>
 
@@ -2881,7 +3257,7 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                   style={{
                     fontFamily: "'TH Sarabun New', 'THSarabunNew', 'Sarabun', 'TH Sarabun PSK', sans-serif"
                   }}
-                  className="bg-white text-black p-6 sm:p-8 shadow-2xl transition-all border border-slate-300 text-xs sm:text-[12.5px] leading-snug rounded-sm w-full max-w-[794px] min-h-[1120px] max-h-[1122px] overflow-hidden flex flex-col justify-between inhouse-portrait-page"
+                  className="bg-white text-black p-6 sm:p-8 shadow-2xl transition-all border border-slate-300 text-xs sm:text-[12.5px] leading-snug rounded-sm w-full max-w-[794px] min-h-[1120px] flex flex-col justify-between inhouse-portrait-page a4-page-portrait"
                 >
                   <div>
                     {/* Top Header */}
@@ -3065,6 +3441,129 @@ export const InhouseTrainingReportModal: React.FC<InhouseTrainingReportModalProp
                   </div>
                 </div>
               )}
+
+              {/* Annex Roster Pages (A4 Portrait) */}
+              {printSelection.roster && (activeTab === 'all' || activeTab === 'roster') && rosterPages.map((p) => (
+                <div
+                  key={`inhouse-roster-page-${p.pageNumber}`}
+                  id={`inhouse-roster-page-${p.pageNumber}`}
+                  style={{
+                    fontFamily: "'TH Sarabun New', 'Sarabun', 'Prompt', sans-serif"
+                  }}
+                  className="w-full max-w-[794px] min-h-[1120px] bg-white text-slate-900 rounded-xl p-5 sm:p-7 shadow-2xl border border-slate-300 font-sarabun flex flex-col justify-between a4-page-portrait inhouse-report-page inhouse-roster-page"
+                >
+                  <div>
+                    {/* Header */}
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b-2 border-black">
+                      <div>
+                        <div className="text-sm sm:text-base font-bold text-[#0F2A4A]">
+                          ศูนย์ฝึกอบรมและพัฒนา TCT Academy Personnel Development &amp; Training Center
+                        </div>
+                        <div className="text-xs sm:text-sm font-semibold text-slate-700 tracking-wide">
+                          บริษัท เทยิน คอร์ด (ประเทศไทย) จำกัด • TEIJIN CORD (THAILAND) CO., LTD.
+                        </div>
+                      </div>
+                      <div className="w-24 flex justify-end">
+                        <TCTLogo size="xs" theme="light" showSubtitle={false} />
+                      </div>
+                    </div>
+
+                    {/* Title */}
+                    <div className="text-center my-2">
+                      <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        เอกสารแนบท้ายแบบรายงานผลการฝึกอบรมภายใน (IN-HOUSE TRAINING REPORT ANNEX)
+                      </div>
+                      <h2 className="text-base sm:text-lg font-bold text-black tracking-tight leading-snug mt-0.5">
+                        บัญชีรายชื่อและผลการทดสอบรายบุคคล (Trainee Roster &amp; Assessment Results)
+                      </h2>
+                      <div className="text-xs font-semibold text-blue-950 mt-1">
+                        หลักสูตร: <span className="underline decoration-blue-900/40 font-bold">{reportData.courseTitle}</span>
+                      </div>
+                      <div className="text-[11px] text-slate-600 font-medium mt-0.5 flex items-center justify-center gap-3 flex-wrap">
+                        <span>รหัสหลักสูตร: <strong>{selectedCourseId}</strong></span>
+                        <span>•</span>
+                        <span>ระยะเวลา: <strong>{reportData.duration}</strong></span>
+                        <span>•</span>
+                        <span>ผู้เข้ารับการอบรมทั้งหมด: <strong>{reportData.traineesList.length} ท่าน</strong></span>
+                      </div>
+                    </div>
+
+                    {/* Table */}
+                    <div className="border border-black overflow-hidden mt-2">
+                      <div className="bg-slate-100 px-2.5 py-1 font-bold text-[11px] text-black border-b border-black flex justify-between items-center">
+                        <span>ลำดับที่ {p.startIndex + 1} - {p.startIndex + p.trainees.length} จาก {reportData.traineesList.length} ท่าน {p.totalPages > 1 ? `(ชุดที่ ${p.pageNumber}/${p.totalPages})` : ''}</span>
+                        <span className="text-[10px] text-emerald-900 font-bold">เกณฑ์ผ่านการทดสอบ ≥ 80% (8/10 คะแนน)</span>
+                      </div>
+                      <table className="w-full border-collapse text-[10.5px]">
+                        <thead>
+                          <tr className="bg-slate-200 border-b border-black font-bold text-center">
+                            <th className="border-r border-black p-1 w-8">ลำดับ</th>
+                            <th className="border-r border-black p-1 w-20">รหัสพนักงาน</th>
+                            <th className="border-r border-black p-1 text-left px-2">ชื่อ-นามสกุล</th>
+                            <th className="border-r border-black p-1 text-left px-2 w-24">แผนก</th>
+                            <th className="border-r border-black p-1 text-left px-2 w-24">ตำแหน่ง</th>
+                            <th className="border-r border-black p-1 w-14">Pre-Test</th>
+                            <th className="border-r border-black p-1 w-14">Post-Test</th>
+                            <th className="p-1 w-28">ผลการประเมิน</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-black text-center">
+                          {p.trainees.map((t, idx) => (
+                            <tr key={t.id || idx} className="hover:bg-slate-50">
+                              <td className="border-r border-black p-1 font-mono font-bold">{p.startIndex + idx + 1}</td>
+                              <td className="border-r border-black p-1 font-bold font-mono text-[#0F2A4A]">{t.empId}</td>
+                              <td className="border-r border-black p-1 text-left font-medium px-2 text-slate-900">{t.fullName}</td>
+                              <td className="border-r border-black p-1 text-left px-2">{t.department}</td>
+                              <td className="border-r border-black p-1 text-left px-2 text-slate-700">{t.position || 'พนักงาน'}</td>
+                              <td className="border-r border-black p-1 font-mono text-purple-900">{t.preTestScore}/10</td>
+                              <td className="border-r border-black p-1 font-mono font-bold text-emerald-900">{t.postTestScore}/10</td>
+                              <td className="p-1 font-bold text-emerald-900 text-[10px]">✓ {t.status || 'ผ่านเกณฑ์ 100%'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Footer or Sign-off */}
+                  <div className="pt-2">
+                    {p.isLast ? (
+                      <div className="border-t border-slate-300 pt-2 space-y-2">
+                        <div className="grid grid-cols-3 gap-3 text-center text-xs">
+                          <div className="p-1.5 rounded bg-slate-50 border border-slate-200">
+                            <div className="text-slate-600 text-[9.5px]">ผู้จัดทำบัญชีรายชื่อ</div>
+                            <div className="font-bold text-black text-[11px] mt-0.5">({signatories.reporterName})</div>
+                            <div className="text-[9px] text-slate-500">{signatories.reporterPosition}</div>
+                          </div>
+                          <div className="p-1.5 rounded bg-slate-50 border border-slate-200">
+                            <div className="text-slate-600 text-[9.5px]">ผู้ตรวจสอบความถูกต้อง</div>
+                            <div className="font-bold text-black text-[11px] mt-0.5">({signatories.reviewerName})</div>
+                            <div className="text-[9px] text-slate-500">{signatories.reviewerPosition}</div>
+                          </div>
+                          <div className="p-1.5 rounded bg-slate-50 border border-slate-200">
+                            <div className="text-slate-600 text-[9.5px]">ผู้อนุมัติผลการอบรม</div>
+                            <div className="font-bold text-black text-[11px] mt-0.5">({signatories.approver1Name})</div>
+                            <div className="text-[9px] text-slate-500">{signatories.approver1Position}</div>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] text-slate-500 pt-1 border-t border-slate-200 font-mono">
+                          <span>ศูนย์ฝึกอบรมและพัฒนา TCT Academy • บริษัท เทยิน คอร์ด (ประเทศไทย) จำกัด</span>
+                          <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">
+                            เอกสารแนบท้าย หน้า {p.pageNumber} จาก {p.totalPages} (แผ่นสุดท้าย / ลายมือชื่ออนุมัติ)
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between items-center text-[11px] text-slate-600 pt-2 border-t border-slate-300">
+                        <span className="italic">* มีรายชื่อผู้เข้าอบรมลำดับที่ {p.startIndex + p.trainees.length + 1} เป็นต้นไป ในเอกสารแนบท้ายหน้า {p.pageNumber + 1}</span>
+                        <span className="font-bold px-2 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono">
+                          เอกสารแนบท้าย หน้า {p.pageNumber} จาก {p.totalPages}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
 
             </div>
 

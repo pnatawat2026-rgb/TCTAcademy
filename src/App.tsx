@@ -42,11 +42,14 @@ import { EditProfileModal } from './components/EditProfileModal';
 import { AdminEmployeeModeBanner } from './components/AdminEmployeeModeBanner';
 import { AssignedCoursesModal } from './components/AssignedCoursesModal';
 import { TrainingSuccessModal } from './components/TrainingSuccessModal';
+import { AutoLocationCheckInModal } from './components/AutoLocationCheckInModal';
 import { 
   subscribeToAllTrainingRosters, 
   subscribeToTrainingRecords, 
   subscribeToUserProgress 
 } from './firebase';
+import { checkForAppUpdates, forceHardRefreshAndPurgeCache } from './utils/appVersionManager';
+import { RefreshCw } from 'lucide-react';
 
 const STORAGE_KEY_USER = 'tct_qsrm_learning_state_v1';
 
@@ -101,6 +104,9 @@ export default function App() {
   const [selectedTraineeForReport, setSelectedTraineeForReport] = useState<TraineeRecord | null>(null);
   const [isAssignedCoursesModalOpen, setIsAssignedCoursesModalOpen] = useState(false);
   const [isTrainingSuccessModalOpen, setIsTrainingSuccessModalOpen] = useState(false);
+  const [isAutoLocationModalOpen, setIsAutoLocationModalOpen] = useState(false);
+  const [hasNewUpdate, setHasNewUpdate] = useState(false);
+  const [evaluationMode, setEvaluationMode] = useState<'auto_course' | 'external_course' | 'followup_30days'>('auto_course');
 
   // 6. Centralized Trainees Cache for Modals
   const [cachedTrainees, setCachedTrainees] = useState<TraineeRecord[]>(() => getStoredTrainees(currentUser));
@@ -274,8 +280,9 @@ export default function App() {
 
     syncUserToServer(fullProfile, 'login', `เข้าสู่ระบบหลักสูตร ${activeCourse}`).catch(() => {});
 
-    // Employee enters their personal page with the assigned courses popup opening automatically
+    // Employee enters system: always automatically prompt location sharing in a simple, non-cumbersome manner
     setCurrentView('courses');
+    setIsAutoLocationModalOpen(true);
     setIsAssignedCoursesModalOpen(true);
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
@@ -741,6 +748,9 @@ export default function App() {
             setTrainingTrackerInitialTab('tracker');
             setIsTrainingTrackerOpen(true);
           }}
+          onOpenCourseApprovalPdf={(cId) => {
+            setCourseApprovalPdfModalCourseId(cId || 'good-employee-skills');
+          }}
         />
       );
     }
@@ -748,9 +758,24 @@ export default function App() {
     // 2. Module Learning Views (module1, module2, ...)
     if (currentView.startsWith('module')) {
       const modNumber = parseInt(currentView.replace('module', ''), 10) || 1;
-      const modules = getCourseModules(currentCourseId);
+      const modules = getCourseModules(currentCourseId) || [];
       const currentModule = modules.find(m => m.id === modNumber) || modules[0];
-      const questions = getCourseQuestions(currentCourseId);
+      const questions = getCourseQuestions(currentCourseId) || [];
+
+      if (!currentModule) {
+        return (
+          <div className="max-w-5xl mx-auto px-4 py-12 text-center text-slate-400 font-sarabun">
+            <p className="text-base mb-4">ไม่พบข้อมูลบทเรียนในหลักสูตรนี้</p>
+            <button
+              type="button"
+              onClick={() => handleNavigate('dashboard')}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm cursor-pointer"
+            >
+              กลับสู่หน้าหลัก
+            </button>
+          </div>
+        );
+      }
 
       return (
         <ModuleView
@@ -812,6 +837,11 @@ export default function App() {
             onOpenCourseApprovalPdf={(cId) => {
               setCourseApprovalPdfModalCourseId(cId || currentCourseId);
             }}
+            onOpenEvaluation={(cId, mode) => {
+              if (cId) setCurrentCourseId(cId);
+              setEvaluationMode(mode || 'auto_course');
+              handleNavigate('evaluation');
+            }}
             onLogout={handleLogout}
             onResetProgress={(cId) => handleResetCurrentCourseProgress(cId)}
           />
@@ -852,6 +882,8 @@ export default function App() {
         return (
           <EvaluationView
             user={currentUser}
+            initialCourseId={currentCourseId}
+            initialMode={evaluationMode}
             onSubmitEvaluation={handleSubmitEvaluation}
             onNavigate={handleNavigate}
           />
@@ -912,6 +944,7 @@ export default function App() {
             onOpenCourseApprovalPdf={(cId) => {
               setCourseApprovalPdfModalCourseId(cId || currentCourseId);
             }}
+            onSelectCourse={handleSelectCourse}
           />
         );
 
@@ -979,7 +1012,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800 antialiased selection:bg-[#003875] selection:text-white">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800 antialiased selection:bg-[#003875] selection:text-white w-full max-w-full overflow-x-hidden">
       {/* 1. Admin Impersonation / Employee Mode Banner */}
       {isAdminLoggedIn && currentUser && (
         <AdminEmployeeModeBanner
@@ -1024,7 +1057,7 @@ export default function App() {
       )}
 
       {/* 3. Main View Area (with mobile bottom padding for native app bar) */}
-      <main className={`flex-1 flex flex-col ${currentUser && currentView !== 'login' ? 'pb-20 md:pb-0' : ''}`}>
+      <main className={`flex-1 flex flex-col w-full max-w-full overflow-x-hidden ${currentUser && currentView !== 'login' ? 'pb-20 md:pb-0' : ''}`}>
         {renderViewContent()}
       </main>
 
@@ -1104,8 +1137,6 @@ export default function App() {
         />
       )}
 
-
-
       {/* Assigned Courses Modal (Pops up to show open courses for the employee) */}
       {currentUser && (
         <AssignedCoursesModal
@@ -1135,6 +1166,38 @@ export default function App() {
             handleNavigate('courses');
           }}
         />
+      )}
+
+      {/* Automatic Location Check-In Modal upon entering system */}
+      {currentUser && isAutoLocationModalOpen && (
+        <AutoLocationCheckInModal
+          user={currentUser}
+          activeCourseId={currentUser.selectedCourseId || currentCourseId}
+          isOpen={isAutoLocationModalOpen}
+          onClose={() => setIsAutoLocationModalOpen(false)}
+        />
+      )}
+
+      {/* Floating System Update Notification Banner (Alerts users on PC/Mobile if server has newer code) */}
+      {hasNewUpdate && (
+        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[100] max-w-md w-[92%] bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border-2 border-amber-400/80 flex items-center justify-between gap-3 animate-fadeIn">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center shrink-0">
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-bold text-xs text-amber-300">ตรวจพบเวอร์ชันใหม่ล่าสุดของระบบ!</div>
+              <div className="text-[11px] text-slate-300 truncate">มีอัปเดตระบบความปลอดภัย & ฟังก์ชันล่าสุด</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => forceHardRefreshAndPurgeCache()}
+            className="px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs whitespace-nowrap cursor-pointer shadow-md active:scale-95 transition-all shrink-0"
+          >
+            รีเฟรชทันที
+          </button>
+        </div>
       )}
     </div>
   );

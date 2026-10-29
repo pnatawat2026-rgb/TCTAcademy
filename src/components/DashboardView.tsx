@@ -22,12 +22,18 @@ import {
   QrCode,
   Share2,
   GraduationCap,
-  Activity
+  Activity,
+  MapPin,
+  Star,
+  FileCheck2
 } from 'lucide-react';
 import { playCyberClick } from '../utils/soundEffects';
 import { getAllAvailableCourses, getCourseQuestions, getNextActionView } from '../utils/courseManager';
+import { getEmployeeKirkpatrickEvaluation } from '../utils/kirkpatrickManager';
 import { ThaiMOOCLogo } from './ThaiMOOCLogo';
+import { TCTLogo } from './TCTLogo';
 import { DataSecurityBadge } from './DataSecurityBadge';
+import { ProgressVisualization } from './ProgressVisualization';
 
 interface DashboardViewProps {
   user: UserProfile;
@@ -39,6 +45,9 @@ interface DashboardViewProps {
   onResetProgress?: () => void;
   onOpenEditProfile?: () => void;
   onOpenTrainingTracker?: (tab?: 'logs' | 'tracker' | 'my-record' | 'security') => void;
+  onOpenContinuousTraining?: (courseId?: string) => void;
+  onOpenLocationTracker?: () => void;
+  onOpenKirkpatrickEval?: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -50,7 +59,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenShare,
   onResetProgress,
   onOpenEditProfile,
-  onOpenTrainingTracker
+  onOpenTrainingTracker,
+  onOpenContinuousTraining,
+  onOpenLocationTracker,
+  onOpenKirkpatrickEval
 }) => {
   const allCourses = getAllAvailableCourses();
   const activeCourse = allCourses.find(c => c.id === user.selectedCourseId) || allCourses[0];
@@ -63,9 +75,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const hasDonePreTest = user.preTestScore !== null;
   const allModulesDone = modules.every((m) => user.completedModules.includes(m.id));
   const hasPassedPostTest = user.postTestScore !== null && user.postTestScore >= passingScore;
+  const kirkpatrickEval = getEmployeeKirkpatrickEvaluation(user.empId, activeCourse.id);
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-6 sm:space-y-8 font-sarabun text-slate-800">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-8 space-y-4 sm:space-y-8 font-sarabun text-slate-800">
+      
+      {/* Mobile Screen: Large Centered Logo */}
+      <div className="flex sm:hidden flex-col items-center justify-center text-center pt-1 pb-1 animate-fadeIn">
+        <div className="p-4 rounded-3xl bg-white shadow-xl border border-slate-200/90 max-w-[320px] w-full flex flex-col items-center justify-center">
+          <TCTLogo size="hero" theme="light" showSubtitle={true} className="w-full flex justify-center" />
+          <div className="text-[11px] font-bold text-[#005A9C] mt-2">
+            ศูนย์ฝึกอบรมและพัฒนา TCT Academy
+          </div>
+        </div>
+      </div>
+
       {/* Top Welcome Hero Banner - TCT Royal Navy Theme */}
       <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#002855] via-[#003875] to-[#005A9C] text-white p-5 sm:p-9 shadow-xl border border-blue-900/40">
         {/* Subtle decorative wave circles */}
@@ -92,7 +116,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </span>
             </div>
 
-            <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-normal leading-snug">
               {activeCourse.title}
             </h1>
             <p className="text-xs sm:text-base text-blue-100/90 leading-relaxed">
@@ -177,8 +201,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {!hasDonePreTest ? (
                 <button
                   id="dash-start-pretest-btn"
-                  onClick={() => { playCyberClick(); onNavigate('pretest'); }}
-                  className="w-full bg-[#005A9C] hover:bg-[#00487C] text-white text-xs sm:text-sm font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md shadow-blue-900/10 cursor-pointer transition-all whitespace-nowrap"
+                  type="button"
+                  onClick={() => { 
+                    playCyberClick(); 
+                    onNavigate('pretest'); 
+                  }}
+                  className="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all whitespace-nowrap"
                 >
                   <PlayCircle className="w-4 h-4 text-white shrink-0" />
                   <span className="whitespace-nowrap">เริ่มทำแบบทดสอบก่อนเรียน (Pre-test)</span>
@@ -186,12 +214,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               ) : !allModulesDone ? (
                 <button
                   id="dash-continue-module-btn"
+                  type="button"
                   onClick={() => { 
                     playCyberClick(); 
                     const nextMod = modules.find(m => !user.completedModules.includes(m.id))?.id || 1;
                     onNavigate(`module${nextMod}` as ViewState);
                   }}
-                  className="w-full bg-[#005A9C] hover:bg-[#00487C] text-white text-xs sm:text-sm font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md shadow-blue-900/10 cursor-pointer transition-all whitespace-nowrap"
+                  className="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all whitespace-nowrap"
                 >
                   <BookOpen className="w-4 h-4 text-white shrink-0" />
                   <span className="whitespace-nowrap">เรียนต่อบทที่ {user.completedModules.length + 1}</span>
@@ -199,19 +228,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               ) : !hasPassedPostTest ? (
                 <button
                   id="dash-start-posttest-btn"
+                  type="button"
                   onClick={() => { playCyberClick(); onNavigate('posttest'); }}
-                  className="w-full bg-[#F59E0B] hover:bg-[#D97706] text-slate-900 text-xs sm:text-sm font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md cursor-pointer animate-pulse transition-all whitespace-nowrap"
+                  className="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all whitespace-nowrap"
                 >
-                  <Target className="w-4 h-4 text-slate-900 shrink-0" />
+                  <Target className="w-4 h-4 text-amber-300 shrink-0" />
                   <span className="whitespace-nowrap">ทำแบบทดสอบหลังเรียน (Post-test)</span>
                 </button>
               ) : (
                 <button
                   id="dash-view-cert-btn"
+                  type="button"
                   onClick={() => { playCyberClick(); onNavigate('certificate'); }}
-                  className="w-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 text-xs sm:text-sm font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 cursor-pointer animate-pulse whitespace-nowrap"
+                  className="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-xs cursor-pointer whitespace-nowrap"
                 >
-                  <Award className="w-4 h-4 text-slate-950 shrink-0" />
+                  <Award className="w-4 h-4 text-amber-300 shrink-0" />
                   <span className="whitespace-nowrap">รับใบเกียรติบัตร (A4)</span>
                 </button>
               )}
@@ -219,6 +250,92 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Employee Location Verification & Attendance Card */}
+      <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border-2 border-emerald-300 rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-start gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <MapPin className="w-6 h-6 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-emerald-200/90 text-emerald-900 border border-emerald-400">
+                GPS GEOFENCING SECURITY • 1.0 KM
+              </span>
+              <span className="text-[10px] text-slate-500">
+                สวนอุตสาหกรรมโรจนะ พระนครศรีอยุธยา
+              </span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900">
+              ระบบตรวจสอบโลเคชั่นพนักงาน (Employee Location Verification & Check-in)
+            </h3>
+            <p className="text-xs text-slate-600 mt-0.5">
+              ตรวจเช็คพิกัด GPS ตำแหน่งปัจจุบันของคุณว่าอยู่ในรัศมีโรงงาน เทยิน คอร์ด (ประเทศไทย) จำกัด เพื่อบันทึกเวลาเรียนอย่างถูกต้อง
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <button
+            id="dash-open-location-tracker-btn"
+            type="button"
+            onClick={() => {
+              playCyberClick();
+              onOpenLocationTracker?.();
+            }}
+            className="h-10 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer whitespace-nowrap"
+          >
+            <MapPin className="w-4 h-4 text-emerald-400" />
+            <span>ตรวจสอบโลเคชั่น / เช็คอิน</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Kirkpatrick 4 Levels Training Evaluation Card */}
+      {onOpenKirkpatrickEval && (
+        <div className="bg-gradient-to-r from-amber-50 via-orange-50/40 to-blue-50 border-2 border-amber-300 rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-start gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center shrink-0 shadow-sm font-black">
+              <Star className="w-6 h-6 fill-slate-950 text-slate-950" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-amber-200/90 text-amber-950 border border-amber-400">
+                  KIRKPATRICK 4 LEVELS • มาตรฐานสากลการประเมินผลการฝึกอบรม
+                </span>
+                <span className="text-[10px] text-slate-500 font-semibold">
+                  (L1 Reaction • L2 Learning • L3 Behavior • L4 Results)
+                </span>
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-normal leading-snug">
+                แบบประเมินความพึงพอใจและประสิทธิผลหลังการฝึกอบรม (Kirkpatrick 4 Levels)
+              </h3>
+              <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                {kirkpatrickEval
+                  ? `คุณประเมินหลักสูตรนี้เรียบร้อยแล้ว: ${kirkpatrickEval.gradeLabelTh} (${kirkpatrickEval.overallPercentage}%) • รหัส ${kirkpatrickEval.evaluationCode}`
+                  : 'สถานะ: ยังไม่ได้ประเมินผล • พนักงานต้องทำแบบประเมินด้วยตนเองเพื่อรับรองผลการฝึกอบรม'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <button
+              id="dash-open-kirkpatrick-eval-btn"
+              type="button"
+              onClick={() => {
+                playCyberClick();
+                onOpenKirkpatrickEval();
+              }}
+              className="h-10 px-5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all cursor-pointer whitespace-nowrap active:scale-95"
+            >
+              <Star className="w-4 h-4 fill-slate-950 text-slate-950" />
+              <span>{kirkpatrickEval ? 'ดูใบสรุปผลประเมิน / ปรับปรุง' : 'คลิกเพื่อประเมินด้วยตนเอง'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 4-Step Clean Learning Roadmap */}
       <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm">
@@ -346,6 +463,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Recharts Progress Visualization (Pre vs Post test score comparison & Module completion time) */}
+      <ProgressVisualization
+        user={user}
+        modules={modules}
+        passingScore={passingScore}
+        totalQuestions={totalQuestions}
+      />
 
       {/* Main Course Modules Grid */}
       <div>

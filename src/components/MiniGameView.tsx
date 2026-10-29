@@ -6,6 +6,7 @@ import { PERSONALITY_MINI_GAME_SCENARIOS } from '../data/personalityCourseData';
 import { AI_MINI_GAME_SCENARIOS } from '../data/aiCourseData';
 import { KYT_MINI_GAME_SCENARIOS } from '../data/kytCourseData';
 import { APPLIED_PSYCHOLOGY_MINI_GAME_SCENARIOS } from '../data/appliedPsychologyCourseData';
+import { GOOD_EMPLOYEE_MINIGAME_SCENARIOS } from '../data/goodEmployeeSkillsData';
 import { 
   Gamepad2, 
   Check, 
@@ -38,12 +39,15 @@ export const MiniGameView: React.FC<MiniGameViewProps> = ({
   onNavigate
 }) => {
   const { t, language } = useLanguage();
+  const isGoodEmployee = user.selectedCourseId === 'good-employee-skills';
   const isAI = user.selectedCourseId === 'ai-for-tct';
   const isAppliedPsychology = user.selectedCourseId === 'applied-psychology';
   const isKYT = user.selectedCourseId === 'kyt-shisa-kanko';
   const isPersonality = user.selectedCourseId === 'personality-psychology' || user.selectedCourseId === 'conflict-management';
   const isPreventive = user.selectedCourseId === 'advanced-preventive-maintenance';
-  const scenarios = isAppliedPsychology
+  const scenarios = isGoodEmployee
+    ? GOOD_EMPLOYEE_MINIGAME_SCENARIOS
+    : isAppliedPsychology
     ? APPLIED_PSYCHOLOGY_MINI_GAME_SCENARIOS
     : isKYT
     ? KYT_MINI_GAME_SCENARIOS

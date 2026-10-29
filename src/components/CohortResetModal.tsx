@@ -84,8 +84,8 @@ export const CohortResetModal: React.FC<CohortResetModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
-      <div className="bg-[#090E1A] border-2 border-red-500/40 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-fadeIn">
+      <div className="bg-[#090E1A] border border-slate-700 rounded-3xl max-w-[95vw] sm:max-w-2xl w-full p-4 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden my-auto">
         
         {/* Top Header */}
         <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-800">

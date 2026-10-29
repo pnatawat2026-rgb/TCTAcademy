@@ -1,4 +1,4 @@
-import type { TraineeRecord, UserProfile, CapaItem, SystemAuditLog, PredefinedEmployee } from '../types';
+import type { TraineeRecord, UserProfile, CapaItem, SystemAuditLog, PredefinedEmployee, StandardEvaluationRecord } from '../types';
 import { sanitizeThaiName, cleanDuplicatePrefixes } from '../utils/nameSanitizer';
 import { MASTER_EMPLOYEE_ROSTER_230, getMasterEmployeeRoster } from './employeeDatabase';
 import { APPLIED_PSYCHOLOGY_INITIAL_TRAINEES } from './appliedPsychologyCourseData';
@@ -704,8 +704,110 @@ export function purgeUnusedCourseRosters(): void {
   }
 }
 
-// Do not automatically purge rosters on initialization to prevent wiping genuine users
-// purgeUnusedCourseRosters();
+/**
+ * Purges newly entered/manual test employee names that are NOT part of the
+ * officially uploaded master employee roster (MASTER_EMPLOYEE_ROSTER_230)
+ * keeping only authentic uploaded employee roster as requested:
+ * "ลบชื่อไม่ได้ทำงานป้อนไป ซึ่งเป็นข้อมูลใหม่ทั้งหมด เอาไว้แต่รายชื่อที่เคยอับโหลดไว้"
+ */
+export function purgeNewlyEnteredDummyEmployees(): { purgedCount: number; remainingCount: number } {
+  try {
+    const validEmpIdSet = new Set<string>();
+    for (const emp of MASTER_EMPLOYEE_ROSTER_230) {
+      validEmpIdSet.add(emp.empId.trim().toUpperCase());
+    }
+
+    // 1. Purge custom registered employees
+    let custom = getCustomRegisteredEmployees();
+    const originalCustomLen = custom.length;
+    custom = custom.filter(emp => validEmpIdSet.has(emp.empId.trim().toUpperCase()));
+    localStorage.setItem(CUSTOM_EMPLOYEES_STORAGE_KEY, JSON.stringify(custom));
+
+    // 2. Purge admin trainees storage
+    const raw = localStorage.getItem(ADMIN_TRAINEES_STORAGE_KEY);
+    let trainees: TraineeRecord[] = raw ? JSON.parse(raw) : [];
+    const originalTraineesLen = trainees.length;
+    trainees = trainees.filter(t => validEmpIdSet.has(t.empId.trim().toUpperCase()));
+    localStorage.setItem(ADMIN_TRAINEES_STORAGE_KEY, JSON.stringify(trainees));
+
+    const purged = (originalCustomLen - custom.length) + (originalTraineesLen - trainees.length);
+    console.info(`[TCT Purge] Cleared ${purged} non-roster test records. Restored official uploaded roster.`);
+    return { purgedCount: Math.max(0, purged), remainingCount: trainees.length };
+  } catch (e) {
+    console.error('Error purging newly entered dummy employees:', e);
+    return { purgedCount: 0, remainingCount: 0 };
+  }
+}
+
+// Automatically clean newly entered non-roster records to enforce authentic uploaded roster
+purgeNewlyEnteredDummyEmployees();
+
+// -------------------------------------------------------------
+// Standard Kirkpatrick 4-Level & External Evaluation Storage
+// -------------------------------------------------------------
+const STANDARD_EVALUATIONS_STORAGE_KEY = 'tct_standard_evaluations_v2';
+
+export function getAllStandardEvaluations(): StandardEvaluationRecord[] {
+  try {
+    const raw = localStorage.getItem(STANDARD_EVALUATIONS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export function saveStandardEvaluation(evalRecord: StandardEvaluationRecord): void {
+  try {
+    const list = getAllStandardEvaluations();
+    const recordId = evalRecord.id || `eval-${evalRecord.empId}-${evalRecord.courseId}-${Date.now()}`;
+    const recordWithId = { ...evalRecord, id: recordId };
+    
+    // Check if updating existing record for same course & empId
+    const existingIdx = list.findIndex(e => 
+      e.empId.toUpperCase() === evalRecord.empId.toUpperCase() && 
+      e.courseId === evalRecord.courseId
+    );
+
+    if (existingIdx >= 0) {
+      list[existingIdx] = recordWithId;
+    } else {
+      list.unshift(recordWithId);
+    }
+
+    localStorage.setItem(STANDARD_EVALUATIONS_STORAGE_KEY, JSON.stringify(list));
+    window.dispatchEvent(new CustomEvent('tct_evaluation_updated', { detail: recordWithId }));
+  } catch (e) {
+    console.error('Error saving standard evaluation:', e);
+  }
+}
+
+export function getEmployeeEvaluations(empId: string): StandardEvaluationRecord[] {
+  if (!empId) return [];
+  const cleanId = empId.trim().toUpperCase();
+  return getAllStandardEvaluations().filter(e => e.empId.toUpperCase() === cleanId);
+}
+
+export function save30DayFollowUp(evaluationId: string, data: Partial<StandardEvaluationRecord>): boolean {
+  try {
+    const list = getAllStandardEvaluations();
+    const idx = list.findIndex(e => e.id === evaluationId);
+    if (idx >= 0) {
+      list[idx] = {
+        ...list[idx],
+        ...data,
+        followUp30DaysSubmitted: true,
+        followUp30DaysDate: data.followUp30DaysDate || new Date().toISOString().split('T')[0]
+      };
+      localStorage.setItem(STANDARD_EVALUATIONS_STORAGE_KEY, JSON.stringify(list));
+      window.dispatchEvent(new CustomEvent('tct_evaluation_updated', { detail: list[idx] }));
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.error('Error saving 30-day follow-up:', e);
+    return false;
+  }
+}
 
 export function deleteTraineeRecord(empId: string): boolean {
   if (!empId) return false;
@@ -1125,6 +1227,25 @@ export function clearAllStoredTrainees() {
     localStorage.removeItem(ADMIN_TRAINEES_STORAGE_KEY);
   } catch (e) {
     console.debug('Failed to clear admin trainees', e);
+  }
+}
+
+/**
+ * Resets and purges test/mock trainees, restoring only the official 224 company roster.
+ * "ระบบนี้จะต้องปลอดภัยเป็นพิเศษ และล้างรายชื่อใหม่"
+ */
+export function cleanAndResetRosterToOfficial(): TraineeRecord[] {
+  try {
+    localStorage.removeItem(CUSTOM_EMPLOYEES_STORAGE_KEY);
+    localStorage.removeItem(DELETED_TRAINEES_STORAGE_KEY);
+    const fresh = buildInitialTrainees();
+    saveStoredTrainees(fresh);
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('tct_roster_cleaned'));
+    return fresh;
+  } catch (e) {
+    console.debug('Error cleaning roster', e);
+    return [];
   }
 }
 

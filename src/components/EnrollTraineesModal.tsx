@@ -173,8 +173,8 @@ export const EnrollTraineesModal: React.FC<EnrollTraineesModalProps> = ({
   const targetCourseMeta = COURSE_OFFICIAL_METADATA[targetCourseId];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-4xl bg-slate-50 border border-slate-300 rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden font-sarabun text-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-[95vw] sm:max-w-4xl bg-slate-50 border border-slate-300 rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden font-sarabun text-slate-800">
         
         {/* Header - Official Corporate Royal Navy Gradient ONLY */}
         <div className="p-4 sm:p-5 bg-gradient-to-r from-[#001f3f] via-[#002D5A] to-[#005A9C] text-white flex items-center justify-between shrink-0 border-b border-blue-900/40">
@@ -229,8 +229,9 @@ export const EnrollTraineesModal: React.FC<EnrollTraineesModalProps> = ({
                 <option value="ai-for-tct">หลักสูตร 4: AI for TCT เพื่อการผลิตและความปลอดภัย (TCT-AI-101)</option>
                 <option value="personality-psychology">หลักสูตร 5: จิตวิทยาบุคลิกภาพและการปรับตัว (TCT-A001)</option>
                 <option value="kyt-shisa-kanko">หลักสูตร 6: KYT & SHISA KANKO การคาดการณ์อันตราย (TCT-KYT-01)</option>
+                <option value="good-employee-skills">⭐ หลักสูตร 8: ทักษะการเป็นพนักงานที่ดี (Good Employee Skills - TCT-GES-01)</option>
                 {availableCourses
-                  .filter(c => !['applied-psychology', 'risk-management', 'advanced-preventive-maintenance', 'conflict-management', 'ai-for-tct', 'personality-psychology', 'kyt-shisa-kanko'].includes(c.id))
+                  .filter(c => !['applied-psychology', 'risk-management', 'advanced-preventive-maintenance', 'conflict-management', 'ai-for-tct', 'personality-psychology', 'kyt-shisa-kanko', 'good-employee-skills'].includes(c.id))
                   .map(c => (
                     <option key={c.id} value={c.id}>{c.title} ({c.id})</option>
                   ))

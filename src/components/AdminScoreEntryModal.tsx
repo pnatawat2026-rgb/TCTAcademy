@@ -275,8 +275,8 @@ export const AdminScoreEntryModal: React.FC<AdminScoreEntryModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-slate-50 border border-slate-300 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl my-auto animate-in fade-in zoom-in-95 duration-200 font-sarabun text-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-slate-50 border border-slate-300 rounded-3xl w-full max-w-[95vw] sm:max-w-3xl overflow-hidden shadow-2xl my-auto animate-in fade-in zoom-in-95 duration-200 font-sarabun text-slate-800">
         
         {/* Header - Official Corporate Royal Navy Gradient ONLY */}
         <div className="p-4 sm:p-5 bg-gradient-to-r from-[#001f3f] via-[#002D5A] to-[#005A9C] text-white flex items-center justify-between border-b border-blue-900/40">

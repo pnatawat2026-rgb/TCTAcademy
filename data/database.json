@@ -3,11 +3,11 @@
     "10019": {
       "id": "psy-tr-10019",
       "empId": "10019",
+      "prefix": "นาย",
       "fullName": "นาย อมร ศรีพรหม",
       "department": "SEC",
       "position": "SUPERVISOR",
       "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-16",
       "status": "passed",
       "preTestScore": 8,
       "postTestScore": 9,
@@ -19,13 +19,10 @@
         3
       ],
       "evaluationSubmitted": true,
-      "satisfactionScore": 5,
       "selectedCourseId": "applied-psychology",
       "enrolledCourses": [
         "applied-psychology"
       ],
-      "certificateId": "TCT-PSY-2026-10019-010",
-      "certificateDate": "16 ตุลาคม 2569",
       "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)",
       "coursesProgress": {
         "applied-psychology": {
@@ -44,16 +41,19 @@
           "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)"
         }
       },
-      "prefix": "นาย"
+      "completedAt": "2026-10-16",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-10019-010",
+      "certificateDate": "16 ตุลาคม 2569"
     },
     "11003": {
       "id": "psy-tr-11003",
       "empId": "11003",
+      "prefix": "นาย",
       "fullName": "นาย ชลิต เสือน้อย",
       "department": "MN",
       "position": "MANAGER",
       "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-15",
       "status": "passed",
       "preTestScore": 9,
       "postTestScore": 10,
@@ -65,13 +65,10 @@
         3
       ],
       "evaluationSubmitted": true,
-      "satisfactionScore": 5,
       "selectedCourseId": "applied-psychology",
       "enrolledCourses": [
         "applied-psychology"
       ],
-      "certificateId": "TCT-PSY-2026-11003-007",
-      "certificateDate": "15 ตุลาคม 2569",
       "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)",
       "coursesProgress": {
         "applied-psychology": {
@@ -90,7 +87,10 @@
           "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)"
         }
       },
-      "prefix": "นาย"
+      "completedAt": "2026-10-15",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-11003-007",
+      "certificateDate": "15 ตุลาคม 2569"
     },
     "12006": {
       "id": "emp-12006",
@@ -159,11 +159,11 @@
     "14025": {
       "id": "psy-tr-14025",
       "empId": "14025",
+      "prefix": "น.ส.",
       "fullName": "น.ส. สุภาวดี จอมทอง",
       "department": "PP",
       "position": "CLERK",
       "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-16",
       "status": "passed",
       "preTestScore": 7,
       "postTestScore": 8,
@@ -175,13 +175,10 @@
         3
       ],
       "evaluationSubmitted": true,
-      "satisfactionScore": 5,
       "selectedCourseId": "applied-psychology",
       "enrolledCourses": [
         "applied-psychology"
       ],
-      "certificateId": "TCT-PSY-2026-14025-012",
-      "certificateDate": "16 ตุลาคม 2569",
       "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 16/20)",
       "coursesProgress": {
         "applied-psychology": {
@@ -200,7 +197,10 @@
           "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 16/20)"
         }
       },
-      "prefix": "น.ส."
+      "completedAt": "2026-10-16",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-14025-012",
+      "certificateDate": "16 ตุลาคม 2569"
     },
     "14032": {
       "id": "emp-14032",
@@ -397,11 +397,11 @@
     "15030": {
       "id": "psy-tr-15030",
       "empId": "15030",
+      "prefix": "น.ส.",
       "fullName": "น.ส. หฤทัย ถึงอินทร์",
       "department": "ESH",
       "position": "CHIEF",
       "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-16",
       "status": "passed",
       "preTestScore": 9,
       "postTestScore": 10,
@@ -413,13 +413,10 @@
         3
       ],
       "evaluationSubmitted": true,
-      "satisfactionScore": 5,
       "selectedCourseId": "applied-psychology",
       "enrolledCourses": [
         "applied-psychology"
       ],
-      "certificateId": "TCT-PSY-2026-15030-009",
-      "certificateDate": "16 ตุลาคม 2569",
       "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)",
       "coursesProgress": {
         "applied-psychology": {
@@ -438,7 +435,10 @@
           "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)"
         }
       },
-      "prefix": "น.ส."
+      "completedAt": "2026-10-16",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-15030-009",
+      "certificateDate": "16 ตุลาคม 2569"
     },
     "15041": {
       "id": "emp-15041",
@@ -539,11 +539,11 @@
     "17001": {
       "id": "psy-tr-17001",
       "empId": "17001",
+      "prefix": "น.ส.",
       "fullName": "น.ส. ดวงพร ไชยวีระ",
       "department": "PS",
       "position": "WORKER",
       "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-15",
       "status": "passed",
       "preTestScore": 8,
       "postTestScore": 9,
@@ -555,13 +555,10 @@
         3
       ],
       "evaluationSubmitted": true,
-      "satisfactionScore": 5,
       "selectedCourseId": "applied-psychology",
       "enrolledCourses": [
         "applied-psychology"
       ],
-      "certificateId": "TCT-PSY-2026-17001-004",
-      "certificateDate": "15 ตุลาคม 2569",
       "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)",
       "coursesProgress": {
         "applied-psychology": {
@@ -580,7 +577,10 @@
           "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)"
         }
       },
-      "prefix": "น.ส."
+      "completedAt": "2026-10-15",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-17001-004",
+      "certificateDate": "15 ตุลาคม 2569"
     },
     "17009": {
       "id": "emp-17009",
@@ -841,11 +841,11 @@
     "18034": {
       "id": "psy-tr-18034",
       "empId": "18034",
+      "prefix": "น.ส.",
       "fullName": "น.ส. วนิดา เพิ่มความประเสริฐ",
       "department": "QA",
       "position": "SUPERVISOR",
       "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-15",
       "status": "passed",
       "preTestScore": 8,
       "postTestScore": 10,
@@ -857,13 +857,10 @@
         3
       ],
       "evaluationSubmitted": true,
-      "satisfactionScore": 5,
       "selectedCourseId": "applied-psychology",
       "enrolledCourses": [
         "applied-psychology"
       ],
-      "certificateId": "TCT-PSY-2026-18034-008",
-      "certificateDate": "15 ตุลาคม 2569",
       "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)",
       "coursesProgress": {
         "applied-psychology": {
@@ -882,7 +879,10 @@
           "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)"
         }
       },
-      "prefix": "น.ส."
+      "completedAt": "2026-10-15",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-18034-008",
+      "certificateDate": "15 ตุลาคม 2569"
     },
     "18042": {
       "id": "emp-18042",
@@ -5367,11 +5367,11 @@
     "25056": {
       "id": "official-emp-25056",
       "empId": "25056",
+      "prefix": "นาย",
       "fullName": "นาย ณฐวัตร พงษ์สาริกิจ",
       "department": "PS",
       "position": "SUPERVISOR",
       "enrolledAt": "2026-09-05",
-      "completedAt": "2026-10-13",
       "status": "in_progress",
       "preTestScore": 21,
       "postTestScore": 10,
@@ -5383,13 +5383,10 @@
         3
       ],
       "evaluationSubmitted": false,
-      "satisfactionScore": 5,
       "selectedCourseId": "ai-for-tct",
       "enrolledCourses": [
         "ai-for-tct"
       ],
-      "certificateId": "TCT-PSY-2026-25056-001",
-      "certificateDate": "13 ตุลาคม 2569",
       "currentStep": "ทำแบบทดสอบก่อนเรียนแล้ว (Pre-test 21 คะแนน) • กำลังเริ่มเรียน",
       "coursesProgress": {
         "applied-psychology": {
@@ -5417,7 +5414,10 @@
           "lastActiveStep": "ทำแบบทดสอบก่อนเรียนแล้ว (Pre-test 21 คะแนน) • กำลังเริ่มเรียน"
         }
       },
-      "prefix": "นาย",
+      "completedAt": "2026-10-13",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-25056-001",
+      "certificateDate": "13 ตุลาคม 2569",
       "lastActivityAt": "2026-09-29T06:40:04.112Z"
     },
     "25059": {
@@ -6412,6 +6412,198 @@
         }
       }
     },
+    "26034": {
+      "id": "emp-26034",
+      "empId": "26034",
+      "prefix": "นาย",
+      "fullName": "นาย ธวัชชัย โพธิ์ทอง",
+      "department": "P",
+      "position": "WORKER",
+      "enrolledAt": "2026-10-12",
+      "status": "not_started",
+      "preTestScore": null,
+      "postTestScore": null,
+      "postTestAttempts": 0,
+      "miniGameScore": 0,
+      "completedModules": [],
+      "evaluationSubmitted": false,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": null,
+          "postTestScore": null,
+          "postTestAttempts": 0,
+          "miniGameScore": 0,
+          "completedModules": [],
+          "evaluationSubmitted": false,
+          "lastActiveStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)"
+        }
+      }
+    },
+    "26035": {
+      "id": "emp-26035",
+      "empId": "26035",
+      "prefix": "นาย",
+      "fullName": "นาย ธีรภัทร์ รัตนโชติ",
+      "department": "P",
+      "position": "WORKER",
+      "enrolledAt": "2026-10-12",
+      "status": "not_started",
+      "preTestScore": null,
+      "postTestScore": null,
+      "postTestAttempts": 0,
+      "miniGameScore": 0,
+      "completedModules": [],
+      "evaluationSubmitted": false,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": null,
+          "postTestScore": null,
+          "postTestAttempts": 0,
+          "miniGameScore": 0,
+          "completedModules": [],
+          "evaluationSubmitted": false,
+          "lastActiveStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)"
+        }
+      }
+    },
+    "26036": {
+      "id": "emp-26036",
+      "empId": "26036",
+      "prefix": "น.ส.",
+      "fullName": "น.ส. ศิริพร บุญช่วย",
+      "department": "QA",
+      "position": "INSPECTOR",
+      "enrolledAt": "2026-10-12",
+      "status": "not_started",
+      "preTestScore": null,
+      "postTestScore": null,
+      "postTestAttempts": 0,
+      "miniGameScore": 0,
+      "completedModules": [],
+      "evaluationSubmitted": false,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": null,
+          "postTestScore": null,
+          "postTestAttempts": 0,
+          "miniGameScore": 0,
+          "completedModules": [],
+          "evaluationSubmitted": false,
+          "lastActiveStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)"
+        }
+      }
+    },
+    "26037": {
+      "id": "emp-26037",
+      "empId": "26037",
+      "prefix": "นาย",
+      "fullName": "นาย อนุวัฒน์ ทรัพย์เจริญ",
+      "department": "MN",
+      "position": "TECHNICIAN",
+      "enrolledAt": "2026-10-12",
+      "status": "not_started",
+      "preTestScore": null,
+      "postTestScore": null,
+      "postTestAttempts": 0,
+      "miniGameScore": 0,
+      "completedModules": [],
+      "evaluationSubmitted": false,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": null,
+          "postTestScore": null,
+          "postTestAttempts": 0,
+          "miniGameScore": 0,
+          "completedModules": [],
+          "evaluationSubmitted": false,
+          "lastActiveStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)"
+        }
+      }
+    },
+    "26038": {
+      "id": "emp-26038",
+      "empId": "26038",
+      "prefix": "น.ส.",
+      "fullName": "น.ส. กัญญารัตน์ ศรีสุข",
+      "department": "PS",
+      "position": "OFFICER",
+      "enrolledAt": "2026-10-12",
+      "status": "not_started",
+      "preTestScore": null,
+      "postTestScore": null,
+      "postTestAttempts": 0,
+      "miniGameScore": 0,
+      "completedModules": [],
+      "evaluationSubmitted": false,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": null,
+          "postTestScore": null,
+          "postTestAttempts": 0,
+          "miniGameScore": 0,
+          "completedModules": [],
+          "evaluationSubmitted": false,
+          "lastActiveStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)"
+        }
+      }
+    },
+    "26039": {
+      "id": "emp-26039",
+      "empId": "26039",
+      "prefix": "นาย",
+      "fullName": "นาย ภานุพงศ์ วงศ์สว่าง",
+      "department": "SEC",
+      "position": "WORKER",
+      "enrolledAt": "2026-10-12",
+      "status": "not_started",
+      "preTestScore": null,
+      "postTestScore": null,
+      "postTestAttempts": 0,
+      "miniGameScore": 0,
+      "completedModules": [],
+      "evaluationSubmitted": false,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": null,
+          "postTestScore": null,
+          "postTestAttempts": 0,
+          "miniGameScore": 0,
+          "completedModules": [],
+          "evaluationSubmitted": false,
+          "lastActiveStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)"
+        }
+      }
+    },
     "96011": {
       "id": "emp-96011",
       "empId": "96011",
@@ -6636,244 +6828,14 @@
         }
       }
     },
-    "08013": {
-      "id": "psy-tr-08013",
-      "empId": "08013",
-      "fullName": "นาย กิตติศักดิ์ สร้อยจิตต์",
-      "department": "PS",
-      "position": "MANAGER",
-      "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-14",
-      "status": "passed",
-      "preTestScore": 9,
-      "postTestScore": 10,
-      "postTestAttempts": 1,
-      "miniGameScore": 10,
-      "completedModules": [
-        1,
-        2,
-        3
-      ],
-      "evaluationSubmitted": true,
-      "satisfactionScore": 5,
-      "selectedCourseId": "applied-psychology",
-      "enrolledCourses": [
-        "applied-psychology"
-      ],
-      "certificateId": "TCT-PSY-2026-08013-002",
-      "certificateDate": "14 ตุลาคม 2569",
-      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)",
-      "coursesProgress": {
-        "applied-psychology": {
-          "preTestScore": 9,
-          "postTestScore": 10,
-          "postTestAttempts": 1,
-          "miniGameScore": 10,
-          "completedModules": [
-            1,
-            2,
-            3
-          ],
-          "evaluationSubmitted": true,
-          "certificateId": "TCT-PSY-2026-08013-002",
-          "certificateDate": "14 ตุลาคม 2569",
-          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)"
-        }
-      },
-      "prefix": "นาย"
-    },
-    "06025": {
-      "id": "psy-tr-06025",
-      "empId": "06025",
-      "fullName": "น.ส. จารุณี อินทรโสภา",
-      "department": "PS",
-      "position": "CHIEF",
-      "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-14",
-      "status": "passed",
-      "preTestScore": 9,
-      "postTestScore": 10,
-      "postTestAttempts": 1,
-      "miniGameScore": 10,
-      "completedModules": [
-        1,
-        2,
-        3
-      ],
-      "evaluationSubmitted": true,
-      "satisfactionScore": 5,
-      "selectedCourseId": "applied-psychology",
-      "enrolledCourses": [
-        "applied-psychology"
-      ],
-      "certificateId": "TCT-PSY-2026-06025-003",
-      "certificateDate": "14 ตุลาคม 2569",
-      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)",
-      "coursesProgress": {
-        "applied-psychology": {
-          "preTestScore": 9,
-          "postTestScore": 10,
-          "postTestAttempts": 1,
-          "miniGameScore": 10,
-          "completedModules": [
-            1,
-            2,
-            3
-          ],
-          "evaluationSubmitted": true,
-          "certificateId": "TCT-PSY-2026-06025-003",
-          "certificateDate": "14 ตุลาคม 2569",
-          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)"
-        }
-      },
-      "prefix": "น.ส."
-    },
-    "01002": {
-      "id": "psy-tr-01002",
-      "empId": "01002",
-      "fullName": "น.ส. มลฤดี ศิริคุณ",
-      "department": "PP",
-      "position": "CHIEF",
-      "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-15",
-      "status": "passed",
-      "preTestScore": 8,
-      "postTestScore": 10,
-      "postTestAttempts": 1,
-      "miniGameScore": 10,
-      "completedModules": [
-        1,
-        2,
-        3
-      ],
-      "evaluationSubmitted": true,
-      "satisfactionScore": 5,
-      "selectedCourseId": "applied-psychology",
-      "enrolledCourses": [
-        "applied-psychology"
-      ],
-      "certificateId": "TCT-PSY-2026-01002-005",
-      "certificateDate": "15 ตุลาคม 2569",
-      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)",
-      "coursesProgress": {
-        "applied-psychology": {
-          "preTestScore": 8,
-          "postTestScore": 10,
-          "postTestAttempts": 1,
-          "miniGameScore": 10,
-          "completedModules": [
-            1,
-            2,
-            3
-          ],
-          "evaluationSubmitted": true,
-          "certificateId": "TCT-PSY-2026-01002-005",
-          "certificateDate": "15 ตุลาคม 2569",
-          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)"
-        }
-      },
-      "prefix": "น.ส."
-    },
-    "03007": {
-      "id": "psy-tr-03007",
-      "empId": "03007",
-      "fullName": "นาย นาวา เกษร",
-      "department": "MN",
-      "position": "SUPERVISOR",
-      "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-15",
-      "status": "passed",
-      "preTestScore": 7,
-      "postTestScore": 9,
-      "postTestAttempts": 1,
-      "miniGameScore": 9,
-      "completedModules": [
-        1,
-        2,
-        3
-      ],
-      "evaluationSubmitted": true,
-      "satisfactionScore": 5,
-      "selectedCourseId": "applied-psychology",
-      "enrolledCourses": [
-        "applied-psychology"
-      ],
-      "certificateId": "TCT-PSY-2026-03007-006",
-      "certificateDate": "15 ตุลาคม 2569",
-      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)",
-      "coursesProgress": {
-        "applied-psychology": {
-          "preTestScore": 7,
-          "postTestScore": 9,
-          "postTestAttempts": 1,
-          "miniGameScore": 9,
-          "completedModules": [
-            1,
-            2,
-            3
-          ],
-          "evaluationSubmitted": true,
-          "certificateId": "TCT-PSY-2026-03007-006",
-          "certificateDate": "15 ตุลาคม 2569",
-          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)"
-        }
-      },
-      "prefix": "นาย"
-    },
-    "07008": {
-      "id": "psy-tr-07008",
-      "empId": "07008",
-      "fullName": "น.ส. พัทยา มาตราช",
-      "department": "PP",
-      "position": "CLERK",
-      "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-16",
-      "status": "passed",
-      "preTestScore": 8,
-      "postTestScore": 9,
-      "postTestAttempts": 1,
-      "miniGameScore": 9,
-      "completedModules": [
-        1,
-        2,
-        3
-      ],
-      "evaluationSubmitted": true,
-      "satisfactionScore": 5,
-      "selectedCourseId": "applied-psychology",
-      "enrolledCourses": [
-        "applied-psychology"
-      ],
-      "certificateId": "TCT-PSY-2026-07008-011",
-      "certificateDate": "16 ตุลาคม 2569",
-      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)",
-      "coursesProgress": {
-        "applied-psychology": {
-          "preTestScore": 8,
-          "postTestScore": 9,
-          "postTestAttempts": 1,
-          "miniGameScore": 9,
-          "completedModules": [
-            1,
-            2,
-            3
-          ],
-          "evaluationSubmitted": true,
-          "certificateId": "TCT-PSY-2026-07008-011",
-          "certificateDate": "16 ตุลาคม 2569",
-          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)"
-        }
-      },
-      "prefix": "น.ส."
-    },
     "00021": {
       "id": "psy-tr-00021",
       "empId": "00021",
+      "prefix": "นาย",
       "fullName": "นาย สัญชัย รู้จัก",
       "department": "TR",
       "position": "LEADER",
       "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-16",
       "status": "passed",
       "preTestScore": 8,
       "postTestScore": 9,
@@ -6885,13 +6847,10 @@
         3
       ],
       "evaluationSubmitted": true,
-      "satisfactionScore": 5,
       "selectedCourseId": "applied-psychology",
       "enrolledCourses": [
         "applied-psychology"
       ],
-      "certificateId": "TCT-PSY-2026-00021-013",
-      "certificateDate": "16 ตุลาคม 2569",
       "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)",
       "coursesProgress": {
         "applied-psychology": {
@@ -6910,139 +6869,15 @@
           "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)"
         }
       },
-      "prefix": "นาย"
-    },
-    "03003": {
-      "id": "psy-tr-03003",
-      "empId": "03003",
-      "fullName": "นาย พิรุณ มาตทอง",
-      "department": "TW",
-      "position": "LEADER",
-      "enrolledAt": "2026-10-12",
       "completedAt": "2026-10-16",
-      "status": "passed",
-      "preTestScore": 8,
-      "postTestScore": 9,
-      "postTestAttempts": 1,
-      "miniGameScore": 9,
-      "completedModules": [
-        1,
-        2,
-        3
-      ],
-      "evaluationSubmitted": true,
       "satisfactionScore": 5,
-      "selectedCourseId": "applied-psychology",
-      "enrolledCourses": [
-        "applied-psychology"
-      ],
-      "certificateId": "TCT-PSY-2026-03003-014",
-      "certificateDate": "16 ตุลาคม 2569",
-      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)",
-      "coursesProgress": {
-        "applied-psychology": {
-          "preTestScore": 8,
-          "postTestScore": 9,
-          "postTestAttempts": 1,
-          "miniGameScore": 9,
-          "completedModules": [
-            1,
-            2,
-            3
-          ],
-          "evaluationSubmitted": true,
-          "certificateId": "TCT-PSY-2026-03003-014",
-          "certificateDate": "16 ตุลาคม 2569",
-          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)"
-        }
-      },
-      "prefix": "นาย"
-    },
-    "02010": {
-      "id": "psy-tr-02010",
-      "empId": "02010",
-      "fullName": "นาย เกตุแก้ว ทรัพย์ขำ",
-      "department": "ST",
-      "position": "LEADER",
-      "enrolledAt": "2026-10-12",
-      "completedAt": "2026-10-16",
-      "status": "passed",
-      "preTestScore": 7,
-      "postTestScore": 9,
-      "postTestAttempts": 1,
-      "miniGameScore": 9,
-      "completedModules": [
-        1,
-        2,
-        3
-      ],
-      "evaluationSubmitted": true,
-      "satisfactionScore": 5,
-      "selectedCourseId": "applied-psychology",
-      "enrolledCourses": [
-        "applied-psychology"
-      ],
-      "certificateId": "TCT-PSY-2026-02010-015",
-      "certificateDate": "16 ตุลาคม 2569",
-      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)",
-      "coursesProgress": {
-        "applied-psychology": {
-          "preTestScore": 7,
-          "postTestScore": 9,
-          "postTestAttempts": 1,
-          "miniGameScore": 9,
-          "completedModules": [
-            1,
-            2,
-            3
-          ],
-          "evaluationSubmitted": true,
-          "certificateId": "TCT-PSY-2026-02010-015",
-          "certificateDate": "16 ตุลาคม 2569",
-          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)"
-        }
-      },
-      "prefix": "นาย"
-    },
-    "06059": {
-      "id": "psy-tr-06059",
-      "empId": "06059",
-      "fullName": "นาย ประไพ รื่นบุตร",
-      "department": "PP",
-      "position": "SENIOR LEADER",
-      "enrolledAt": "2026-10-12",
-      "status": "in_progress",
-      "preTestScore": 8,
-      "postTestScore": null,
-      "postTestAttempts": 0,
-      "miniGameScore": 0,
-      "completedModules": [
-        1
-      ],
-      "evaluationSubmitted": false,
-      "selectedCourseId": "applied-psychology",
-      "enrolledCourses": [
-        "applied-psychology"
-      ],
-      "currentStep": "กำลังเรียนบทที่ 2 (การบริหารอารมณ์และความเครียด)",
-      "coursesProgress": {
-        "applied-psychology": {
-          "preTestScore": 8,
-          "postTestScore": null,
-          "postTestAttempts": 0,
-          "miniGameScore": 0,
-          "completedModules": [
-            1
-          ],
-          "evaluationSubmitted": false,
-          "lastActiveStep": "กำลังเรียนบทที่ 2 (การบริหารอารมณ์และความเครียด)"
-        }
-      },
-      "prefix": "นาย"
+      "certificateId": "TCT-PSY-2026-00021-013",
+      "certificateDate": "16 ตุลาคม 2569"
     },
     "00023": {
       "id": "psy-tr-00023",
       "empId": "00023",
+      "prefix": "นาย",
       "fullName": "นาย กรรณจพงษ์ คลีรัมย์",
       "department": "TR",
       "position": "SENIOR LEADER",
@@ -7075,12 +6910,12 @@
           "evaluationSubmitted": false,
           "lastActiveStep": "กำลังเรียนบทที่ 3 (ความสุขและความมั่นคงในงาน)"
         }
-      },
-      "prefix": "นาย"
+      }
     },
     "00024": {
       "id": "psy-tr-00024",
       "empId": "00024",
+      "prefix": "นาย",
       "fullName": "นาย สรรพสิทธิ์ ขันสัมฤทธิ์",
       "department": "AD1",
       "position": "SENIOR LEADER",
@@ -7111,77 +6946,191 @@
           "evaluationSubmitted": false,
           "lastActiveStep": "กำลังเรียนบทที่ 2 (การบริหารอารมณ์และความเครียด)"
         }
-      },
-      "prefix": "นาย"
+      }
     },
-    "08029": {
-      "id": "psy-tr-08029",
-      "empId": "08029",
-      "fullName": "นาย ต้อม ศรีกุนชร",
-      "department": "FI",
-      "position": "LEADER",
+    "01002": {
+      "id": "psy-tr-01002",
+      "empId": "01002",
+      "prefix": "น.ส.",
+      "fullName": "น.ส. มลฤดี ศิริคุณ",
+      "department": "PP",
+      "position": "CHIEF",
       "enrolledAt": "2026-10-12",
-      "status": "in_progress",
-      "preTestScore": 9,
-      "postTestScore": null,
-      "postTestAttempts": 0,
-      "miniGameScore": 0,
+      "status": "passed",
+      "preTestScore": 8,
+      "postTestScore": 10,
+      "postTestAttempts": 1,
+      "miniGameScore": 10,
       "completedModules": [
         1,
-        2
+        2,
+        3
       ],
-      "evaluationSubmitted": false,
+      "evaluationSubmitted": true,
       "selectedCourseId": "applied-psychology",
       "enrolledCourses": [
         "applied-psychology"
       ],
-      "currentStep": "กำลังเรียนบทที่ 3 (ความสุขและความมั่นคงในงาน)",
+      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)",
       "coursesProgress": {
         "applied-psychology": {
-          "preTestScore": 9,
-          "postTestScore": null,
-          "postTestAttempts": 0,
-          "miniGameScore": 0,
+          "preTestScore": 8,
+          "postTestScore": 10,
+          "postTestAttempts": 1,
+          "miniGameScore": 10,
           "completedModules": [
             1,
-            2
+            2,
+            3
           ],
-          "evaluationSubmitted": false,
-          "lastActiveStep": "กำลังเรียนบทที่ 3 (ความสุขและความมั่นคงในงาน)"
+          "evaluationSubmitted": true,
+          "certificateId": "TCT-PSY-2026-01002-005",
+          "certificateDate": "15 ตุลาคม 2569",
+          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)"
         }
       },
-      "prefix": "นาย"
+      "completedAt": "2026-10-15",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-01002-005",
+      "certificateDate": "15 ตุลาคม 2569"
     },
-    "09001": {
-      "id": "psy-tr-09001",
-      "empId": "09001",
-      "fullName": "นาย วัชรินทร์ จุลแก้ว",
+    "02010": {
+      "id": "psy-tr-02010",
+      "empId": "02010",
+      "prefix": "นาย",
+      "fullName": "นาย เกตุแก้ว ทรัพย์ขำ",
       "department": "ST",
       "position": "LEADER",
       "enrolledAt": "2026-10-12",
-      "status": "not_started",
-      "preTestScore": null,
-      "postTestScore": null,
-      "postTestAttempts": 0,
-      "miniGameScore": 0,
-      "completedModules": [],
-      "evaluationSubmitted": false,
+      "status": "passed",
+      "preTestScore": 7,
+      "postTestScore": 9,
+      "postTestAttempts": 1,
+      "miniGameScore": 9,
+      "completedModules": [
+        1,
+        2,
+        3
+      ],
+      "evaluationSubmitted": true,
       "selectedCourseId": "applied-psychology",
       "enrolledCourses": [
         "applied-psychology"
       ],
-      "currentStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)",
+      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)",
       "coursesProgress": {
         "applied-psychology": {
-          "preTestScore": null,
-          "postTestScore": null,
-          "postTestAttempts": 0,
-          "miniGameScore": 0,
-          "completedModules": [],
-          "evaluationSubmitted": false,
-          "lastActiveStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)"
+          "preTestScore": 7,
+          "postTestScore": 9,
+          "postTestAttempts": 1,
+          "miniGameScore": 9,
+          "completedModules": [
+            1,
+            2,
+            3
+          ],
+          "evaluationSubmitted": true,
+          "certificateId": "TCT-PSY-2026-02010-015",
+          "certificateDate": "16 ตุลาคม 2569",
+          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)"
         }
-      }
+      },
+      "completedAt": "2026-10-16",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-02010-015",
+      "certificateDate": "16 ตุลาคม 2569"
+    },
+    "03003": {
+      "id": "psy-tr-03003",
+      "empId": "03003",
+      "prefix": "นาย",
+      "fullName": "นาย พิรุณ มาตทอง",
+      "department": "TW",
+      "position": "LEADER",
+      "enrolledAt": "2026-10-12",
+      "status": "passed",
+      "preTestScore": 8,
+      "postTestScore": 9,
+      "postTestAttempts": 1,
+      "miniGameScore": 9,
+      "completedModules": [
+        1,
+        2,
+        3
+      ],
+      "evaluationSubmitted": true,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": 8,
+          "postTestScore": 9,
+          "postTestAttempts": 1,
+          "miniGameScore": 9,
+          "completedModules": [
+            1,
+            2,
+            3
+          ],
+          "evaluationSubmitted": true,
+          "certificateId": "TCT-PSY-2026-03003-014",
+          "certificateDate": "16 ตุลาคม 2569",
+          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)"
+        }
+      },
+      "completedAt": "2026-10-16",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-03003-014",
+      "certificateDate": "16 ตุลาคม 2569"
+    },
+    "03007": {
+      "id": "psy-tr-03007",
+      "empId": "03007",
+      "prefix": "นาย",
+      "fullName": "นาย นาวา เกษร",
+      "department": "MN",
+      "position": "SUPERVISOR",
+      "enrolledAt": "2026-10-12",
+      "status": "passed",
+      "preTestScore": 7,
+      "postTestScore": 9,
+      "postTestAttempts": 1,
+      "miniGameScore": 9,
+      "completedModules": [
+        1,
+        2,
+        3
+      ],
+      "evaluationSubmitted": true,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": 7,
+          "postTestScore": 9,
+          "postTestAttempts": 1,
+          "miniGameScore": 9,
+          "completedModules": [
+            1,
+            2,
+            3
+          ],
+          "evaluationSubmitted": true,
+          "certificateId": "TCT-PSY-2026-03007-006",
+          "certificateDate": "15 ตุลาคม 2569",
+          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)"
+        }
+      },
+      "completedAt": "2026-10-15",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-03007-006",
+      "certificateDate": "15 ตุลาคม 2569"
     },
     "03020": {
       "id": "emp-03020",
@@ -7247,6 +7196,88 @@
         }
       }
     },
+    "06025": {
+      "id": "psy-tr-06025",
+      "empId": "06025",
+      "prefix": "น.ส.",
+      "fullName": "น.ส. จารุณี อินทรโสภา",
+      "department": "PS",
+      "position": "CHIEF",
+      "enrolledAt": "2026-10-12",
+      "status": "passed",
+      "preTestScore": 9,
+      "postTestScore": 10,
+      "postTestAttempts": 1,
+      "miniGameScore": 10,
+      "completedModules": [
+        1,
+        2,
+        3
+      ],
+      "evaluationSubmitted": true,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": 9,
+          "postTestScore": 10,
+          "postTestAttempts": 1,
+          "miniGameScore": 10,
+          "completedModules": [
+            1,
+            2,
+            3
+          ],
+          "evaluationSubmitted": true,
+          "certificateId": "TCT-PSY-2026-06025-003",
+          "certificateDate": "14 ตุลาคม 2569",
+          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)"
+        }
+      },
+      "completedAt": "2026-10-14",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-06025-003",
+      "certificateDate": "14 ตุลาคม 2569"
+    },
+    "06059": {
+      "id": "psy-tr-06059",
+      "empId": "06059",
+      "prefix": "นาย",
+      "fullName": "นาย ประไพ รื่นบุตร",
+      "department": "PP",
+      "position": "SENIOR LEADER",
+      "enrolledAt": "2026-10-12",
+      "status": "in_progress",
+      "preTestScore": 8,
+      "postTestScore": null,
+      "postTestAttempts": 0,
+      "miniGameScore": 0,
+      "completedModules": [
+        1
+      ],
+      "evaluationSubmitted": false,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "กำลังเรียนบทที่ 2 (การบริหารอารมณ์และความเครียด)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": 8,
+          "postTestScore": null,
+          "postTestAttempts": 0,
+          "miniGameScore": 0,
+          "completedModules": [
+            1
+          ],
+          "evaluationSubmitted": false,
+          "lastActiveStep": "กำลังเรียนบทที่ 2 (การบริหารอารมณ์และความเครียด)"
+        }
+      }
+    },
     "06061": {
       "id": "emp-06061",
       "empId": "06061",
@@ -7278,6 +7309,52 @@
           "lastActiveStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)"
         }
       }
+    },
+    "07008": {
+      "id": "psy-tr-07008",
+      "empId": "07008",
+      "prefix": "น.ส.",
+      "fullName": "น.ส. พัทยา มาตราช",
+      "department": "PP",
+      "position": "CLERK",
+      "enrolledAt": "2026-10-12",
+      "status": "passed",
+      "preTestScore": 8,
+      "postTestScore": 9,
+      "postTestAttempts": 1,
+      "miniGameScore": 9,
+      "completedModules": [
+        1,
+        2,
+        3
+      ],
+      "evaluationSubmitted": true,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": 8,
+          "postTestScore": 9,
+          "postTestAttempts": 1,
+          "miniGameScore": 9,
+          "completedModules": [
+            1,
+            2,
+            3
+          ],
+          "evaluationSubmitted": true,
+          "certificateId": "TCT-PSY-2026-07008-011",
+          "certificateDate": "16 ตุลาคม 2569",
+          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 18/20)"
+        }
+      },
+      "completedAt": "2026-10-16",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-07008-011",
+      "certificateDate": "16 ตุลาคม 2569"
     },
     "07044": {
       "id": "emp-07044",
@@ -7316,6 +7393,122 @@
       "empId": "07057",
       "prefix": "นาย",
       "fullName": "นาย อภินันท์ ทองประสานศรี",
+      "department": "ST",
+      "position": "LEADER",
+      "enrolledAt": "2026-10-12",
+      "status": "not_started",
+      "preTestScore": null,
+      "postTestScore": null,
+      "postTestAttempts": 0,
+      "miniGameScore": 0,
+      "completedModules": [],
+      "evaluationSubmitted": false,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": null,
+          "postTestScore": null,
+          "postTestAttempts": 0,
+          "miniGameScore": 0,
+          "completedModules": [],
+          "evaluationSubmitted": false,
+          "lastActiveStep": "ลงทะเบียนเข้าเรียนรอบที่ 1 แล้ว (รอเริ่มเรียน 12-16 ต.ค. 2569)"
+        }
+      }
+    },
+    "08013": {
+      "id": "psy-tr-08013",
+      "empId": "08013",
+      "prefix": "นาย",
+      "fullName": "นาย กิตติศักดิ์ สร้อยจิตต์",
+      "department": "PS",
+      "position": "MANAGER",
+      "enrolledAt": "2026-10-12",
+      "status": "passed",
+      "preTestScore": 9,
+      "postTestScore": 10,
+      "postTestAttempts": 1,
+      "miniGameScore": 10,
+      "completedModules": [
+        1,
+        2,
+        3
+      ],
+      "evaluationSubmitted": true,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": 9,
+          "postTestScore": 10,
+          "postTestAttempts": 1,
+          "miniGameScore": 10,
+          "completedModules": [
+            1,
+            2,
+            3
+          ],
+          "evaluationSubmitted": true,
+          "certificateId": "TCT-PSY-2026-08013-002",
+          "certificateDate": "14 ตุลาคม 2569",
+          "lastActiveStep": "จบหลักสูตร & ได้รับวุฒิบัตร (คะแนน 20/20)"
+        }
+      },
+      "completedAt": "2026-10-14",
+      "satisfactionScore": 5,
+      "certificateId": "TCT-PSY-2026-08013-002",
+      "certificateDate": "14 ตุลาคม 2569"
+    },
+    "08029": {
+      "id": "psy-tr-08029",
+      "empId": "08029",
+      "prefix": "นาย",
+      "fullName": "นาย ต้อม ศรีกุนชร",
+      "department": "FI",
+      "position": "LEADER",
+      "enrolledAt": "2026-10-12",
+      "status": "in_progress",
+      "preTestScore": 9,
+      "postTestScore": null,
+      "postTestAttempts": 0,
+      "miniGameScore": 0,
+      "completedModules": [
+        1,
+        2
+      ],
+      "evaluationSubmitted": false,
+      "selectedCourseId": "applied-psychology",
+      "enrolledCourses": [
+        "applied-psychology"
+      ],
+      "currentStep": "กำลังเรียนบทที่ 3 (ความสุขและความมั่นคงในงาน)",
+      "coursesProgress": {
+        "applied-psychology": {
+          "preTestScore": 9,
+          "postTestScore": null,
+          "postTestAttempts": 0,
+          "miniGameScore": 0,
+          "completedModules": [
+            1,
+            2
+          ],
+          "evaluationSubmitted": false,
+          "lastActiveStep": "กำลังเรียนบทที่ 3 (ความสุขและความมั่นคงในงาน)"
+        }
+      }
+    },
+    "09001": {
+      "id": "psy-tr-09001",
+      "empId": "09001",
+      "prefix": "นาย",
+      "fullName": "นาย วัชรินทร์ จุลแก้ว",
       "department": "ST",
       "position": "LEADER",
       "enrolledAt": "2026-10-12",
@@ -7410,6 +7603,15 @@
   },
   "activities": [
     {
+      "id": "act-loc-1792918435882",
+      "timestamp": "25/10/2569 08:53:55",
+      "empId": "25056",
+      "fullName": "นาย ณฐวัตร พงษ์สาริกิจ",
+      "department": "PS",
+      "action": "location_checkin",
+      "detail": "เช็คอินพิกัด GPS: ผ่านเกณฑ์ตรวจสอบพิกัด (ภายในโรงงาน) (นาย ณฐวัตร พงษ์สาริกิจ)"
+    },
+    {
       "id": "del-11003-1790664068032",
       "timestamp": "2026-09-29T06:41:08.032Z",
       "empId": "11003",
@@ -7440,5 +7642,73 @@
     }
   ],
   "trainingLogs": [],
-  "lastUpdated": "2026-10-17T18:20:39.741Z"
+  "locationCheckIns": [
+    {
+      "id": "chk-1792918435881-f4qhz",
+      "timestamp": "2026-10-25T08:53:55.881Z",
+      "displayTime": "25/10/2569 08:53:55",
+      "empId": "25056",
+      "fullName": "นาย ณฐวัตร พงษ์สาริกิจ",
+      "department": "PS",
+      "position": "SUPERVISOR",
+      "courseId": "applied-psychology",
+      "courseTitle": "จิตวิทยาประยุกต์ในการทำงาน",
+      "lat": 14.3380539,
+      "lng": 100.6279692,
+      "accuracyMeters": 5,
+      "distanceKm": 0,
+      "distanceMeters": 0,
+      "isWithinGeofence": true,
+      "status": "verified_onsite",
+      "statusLabelTh": "ผ่านเกณฑ์ตรวจสอบพิกัด (ภายในโรงงาน)",
+      "deviceInfo": "curl/7.88.1",
+      "notes": "ทดสอบระบบตรวจสอบพิกัดพนักงาน",
+      "qrHash": "TCT-GPS-1792918435882"
+    },
+    {
+      "id": "chk-srv-01",
+      "timestamp": "2026-10-25T08:33:49.059Z",
+      "displayTime": "25/10/2569 08:33:49",
+      "empId": "003290",
+      "fullName": "นาย กิตติศักดิ์ ชัยชนะ",
+      "department": "P",
+      "position": "OPERATOR",
+      "courseId": "good-employee-skills",
+      "courseTitle": "ทักษะการเป็นพนักงานที่ดี",
+      "lat": 14.338112,
+      "lng": 100.627932,
+      "accuracyMeters": 3,
+      "distanceKm": 0.012,
+      "distanceMeters": 12,
+      "isWithinGeofence": true,
+      "status": "verified_onsite",
+      "statusLabelTh": "ยืนยันพิกัดในโรงงาน (< 1.0 กม.)",
+      "deviceInfo": "Android Mobile • Chrome",
+      "notes": "เช็คอินเข้าอบรม กะเช้า (Morning Shift)",
+      "qrHash": "TCT-003290-SHIFT-M"
+    },
+    {
+      "id": "chk-srv-02",
+      "timestamp": "2026-10-25T07:58:49.081Z",
+      "displayTime": "25/10/2569 07:58:49",
+      "empId": "25056",
+      "fullName": "นาย ณฐวัตร พงษ์สาริกิจ",
+      "department": "PS",
+      "position": "SUPERVISOR",
+      "courseId": "applied-psychology",
+      "courseTitle": "จิตวิทยาประยุกต์ในการทำงาน",
+      "lat": 14.3380539,
+      "lng": 100.6279692,
+      "accuracyMeters": 2,
+      "distanceKm": 0,
+      "distanceMeters": 0,
+      "isWithinGeofence": true,
+      "status": "verified_onsite",
+      "statusLabelTh": "ยืนยันพิกัดในโรงงาน (< 1.0 กม.)",
+      "deviceInfo": "Desktop Workstation • Chrome",
+      "notes": "อาคารบริหาร แผนกบุคคลและธุรการ",
+      "qrHash": "TCT-25056-HEAD-PS"
+    }
+  ],
+  "lastUpdated": "2026-10-25T08:53:55.882Z"
 }

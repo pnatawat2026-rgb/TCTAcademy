@@ -520,8 +520,8 @@ export const TrainingTrackerModal: React.FC<TrainingTrackerModalProps> = ({
                   className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 cursor-pointer focus:outline-none focus:border-[#005A9C]"
                 >
                   <option value="all">ทุกประเภทกิจกรรม</option>
-                  {Object.entries(ACTION_LABELS).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
+                  {Object.entries(ACTION_LABELS).map(([key, item]) => (
+                    <option key={key} value={key}>{item.label}</option>
                   ))}
                 </select>
               </div>
@@ -584,8 +584,8 @@ export const TrainingTrackerModal: React.FC<TrainingTrackerModalProps> = ({
                               </span>
                             </td>
                             <td className="py-2.5 px-3 whitespace-nowrap">
-                              <span className="inline-flex items-center gap-1 font-semibold text-slate-800 text-[11px]">
-                                {ACTION_LABELS[log.action] || log.action}
+                              <span className={`inline-flex items-center gap-1 font-semibold text-[11px] px-2 py-0.5 rounded-full border ${ACTION_LABELS[log.action as TrainingActionType]?.badgeColor || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                                {ACTION_LABELS[log.action as TrainingActionType]?.label || log.action}
                               </span>
                             </td>
                             <td className="py-2.5 px-3 text-slate-600 max-w-[280px] truncate" title={log.detail}>
